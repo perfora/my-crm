@@ -2,12 +2,59 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use App\Models\Kisi;
 use App\Models\Ziyaret;
 use App\Models\TumIsler;
 
-// Ana sayfa
-Route::get('/', fn () => view('dashboard'))->name('home');
+// Login/Logout Routes (no auth middleware)
+Route::get('/login', function() {
+    return view('auth.login');
+})->name('login')->middleware('guest');
+
+Route::post('/login', function(Request $request) {
+    $credentials = $request->validate([
+        'email' => ['required', 'email'],
+        'password' => ['required'],
+    ]);
+    
+    // Rate limiting: 5 deneme / 1 dakika
+    $key = 'login.' . $request->ip();
+    $maxAttempts = 5;
+    $decayMinutes = 1;
+    
+    if (RateLimiter::tooManyAttempts($key, $maxAttempts)) {
+        $seconds = RateLimiter::availableIn($key);
+        return back()->withErrors([
+            'email' => "Çok fazla başarısız deneme! {$seconds} saniye sonra tekrar deneyin.",
+        ])->onlyInput('email');
+    }
+    
+    if (auth()->attempt($credentials, $request->filled('remember'))) {
+        RateLimiter::clear($key); // Başarılı girişte sayacı sıfırla
+        $request->session()->regenerate();
+        return redirect()->intended('/');
+    }
+    
+    RateLimiter::hit($key, $decayMinutes * 60); // Başarısız deneme kaydet
+    
+    return back()->withErrors([
+        'email' => 'E-posta veya şifre hatalı.',
+    ])->onlyInput('email');
+});
+
+Route::post('/logout', function() {
+    auth()->logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect('/login');
+})->name('logout');
+
+// Protected Routes (require authentication)
+Route::middleware(['auth'])->group(function () {
+    
+    // Ana sayfa
+    Route::get('/', fn () => view('dashboard'))->name('home');
 
 // API: Filter Widget Data
 Route::post('/api/filter-widget-data', function(Request $request) {
@@ -622,3 +669,27 @@ Route::delete('/tum-isler/{id}', function ($id) {
     return redirect('/tum-isler')->with('message', 'İş silindi.');
 });
 
+// Saved Filters API
+Route::get('/api/saved-filters', function () {
+    $page = request('page', 'tum-isler');
+    return \App\Models\SavedFilter::where('page', $page)->get();
+});
+
+Route::post('/api/saved-filters', function () {
+    $validated = request()->validate([
+        'name' => 'required|string|max:255',
+        'page' => 'required|string',
+        'filter_data' => 'required|array',
+    ]);
+    
+    $filter = \App\Models\SavedFilter::create($validated);
+    return response()->json($filter);
+});
+
+Route::delete('/api/saved-filters/{name}', function ($name) {
+    $page = request('page', 'tum-isler');
+    \App\Models\SavedFilter::where('page', $page)->where('name', $name)->delete();
+    return response()->json(['success' => true]);
+});
+
+}); // End of auth middleware group

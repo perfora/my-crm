@@ -12,9 +12,17 @@
     <div class="container mx-auto px-4 py-8">
         <div class="flex justify-between items-center mb-8">
             <h1 class="text-3xl font-bold">CRM Dashboard</h1>
-            <a href="/dashboard/widget-settings" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">
-                ⚙️ Widget Ayarları
-            </a>
+            <div class="flex gap-2">
+                <a href="/dashboard/widget-settings" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">
+                    ⚙️ Widget Ayarları
+                </a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                        🚪 Çıkış Yap
+                    </button>
+                </form>
+            </div>
         </div>
         
         @php

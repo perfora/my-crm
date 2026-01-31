@@ -21,3 +21,7 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Database files - NEVER commit!
+/database/*.sqlite
+/database/*.sqlite-journal
