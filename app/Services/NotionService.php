@@ -15,11 +15,16 @@ class NotionService
     public function __construct()
     {
         // Database'den API token'ı al
-        $token = DB::table('notion_settings')
-            ->where('key', 'api_token')
-            ->value('value');
-        
-        $this->apiToken = $token ?? env('NOTION_API_TOKEN');
+        try {
+            $token = DB::table('notion_settings')
+                ->where('key', 'api_token')
+                ->value('value');
+            
+            $this->apiToken = $token ?? env('NOTION_API_TOKEN');
+        } catch (\Exception $e) {
+            // Migration sırasında tablo yoksa env'den al
+            $this->apiToken = env('NOTION_API_TOKEN');
+        }
     }
 
     /**
