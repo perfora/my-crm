@@ -669,27 +669,29 @@ Route::delete('/tum-isler/{id}', function ($id) {
     return redirect('/tum-isler')->with('message', 'İş silindi.');
 });
 
-// Saved Filters API
-Route::get('/api/saved-filters', function () {
-    $page = request('page', 'tum-isler');
-    return \App\Models\SavedFilter::where('page', $page)->get();
-});
-
-Route::post('/api/saved-filters', function () {
-    $validated = request()->validate([
-        'name' => 'required|string|max:255',
-        'page' => 'required|string',
-        'filter_data' => 'required|array',
-    ]);
-    
-    $filter = \App\Models\SavedFilter::create($validated);
-    return response()->json($filter);
-});
-
-Route::delete('/api/saved-filters/{name}', function ($name) {
-    $page = request('page', 'tum-isler');
-    \App\Models\SavedFilter::where('page', $page)->where('name', $name)->delete();
-    return response()->json(['success' => true]);
-});
-
 }); // End of auth middleware group
+
+// Saved Filters API (auth middleware içinde OLMALI - sadece giriş yapmış kullanıcılar)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/api/saved-filters', function () {
+        $page = request('page', 'tum-isler');
+        return \App\Models\SavedFilter::where('page', $page)->get();
+    });
+
+    Route::post('/api/saved-filters', function () {
+        $validated = request()->validate([
+            'name' => 'required|string|max:255',
+            'page' => 'required|string',
+            'filter_data' => 'required|array',
+        ]);
+        
+        $filter = \App\Models\SavedFilter::create($validated);
+        return response()->json($filter);
+    });
+
+    Route::delete('/api/saved-filters/{name}', function ($name) {
+        $page = request('page', 'tum-isler');
+        \App\Models\SavedFilter::where('page', $page)->where('name', $name)->delete();
+        return response()->json(['success' => true]);
+    });
+});
