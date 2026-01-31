@@ -1521,5 +1521,9 @@
             });
         }
     </script>
+    
+    <!-- Ayrı JavaScript Dosyaları -->
+    <script src="/js/tum-isler-filters.js"></script>
+    <script src="/js/tum-isler-main.js"></script>
 </body>
 </html>
