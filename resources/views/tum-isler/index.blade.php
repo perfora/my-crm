@@ -1220,8 +1220,8 @@
             });
         }
         
-        // Filtre Kaydetme ve Yükleme Sistemi
-        function saveCurrentFilter() {
+        // Filtre Kaydetme ve Yükleme Sistemi (Database-backed)
+        async function saveCurrentFilter() {
             const filterName = document.getElementById('filterName').value.trim();
             if (!filterName) {
                 alert('Lütfen filtre adı girin!');
@@ -1234,40 +1234,36 @@
             const inputs = form.querySelectorAll('input, select');
             
             inputs.forEach(input => {
-                // name attribute'u varsa ve değeri varsa (boş string bile olabilir, undefined olmasın yeter)
-                if (input.name) {
-                    const value = input.value;
-                    // Sadece boş olmayan değerleri kaydet
-                    if (value !== null && value !== undefined && value !== '') {
-                        formData[input.name] = value;
-                        console.log('Kaydedilen alan:', input.name, '=', value); // Debug için
-                    }
+                if (input.name && input.value) {
+                    formData[input.name] = input.value;
                 }
             });
             
-            console.log('Kaydedilen filtre:', filterName, formData); // Debug için
-            
-            // localStorage'dan mevcut filtreleri al
-            let savedFilters = JSON.parse(localStorage.getItem('tumIslerFilters') || '{}');
-            
-            // Yeni filtreyi ekle
-            savedFilters[filterName] = formData;
-            
-            // localStorage'a kaydet
-            localStorage.setItem('tumIslerFilters', JSON.stringify(savedFilters));
-            
-            // Dropdown'ı güncelle
-            updateFilterDropdown();
-            
-            // Bilgi mesajı
-            const fieldCount = Object.keys(formData).length;
-            alert('✓ Filtre kaydedildi: ' + filterName + '\n(' + fieldCount + ' alan)');
-            
-            // İsim alanını temizle
-            document.getElementById('filterName').value = '';
-            
-            // Butonları güncelle
-            updateFilterButtons();
+            try {
+                const response = await fetch('/api/saved-filters', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        name: filterName,
+                        page: 'tum-isler',
+                        filter_data: formData
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('✓ Filtre kaydedildi: ' + filterName);
+                    document.getElementById('filterName').value = '';
+                    updateFilterButtons();
+                } else {
+                    alert('❌ Kayıt başarısız!');
+                }
+            } catch (error) {
+                console.error('Filter save error:', error);
+                alert('❌ Bağlantı hatası!');
+            }
         }
         
         function loadFilter(filterName) {
@@ -1296,50 +1292,60 @@
             form.submit();
         }
         
-        function deleteFilter(filterName) {
+        async function deleteFilter(filterName) {
             if (!confirm('Bu filtreyi silmek istediğinize emin misiniz?\n\n' + filterName)) {
                 return;
             }
             
-            // localStorage'dan filtreleri al
-            let savedFilters = JSON.parse(localStorage.getItem('tumIslerFilters') || '{}');
-            
-            // Filtreyi sil
-            delete savedFilters[filterName];
-            
-            // localStorage'a kaydet
-            localStorage.setItem('tumIslerFilters', JSON.stringify(savedFilters));
-            
-            // Butonları güncelle
-            updateFilterButtons();
-            
-            alert('✓ Filtre silindi: ' + filterName);
+            try {
+                const response = await fetch('/api/saved-filters/' + encodeURIComponent(filterName) + '?page=tum-isler', {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+                
+                if (response.ok) {
+                    alert('✓ Filtre silindi: ' + filterName);
+                    updateFilterButtons();
+                } else {
+                    alert('❌ Silme başarısız!');
+                }
+            } catch (error) {
+                console.error('Filter delete error:', error);
+                alert('❌ Bağlantı hatası!');
+            }
         }
         
-        function updateFilterButtons() {
-            const savedFilters = JSON.parse(localStorage.getItem('tumIslerFilters') || '{}');
-            const container = document.getElementById('savedFiltersButtons');
-            
-            if (Object.keys(savedFilters).length === 0) {
-                container.innerHTML = '<p class="text-sm text-gray-500">Henüz kayıtlı filtre yok</p>';
-                return;
+        async function updateFilterButtons() {
+            try {
+                const response = await fetch('/api/saved-filters?page=tum-isler');
+                const filters = await response.json();
+                const container = document.getElementById('savedFiltersButtons');
+                
+                if (filters.length === 0) {
+                    container.innerHTML = '<p class="text-sm text-gray-500">Henüz kayıtlı filtre yok</p>';
+                    return;
+                }
+                
+                let html = '';
+                filters.forEach(filter => {
+                    html += `
+                        <div class="inline-flex items-center gap-0.5 bg-blue-50 hover:bg-blue-100 rounded border border-blue-200 transition-colors">
+                            <button type="button" onclick="loadFilter('${filter.name}'); return false;" class="px-2 py-0.5 text-xs font-medium text-blue-700">
+                                ${filter.name}
+                            </button>
+                            <button type="button" onclick="deleteFilter('${filter.name}'); return false;" class="px-1.5 py-0.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-r text-xs">
+                                ×
+                            </button>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Filter buttons update error:', error);
             }
-            
-            let html = '';
-            Object.keys(savedFilters).forEach(filterName => {
-                html += `
-                    <div class="inline-flex items-center gap-0.5 bg-blue-50 hover:bg-blue-100 rounded border border-blue-200 transition-colors">
-                        <button type="button" onclick="loadFilter('${filterName}'); return false;" class="px-2 py-0.5 text-xs font-medium text-blue-700">
-                            ${filterName}
-                        </button>
-                        <button type="button" onclick="deleteFilter('${filterName}'); return false;" class="px-1.5 py-0.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-r text-xs">
-                            ×
-                        </button>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = html;
         }
         
         // Eski fonksiyonlar - geriye uyumluluk için
