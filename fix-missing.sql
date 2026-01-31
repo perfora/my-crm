@@ -1,0 +1,14 @@
+INSERT OR IGNORE INTO musteriler (sirket, turu, created_at, updated_at) VALUES ('Beraytek bilgisayar', 'Bayi', datetime('now'), datetime('now'));
+INSERT OR IGNORE INTO musteriler (sirket, turu, created_at, updated_at) VALUES ('Bilkar', 'Bayi', datetime('now'), datetime('now'));
+INSERT OR IGNORE INTO musteriler (sirket, turu, created_at, updated_at) VALUES ('Fortinet Türkiye', 'Bayi', datetime('now'), datetime('now'));
+INSERT OR IGNORE INTO musteriler (sirket, turu, created_at, updated_at) VALUES ('Ingram', 'Tedarikçi', datetime('now'), datetime('now'));
+INSERT OR IGNORE INTO musteriler (sirket, turu, created_at, updated_at) VALUES ('Kare', NULL, datetime('now'), datetime('now'));
+INSERT OR IGNORE INTO musteriler (sirket, turu, created_at, updated_at) VALUES ('Konbeltaş', NULL, datetime('now'), datetime('now'));
+INSERT OR IGNORE INTO musteriler (sirket, turu, created_at, updated_at) VALUES ('Mahmut Karaköse', NULL, datetime('now'), datetime('now'));
+INSERT OR IGNORE INTO musteriler (sirket, turu, created_at, updated_at) VALUES ('RZK', 'Tedarikçi', datetime('now'), datetime('now'));
+INSERT OR IGNORE INTO musteriler (sirket, turu, created_at, updated_at) VALUES ('Redington', 'Tedarikçi', datetime('now'), datetime('now'));
+INSERT OR IGNORE INTO musteriler (sirket, turu, created_at, updated_at) VALUES ('Synamos Yazılım', NULL, datetime('now'), datetime('now'));
+INSERT OR IGNORE INTO musteriler (sirket, turu, created_at, updated_at) VALUES ('Trend Micro', 'Tedarikçi', datetime('now'), datetime('now'));
+INSERT OR IGNORE INTO musteriler (sirket, turu, created_at, updated_at) VALUES ('Veeam', 'Tedarikçi', datetime('now'), datetime('now'));
+INSERT OR IGNORE INTO musteriler (sirket, turu, created_at, updated_at) VALUES ('Virus Bilgisayar', 'Tedarikçi', datetime('now'), datetime('now'));
+INSERT OR IGNORE INTO musteriler (sirket, turu, created_at, updated_at) VALUES ('Özdöken Makina', NULL, datetime('now'), datetime('now'));

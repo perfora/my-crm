@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tüm İşler - CRM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <style>
+        .select2-container--default .select2-selection--single {
+            height: 42px;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            padding: 0.5rem 0.75rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 26px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 40px;
+        }
+        .scroll-sync {
+            overflow-x: auto;
+        }
+        .sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+        .sortable:hover {
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    @include('layouts.nav')
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">Tüm İşler</h1>
+            @php
+                $notionCount = \App\Models\TumIsler::whereNotNull('notion_id')->count();
+            @endphp
+            @if($notionCount > 0)
+                <div class="bg-purple-100 text-purple-800 px-4 py-2 rounded-lg text-sm">
+                    🔗 <strong>{{ $notionCount }}</strong> kayıt Notion'dan senkronize
+                </div>
+            @endif
+        </div>
+        
+        @if(session('message'))
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                {{ session('message') }}
+            </div>
+        @endif
+        <!-- Form -->
+        <div class="bg-white rounded-lg shadow mb-6">
+            <div class="p-6 flex justify-between items-center cursor-pointer" onclick="toggleForm()">
+                <h2 class="text-xl font-bold">Yeni İş Ekle</h2>
+                <span id="form-toggle-icon" class="text-2xl transform transition-transform">▼</span>
+            </div>
+            <div id="is-ekle-form" style="display: none;">
+                <form method="POST" action="/tum-isler" class="space-y-4 px-6 pb-6">
+                @csrf
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">İş Adı *</label>
+                        <input type="text" name="name" required class="w-full border rounded px-3 py-2">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Müşteri</label>
+                        <select name="musteri_id" id="musteri-select" class="w-full border rounded px-3 py-2">
+                            <option value="">Seçiniz</option>
+                            @php
+                                $musteriler = \App\Models\Musteri::orderBy('sirket')->get();
+                            @endphp
+                            @foreach($musteriler as $musteri)
+                                <option value="{{ $musteri->id }}">{{ $musteri->sirket }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Marka</label>
+                        <select name="marka_id" id="marka-select" class="w-full border rounded px-3 py-2">
+                            <option value="">Seçiniz</option>
+                            @php
+                                $markalar = \App\Models\Marka::orderBy('name')->get();
+                            @endphp
+                            @foreach($markalar as $marka)
+                                <option value="{{ $marka->id }}">{{ $marka->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Tipi</label>
+                        <select name="tipi" id="tipi" class="w-full border rounded px-3 py-2">
+                            <option value="">Seçiniz</option>
+                            <option value="Verilecek">Verilecek</option>
+                            <option value="Verildi">Verildi</option>
+                            <option value="Takip Edilecek">Takip Edilecek</option>
+                            <option value="Kazanıldı">Kazanıldı</option>
+                            <option value="Kaybedildi">Kaybedildi</option>
+                            <option value="Vazgeçildi">Vazgeçildi</option>
+                            <option value="Tamamlandı">Tamamlandı</option>
+                            <option value="Askıda">Askıda</option>
+                            <option value="Register">Register</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Türü</label>
+                        <select name="turu" id="turu-select" class="w-full border rounded px-3 py-2">
+                            <option value="">Seçiniz</option>
+                            <option value="Cihaz">Cihaz</option>
+                            <option value="Yazılım ve Lisans">Yazılım ve Lisans</option>
+                            <option value="Cihaz ve Lisans">Cihaz ve Lisans</option>
+                            <option value="Yenileme">Yenileme</option>
+                            <option value="Destek">Destek</option>
+                            <option value="Hizmet Alımı">Hizmet Alımı</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Öncelik</label>
+                        <select name="oncelik" id="oncelik-select" class="w-full border rounded px-3 py-2">
+                            <option value="">Seçiniz</option>
+                            <option value="1">1 (Yüksek)</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4 (Düşük)</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Teklif Tutarı</label>
+                        <input type="number" step="0.01" name="teklif_tutari" class="w-full border rounded px-3 py-2">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Alış Tutarı</label>
+                        <input type="number" step="0.01" name="alis_tutari" class="w-full border rounded px-3 py-2">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Kur</label>
+                        <input type="number" step="0.0001" name="kur" class="w-full border rounded px-3 py-2">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Açılış Tarihi</label>
+                        <input type="date" name="is_guncellenme_tarihi" value="{{ date('Y-m-d') }}" class="w-full border rounded px-3 py-2">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Kapanış Tarihi</label>
+                        <input type="date" name="kapanis_tarihi" id="kapanis_tarihi" class="w-full border rounded px-3 py-2">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Lisans Bitiş</label>
+                        <input type="date" name="lisans_bitis" class="w-full border rounded px-3 py-2">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1">Açıklama</label>
+                    <textarea name="aciklama" rows="2" class="w-full border rounded px-3 py-2"></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Kaybedilme Nedeni</label>
+                        <select name="kaybedilme_nedeni" class="w-full border rounded px-3 py-2">
+                            <option value="">Seçiniz</option>
+                            <option value="Diğer">Diğer</option>
+                            <option value="Bütçe Yok">Bütçe Yok</option>
+                            <option value="Kendileri Kurdu">Kendileri Kurdu</option>
+                            <option value="Müşteri Vazgeçti">Müşteri Vazgeçti</option>
+                            <option value="Yerli Ürün Tercihi">Yerli Ürün Tercihi</option>
+                            <option value="Vade/Ödeme Koşulu">Vade/Ödeme Koşulu</option>
+                            <option value="Stok Yok">Stok Yok</option>
+                            <option value="Rakip Daha Ucuz">Rakip Daha Ucuz</option>
+                            <option value="Fiyat Yüksek">Fiyat Yüksek</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Register Durum</label>
+                        <select name="register_durum" id="register-durum-select" class="w-full border rounded px-3 py-2">
+                            <option value="">Seçiniz</option>
+                            <option value="Açık">Açık</option>
+                            <option value="Uzatım İstendi">Uzatım İstendi</option>
+                            <option value="Uzatıldı">Uzatıldı</option>
+                            <option value="Kapatıldı">Kapatıldı</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1">Notlar</label>
+                    <textarea name="notlar" rows="3" class="w-full border rounded px-3 py-2"></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1">Geçmiş Notlar</label>
+                    <textarea name="gecmis_notlar" rows="3" class="w-full border rounded px-3 py-2"></textarea>
+                </div>
+                
+                <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+                    İş Ekle
+                </button>
+            </form>
+            </div>
+        </div>
+
+        <!-- Kayıtlı Filtreler - Her zaman görünür -->
+        <div class="bg-white rounded-lg shadow mb-4 p-4">
+            <div class="flex items-center gap-3">
+                <label class="text-sm font-medium text-gray-600">Kayıtlı Filtreler:</label>
+                <div id="savedFiltersButtons" class="flex gap-1.5 flex-wrap flex-1">
+                    <!-- JavaScript ile doldurulacak -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtreler -->
+        <div class="bg-white rounded-lg shadow mb-6">
+            <div class="p-6 flex justify-between items-center cursor-pointer" onclick="toggleFilters()">
+                <h2 class="text-xl font-bold">Filtreler</h2>
+                <span id="filter-toggle-icon" class="text-2xl transform transition-transform">▼</span>
+            </div>
+            <div id="filters-form" style="display: none;">
+                <form method="GET" action="/tum-isler" id="filterForm" class="space-y-4 px-6 pb-6">
+                
+                <!-- Yeni Filtre Kaydet -->
+                <div class="bg-green-50 p-3 rounded border border-green-200 mb-4">
+                    <div class="flex gap-2 items-end flex-wrap">
+                        <div class="flex-1 min-w-[200px]">
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Yeni Filtre Adı</label>
+                            <input type="text" id="filterName" class="w-full border border-gray-200 rounded px-2 py-1.5 text-sm" placeholder="Filtre adı girin...">
+                        </div>
+                        <button type="button" onclick="saveCurrentFilter()" class="bg-green-500 text-white px-3 py-1.5 rounded text-sm hover:bg-green-600">
+                            💾 Kaydet
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">İş Adı</label>
+                        <input type="text" name="name" value="{{ request('name') }}" class="w-full border rounded px-3 py-2" placeholder="İş adında ara...">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Yıl</label>
+                        <select name="yil" class="w-full border rounded px-3 py-2">
+                            <option value="">Tümü</option>
+                            <option value="2024" {{ request('yil') == '2024' ? 'selected' : '' }}>2024</option>
+                            <option value="2025" {{ request('yil') == '2025' ? 'selected' : '' }}>2025</option>
+                            <option value="2026" {{ request('yil') == '2026' ? 'selected' : '' }}>2026</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Tipi</label>
+                        <select name="tipi" class="w-full border rounded px-3 py-2">
+                            <option value="">Tümü</option>
+                            <option value="Kazanıldı" {{ request('tipi') == 'Kazanıldı' ? 'selected' : '' }}>Kazanıldı</option>
+                            <option value="Kaybedildi" {{ request('tipi') == 'Kaybedildi' ? 'selected' : '' }}>Kaybedildi</option>
+                            <option value="Verildi" {{ request('tipi') == 'Verildi' ? 'selected' : '' }}>Verildi</option>
+                            <option value="Verilecek" {{ request('tipi') == 'Verilecek' ? 'selected' : '' }}>Verilecek</option>
+                            <option value="Takip Edilecek" {{ request('tipi') == 'Takip Edilecek' ? 'selected' : '' }}>Takip Edilecek</option>
+                            <option value="Askıda" {{ request('tipi') == 'Askıda' ? 'selected' : '' }}>Askıda</option>
+                            <option value="Vazgeçildi" {{ request('tipi') == 'Vazgeçildi' ? 'selected' : '' }}>Vazgeçildi</option>
+                            <option value="Tamamlandı" {{ request('tipi') == 'Tamamlandı' ? 'selected' : '' }}>Tamamlandı</option>
+                            <option value="Register" {{ request('tipi') == 'Register' ? 'selected' : '' }}>Register</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Durum</label>
+                        <select name="durum" class="w-full border rounded px-3 py-2">
+                            <option value="">Tümü</option>
+                            <option value="Aktif" {{ request('durum') == 'Aktif' ? 'selected' : '' }}>Aktif</option>
+                            <option value="Pasif" {{ request('durum') == 'Pasif' ? 'selected' : '' }}>Pasif</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Türü</label>
+                        <select name="turu" class="w-full border rounded px-3 py-2">
+                            <option value="">Tümü</option>
+                            <option value="Cihaz" {{ request('turu') == 'Cihaz' ? 'selected' : '' }}>Cihaz</option>
+                            <option value="Yazılım ve Lisans" {{ request('turu') == 'Yazılım ve Lisans' ? 'selected' : '' }}>Yazılım ve Lisans</option>
+                            <option value="Cihaz ve Lisans" {{ request('turu') == 'Cihaz ve Lisans' ? 'selected' : '' }}>Cihaz ve Lisans</option>
+                            <option value="Yenileme" {{ request('turu') == 'Yenileme' ? 'selected' : '' }}>Yenileme</option>
+                            <option value="Destek" {{ request('turu') == 'Destek' ? 'selected' : '' }}>Destek</option>
+                            <option value="Hizmet Alımı" {{ request('turu') == 'Hizmet Alımı' ? 'selected' : '' }}>Hizmet Alımı</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Öncelik</label>
+                        <select name="oncelik" class="w-full border rounded px-3 py-2">
+                            <option value="">Tümü</option>
+                            <option value="1" {{ request('oncelik') == '1' ? 'selected' : '' }}>1 (Yüksek)</option>
+                            <option value="2" {{ request('oncelik') == '2' ? 'selected' : '' }}>2</option>
+                            <option value="3" {{ request('oncelik') == '3' ? 'selected' : '' }}>3</option>
+                            <option value="4" {{ request('oncelik') == '4' ? 'selected' : '' }}>4 (Düşük)</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Register Durumu</label>
+                        <select name="register_durum" class="w-full border rounded px-3 py-2">
+                            <option value="">Tümü</option>
+                            <option value="Tamam" {{ request('register_durum') == 'Tamam' ? 'selected' : '' }}>Tamam</option>
+                            <option value="Beklemede" {{ request('register_durum') == 'Beklemede' ? 'selected' : '' }}>Beklemede</option>
+                            <option value="Sorunlu" {{ request('register_durum') == 'Sorunlu' ? 'selected' : '' }}>Sorunlu</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Müşteri</label>
+                        <select name="musteri_id" id="filter-musteri-select" class="w-full border rounded px-3 py-2">
+                            <option value="">Tümü</option>
+                            @foreach(\App\Models\Musteri::orderBy('sirket')->get() as $m)
+                                <option value="{{ $m->id }}" {{ request('musteri_id') == $m->id ? 'selected' : '' }}>
+                                    {{ $m->sirket }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Marka</label>
+                        <select name="marka_id" id="filter-marka-select" class="w-full border rounded px-3 py-2">
+                            <option value="">Tümü</option>
+                            @foreach(\App\Models\Marka::orderBy('name')->get() as $marka)
+                                <option value="{{ $marka->id }}" {{ request('marka_id') == $marka->id ? 'selected' : '' }}>
+                                    {{ $marka->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Tutarlar -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Teklif (Min)</label>
+                            <input type="number" step="0.01" name="teklif_min" value="{{ request('teklif_min') }}" class="w-full border rounded px-3 py-2" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Teklif (Max)</label>
+                            <input type="number" step="0.01" name="teklif_max" value="{{ request('teklif_max') }}" class="w-full border rounded px-3 py-2" placeholder="∞">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Alış (Min)</label>
+                            <input type="number" step="0.01" name="alis_min" value="{{ request('alis_min') }}" class="w-full border rounded px-3 py-2" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Alış (Max)</label>
+                            <input type="number" step="0.01" name="alis_max" value="{{ request('alis_max') }}" class="w-full border rounded px-3 py-2" placeholder="∞">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Kar (Min)</label>
+                            <input type="number" step="0.01" name="kar_min" value="{{ request('kar_min') }}" class="w-full border rounded px-3 py-2" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Kar (Max)</label>
+                            <input type="number" step="0.01" name="kar_max" value="{{ request('kar_max') }}" class="w-full border rounded px-3 py-2" placeholder="∞">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tarih Aralıkları -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Açılış (Başlangıç)</label>
+                            <input type="date" name="acilis_start" value="{{ request('acilis_start') }}" class="w-full border rounded px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Açılış (Bitiş)</label>
+                            <input type="date" name="acilis_end" value="{{ request('acilis_end') }}" class="w-full border rounded px-3 py-2">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Kapanış (Başlangıç)</label>
+                            <input type="date" name="kapanis_start" value="{{ request('kapanis_start') }}" class="w-full border rounded px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Kapanış (Bitiş)</label>
+                            <input type="date" name="kapanis_end" value="{{ request('kapanis_end') }}" class="w-full border rounded px-3 py-2">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Lisans (Başlangıç)</label>
+                            <input type="date" name="lisans_start" value="{{ request('lisans_start') }}" class="w-full border rounded px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Lisans (Bitiş)</label>
+                            <input type="date" name="lisans_end" value="{{ request('lisans_end') }}" class="w-full border rounded px-3 py-2">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Güncelleme (Başlangıç)</label>
+                            <input type="date" name="updated_start" value="{{ request('updated_start') }}" class="w-full border rounded px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Güncelleme (Bitiş)</label>
+                            <input type="date" name="updated_end" value="{{ request('updated_end') }}" class="w-full border rounded px-3 py-2">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+                        🔍 Filtrele
+                    </button>
+                    <a href="/tum-isler" class="bg-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-400">
+                        🔄 Temizle
+                    </a>
+                </div>
+            </form>
+            </div>
+        </div>
+            
+            <!-- Toplam Gösterge -->
+            @php
+                $query = \App\Models\TumIsler::query();
+                
+                // İş Adı Filtresi
+                if(request('name')) {
+                    $query->where('name', 'LIKE', '%' . request('name') . '%');
+                }
+                
+                // Tipi Filtresi (önce uygula, çünkü yıl filtresi buna bağlı)
+                if(request('tipi')) {
+                    $query->where('tipi', request('tipi'));
+                }
+                
+                // Yıl Filtresi - Tipi bazlı
+                if(request('yil')) {
+                    $tipi = request('tipi');
+                    // Eğer tipi Kazanıldı veya Kaybedildi ise, yıl filtresini kapanis_tarihi'ne göre yap
+                    if(in_array($tipi, ['Kazanıldı', 'Kaybedildi'])) {
+                        $query->whereYear('kapanis_tarihi', request('yil'));
+                    } else {
+                        // Diğer durumlarda açılış tarihine göre filtrele
+                        $query->whereYear('is_guncellenme_tarihi', request('yil'));
+                    }
+                }
+                
+
+                
+                // Türü Filtresi
+                if(request('turu')) {
+                    $query->where('turu', request('turu'));
+                }
+                
+                // Öncelik Filtresi
+                if(request('oncelik')) {
+                    $query->where('oncelik', request('oncelik'));
+                }
+                
+                // Register Durumu Filtresi
+                if(request('register_durum')) {
+                    $query->where('register_durum', request('register_durum'));
+                }
+                
+                // Müşteri Filtresi
+                if(request('musteri_id')) {
+                    $query->where('musteri_id', request('musteri_id'));
+                }
+                
+                // Marka Filtresi
+                if(request('marka_id')) {
+                    $query->where('marka_id', request('marka_id'));
+                }
+                
+                // Teklif Tutarı Aralığı
+                if(request('teklif_min')) {
+                    $query->where('teklif_tutari', '>=', request('teklif_min'));
+                }
+                if(request('teklif_max')) {
+                    $query->where('teklif_tutari', '<=', request('teklif_max'));
+                }
+                
+                // Alış Tutarı Aralığı
+                if(request('alis_min')) {
+                    $query->where('alis_tutari', '>=', request('alis_min'));
+                }
+                if(request('alis_max')) {
+                    $query->where('alis_tutari', '<=', request('alis_max'));
+                }
+                
+                // Kar Aralığı (Computed - backend'de hesaplanması gerekiyor)
+                if(request('kar_min') || request('kar_max')) {
+                    $filtered = $query->get()->filter(function($is) {
+                        $kar = ($is->teklif_tutari ?? 0) - ($is->alis_tutari ?? 0);
+                        $minOk = !request('kar_min') || $kar >= request('kar_min');
+                        $maxOk = !request('kar_max') || $kar <= request('kar_max');
+                        return $minOk && $maxOk;
+                    });
+                    $filtreliIsler = $filtered;
+                } else {
+                    // Açılış Tarihi Aralığı
+                    if(request('acilis_start')) {
+                        $query->whereDate('is_guncellenme_tarihi', '>=', request('acilis_start'));
+                    }
+                    if(request('acilis_end')) {
+                        $query->whereDate('is_guncellenme_tarihi', '<=', request('acilis_end'));
+                    }
+                    
+                    // Kapanış Tarihi Aralığı
+                    if(request('kapanis_start')) {
+                        $query->whereDate('kapanis_tarihi', '>=', request('kapanis_start'));
+                    }
+                    if(request('kapanis_end')) {
+                        $query->whereDate('kapanis_tarihi', '<=', request('kapanis_end'));
+                    }
+                    
+                    // Lisans Bitiş Aralığı
+                    if(request('lisans_start')) {
+                        $query->whereDate('lisans_bitis', '>=', request('lisans_start'));
+                    }
+                    if(request('lisans_end')) {
+                        $query->whereDate('lisans_bitis', '<=', request('lisans_end'));
+                    }
+                    
+                    // Güncelleme Tarihi Aralığı
+                    if(request('updated_start')) {
+                        $query->whereDate('updated_at', '>=', request('updated_start'));
+                    }
+                    if(request('updated_end')) {
+                        $query->whereDate('updated_at', '<=', request('updated_end'));
+                    }
+                    
+                    $filtreliIsler = $query->get();
+                }
+
+                // Para birimine göre ayrı toplamlar (CSV neyse o şekilde gösterilecek)
+                $toplamTLTeklif = $filtreliIsler->filter(function($i){ return empty($i->teklif_doviz) || $i->teklif_doviz === 'TL'; })->sum('teklif_tutari');
+                $toplamTLAlis = $filtreliIsler->filter(function($i){ return empty($i->alis_doviz) || $i->alis_doviz === 'TL'; })->sum('alis_tutari');
+                $toplamKarTL = $toplamTLTeklif - $toplamTLAlis;
+
+                $toplamUSDTeklif = $filtreliIsler->filter(function($i){ return $i->teklif_doviz === 'USD'; })->sum('teklif_tutari');
+                $toplamUSDAlis = $filtreliIsler->filter(function($i){ return $i->alis_doviz === 'USD'; })->sum('alis_tutari');
+                $toplamKarUSD = $toplamUSDTeklif - $toplamUSDAlis;
+
+                // Orijinal döviz bilgilerini topla (aciklama alanındaki [ORJ: ...] notlarından) — bilgilendirme amaçlı
+                $orjCount = 0;
+                $orjTeklifSum = 0;
+                $orjAlisSum = 0;
+                $normalize = function($s) {
+                    $s = trim((string)$s);
+                    if ($s === '') return 0.0;
+                    if (strpos($s, ',') !== false) {
+                        $s = str_replace('.', '', $s);
+                        $s = str_replace(',', '.', $s);
+                    } else {
+                        $s = str_replace(',', '.', $s);
+                    }
+                    return (float)$s;
+                };
+                foreach ($filtreliIsler as $fi) {
+                    if (!empty($fi->aciklama) && preg_match('/\[ORJ:\s*teklif\s*([0-9.,\-]+)\s*USD(?:,\s*alis\s*([0-9.,\-]+)\s*USD)?(?:,\s*kur\s*([0-9.,]+))?/i', $fi->aciklama, $m)) {
+                        $orjCount++;
+                        $orjTeklifSum += $normalize($m[1]);
+                        if (isset($m[2]) && $m[2] !== '') {
+                            $orjAlisSum += $normalize($m[2]);
+                        }
+                    }
+                }
+            @endphp
+            
+            @if(request()->hasAny(['yil', 'tipi', 'turu', 'musteri_id']))
+                <div class="mt-4 p-4 bg-blue-50 rounded">
+                    <div class="grid grid-cols-4 gap-4 text-center">
+                        <div>
+                            <div class="text-sm text-gray-600">İş Sayısı</div>
+                            <div class="text-2xl font-bold">{{ $filtreliIsler->count() }}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-600">Toplam Teklif (USD)</div>
+                            <div class="text-2xl font-bold text-indigo-600">${{ number_format($toplamUSDTeklif, 2) }}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-600">Toplam Alış (USD)</div>
+                            <div class="text-2xl font-bold text-orange-600">${{ number_format($toplamUSDAlis, 2) }}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-600">Toplam Kar (USD)</div>
+                            <div class="text-2xl font-bold text-green-600">${{ number_format($toplamKarUSD, 2) }}</div>
+                        </div>
+                    </div>
+                    @if($orjCount > 0)
+                        <div class="mt-3 text-sm text-gray-700">
+                            ⚠️ <strong>{{ $orjCount }}</strong> kayıtta orijinal döviz tespit edildi — toplam orijinal teklif: <strong>{{ number_format($orjTeklifSum, 2) }} USD</strong>@if($orjAlisSum > 0), orijinal alış: <strong>{{ number_format($orjAlisSum, 2) }} USD</strong>@endif.
+                        </div>
+                    @endif
+                
+            @endif
+        
+
+        <!-- Liste -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <!-- Sütun Seçici -->
+            <div class="px-6 py-4 flex justify-end border-b">
+                <div class="relative inline-block">
+                    <button id="column-toggle-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded flex items-center gap-2">
+                        <span>📊 Sütunlar</span>
+                        <span id="column-arrow">▼</span>
+                    </button>
+                    <div id="column-menu" class="hidden absolute right-0 mt-2 w-56 bg-white border rounded-lg shadow-lg z-50 p-3 max-h-96 overflow-y-auto">
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                <input type="checkbox" class="column-toggle" data-column="name" checked> İş Adı
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                <input type="checkbox" class="column-toggle" data-column="musteri" checked> Müşteri
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                <input type="checkbox" class="column-toggle" data-column="marka" checked> Marka
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                <input type="checkbox" class="column-toggle" data-column="tipi" checked> Tipi
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                <input type="checkbox" class="column-toggle" data-column="durum"> Durum
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                <input type="checkbox" class="column-toggle" data-column="turu"> Türü
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                <input type="checkbox" class="column-toggle" data-column="oncelik" checked> Öncelik
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                <input type="checkbox" class="column-toggle" data-column="kapanis_tarihi" checked> Kapanış
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                <input type="checkbox" class="column-toggle" data-column="lisans_bitis"> Lisans Bitiş
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                <input type="checkbox" class="column-toggle" data-column="teklif_tutari" checked> Teklif
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                <input type="checkbox" class="column-toggle" data-column="alis_tutari"> Alış
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                <input type="checkbox" class="column-toggle" data-column="kar_tutari"> Kar
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                <input type="checkbox" class="column-toggle" data-column="is_guncellenme_tarihi" checked> Açılış
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                <input type="checkbox" class="column-toggle" data-column="updated_at"> Güncelleme
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                <input type="checkbox" class="column-toggle" data-column="islemler" checked> İşlemler
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Üst scroll bar -->
+            <div id="scroll-top" class="scroll-sync" style="overflow-x: auto; height: 20px;">
+                <div id="scroll-content-top" style="height: 1px;"></div>
+            </div>
+            
+            <div id="scroll-bottom" class="scroll-sync" style="overflow-x: auto;">
+                <table id="isler-table" class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="name">İş Adı <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="musteri">Müşteri <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="marka">Marka <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="tipi">Tipi <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="durum">Durum <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="turu">Türü <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="oncelik">Öncelik <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="kapanis_tarihi">Kapanış <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="lisans_bitis">Lisans <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="teklif_tutari">Teklif <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="alis_tutari">Alış <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="kar_tutari">Kar <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="is_guncellenme_tarihi">Açılış <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="updated_at">Güncelleme <span class="sort-icon"></span></th>
+                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase">Yenileme</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @php
+                            $query = \App\Models\TumIsler::with(['musteri', 'marka']);
+                            
+                            // Tipi filtresi önce (yıl filtresi buna bağlı)
+                            if(request('tipi')) {
+                                $query->where('tipi', request('tipi'));
+                            }
+                            
+                            // Yıl Filtresi - Tipi bazlı
+                            if(request('yil')) {
+                                $tipi = request('tipi');
+                                // Eğer tipi Kazanıldı veya Kaybedildi ise, yıl filtresini kapanis_tarihi'ne göre yap
+                                if(in_array($tipi, ['Kazanıldı', 'Kaybedildi'])) {
+                                    $query->whereYear('kapanis_tarihi', request('yil'));
+                                } else {
+                                    // Diğer durumlarda açılış tarihine göre filtrele
+                                    $query->whereYear('is_guncellenme_tarihi', request('yil'));
+                                }
+                            }
+                            if(request('turu')) {
+                                $query->where('turu', request('turu'));
+                            }
+                            if(request('musteri_id')) {
+                                $query->where('musteri_id', request('musteri_id'));
+                            }
+                            if(request('marka_id')) {
+                                $query->where('marka_id', request('marka_id'));
+                            }
+                            
+                            // Tarih aralığı filtreleri
+                            if(request('acilis_start')) {
+                                $query->whereDate('is_guncellenme_tarihi', '>=', request('acilis_start'));
+                            }
+                            if(request('acilis_end')) {
+                                $query->whereDate('is_guncellenme_tarihi', '<=', request('acilis_end'));
+                            }
+                            if(request('kapanis_start')) {
+                                $query->whereDate('kapanis_tarihi', '>=', request('kapanis_start'));
+                            }
+                            if(request('kapanis_end')) {
+                                $query->whereDate('kapanis_tarihi', '<=', request('kapanis_end'));
+                            }
+                            if(request('lisans_start')) {
+                                $query->whereDate('lisans_bitis', '>=', request('lisans_start'));
+                            }
+                            if(request('lisans_end')) {
+                                $query->whereDate('lisans_bitis', '<=', request('lisans_end'));
+                            }
+                            if(request('updated_start')) {
+                                $query->whereDate('updated_at', '>=', request('updated_start'));
+                            }
+                            if(request('updated_end')) {
+                                $query->whereDate('updated_at', '<=', request('updated_end'));
+                            }
+                            
+                            // En son açılan işler üstte (açılış tarihine göre)
+                            $isler = $query->orderBy('is_guncellenme_tarihi', 'DESC')->get();
+                        @endphp
+                        
+                        @forelse($isler as $is)
+                            <tr data-name="{{ $is->name }}" 
+                                data-musteri="{{ $is->musteri ? $is->musteri->sirket : '' }}" 
+                                data-marka="{{ $is->marka ? $is->marka->name : '' }}" 
+                                data-tipi="{{ $is->tipi ?? '' }}" 
+                                data-durum="{{ $is->durum ?? '' }}" 
+                                data-turu="{{ $is->turu ?? '' }}" 
+                                data-oncelik="{{ $is->oncelik ?? '' }}" 
+                                data-kapanis_tarihi="{{ $is->kapanis_tarihi ?? '' }}" 
+                                data-lisans_bitis="{{ $is->lisans_bitis ?? '' }}" 
+                                data-teklif_tutari="{{ $is->teklif_tutari ?? 0 }}" 
+                                data-alis_tutari="{{ $is->alis_tutari ?? 0 }}" 
+                                data-kar_tutari="{{ $is->kar_tutari ?? 0 }}" 
+                                data-is_guncellenme_tarihi="{{ $is->is_guncellenme_tarihi }}">
+                                <td class="px-3 py-3 whitespace-nowrap">
+                                    <div class="flex items-center gap-2">
+                                        <span>{{ $is->name }}</span>
+                                        @if($is->notion_id)
+                                            <a href="{{ $is->notion_url }}" target="_blank" 
+                                               class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition"
+                                               title="Notion'da aç">
+                                                🔗 Notion
+                                            </a>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap">
+                                    @if($is->musteri)
+                                        <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                                            {{ $is->musteri->sirket }}
+                                        </span>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap">
+                                    @if($is->marka)
+                                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                                            {{ $is->marka->name }}
+                                        </span>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap">
+                                    <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                                        {{ $is->tipi ?? '-' }}
+                                    </span>
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap">
+                                    @if($is->durum)
+                                        {{ $is->durum }}
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap">{{ $is->turu ?? '-' }}</td>
+                                <td class="px-3 py-3 whitespace-nowrap">
+                                    @if($is->oncelik)
+                                        <span class="px-2 py-1 text-xs rounded-full 
+                                            @if($is->oncelik == '1') bg-red-100 text-red-800
+                                            @elseif($is->oncelik == '2') bg-yellow-100 text-yellow-800
+                                            @elseif($is->oncelik == '3') bg-green-100 text-green-800
+                                            @else bg-gray-100 text-gray-800
+                                            @endif">
+                                            {{ $is->oncelik }}
+                                        </span>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap text-sm">
+                                    {{ $is->kapanis_tarihi ? \Carbon\Carbon::parse($is->kapanis_tarihi)->format('d.m.Y') : '-' }}
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap text-sm">
+                                    {{ $is->lisans_bitis ? \Carbon\Carbon::parse($is->lisans_bitis)->format('d.m.Y') : '-' }}
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap">
+                                    @if($is->teklif_tutari !== null)
+                                        @if($is->teklif_doviz === 'USD')
+                                            ${{ number_format($is->teklif_tutari, 2) }}
+                                        @else
+                                            {{ number_format($is->teklif_tutari, 2) }} TL
+                                        @endif
+                                        @php
+                                            $orig = null;
+                                            $origKur = null;
+                                            if (!empty($is->aciklama) && preg_match('/\[ORJ:\s*teklif\s*([0-9.,\-]+)\s*USD(?:,\s*kur\s*([0-9.,]+))?/i', $is->aciklama, $m)) {
+                                                $orig = $m[1];
+                                                $origKur = $m[2] ?? null;
+                                            }
+                                            $formatOrig = function($s) {
+                                                $s = trim((string)$s);
+                                                if ($s === '') return null;
+                                                if (strpos($s, ',') !== false) {
+                                                    $s = str_replace('.', '', $s);
+                                                    $s = str_replace(',', '.', $s);
+                                                }
+                                                return (float)$s;
+                                            };
+                                        @endphp
+                                        @if($orig)
+                                            <div class="text-xs text-gray-500">ORJ: {{ number_format($formatOrig($orig), 2) }} USD @if($origKur) (kur {{ $origKur }}) @endif</div>
+                                        @endif
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap">
+                                    @if($is->alis_tutari !== null)
+                                        @if($is->alis_doviz === 'USD')
+                                            ${{ number_format($is->alis_tutari, 2) }}
+                                        @else
+                                            {{ number_format($is->alis_tutari, 2) }} TL
+                                        @endif
+                                        @php
+                                            $origAlis = null;
+                                            if (!empty($is->aciklama) && preg_match('/\[ORJ:.*alis\s*([0-9.,\-]+)\s*USD/i', $is->aciklama, $m2)) {
+                                                $origAlis = $m2[1];
+                                            }
+                                        @endphp
+                                        @if($origAlis)
+                                            <div class="text-xs text-gray-500">ORJ Alış: {{ number_format($formatOrig($origAlis), 2) }} USD</div>
+                                        @endif
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap">
+                                    @if($is->kar_tutari)
+                                        @php
+                                            $isUsd = ($is->teklif_doviz === 'USD' || $is->alis_doviz === 'USD');
+                                        @endphp
+                                        <span class="font-semibold {{ $is->kar_tutari > 0 ? 'text-green-600' : 'text-red-600' }}">
+                                            @if($isUsd)
+                                                ${{ number_format($is->kar_tutari, 2) }}
+                                            @else
+                                                {{ number_format($is->kar_tutari, 2) }} TL
+                                            @endif
+                                            ({{ number_format($is->kar_orani, 1) }}%)
+                                        </span>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
+                                    {{ $is->is_guncellenme_tarihi ? \Carbon\Carbon::parse($is->is_guncellenme_tarihi)->format('d.m.Y') : '-' }}
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
+                                    {{ $is->updated_at->format('d.m.Y H:i') }}
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap text-center">
+                                    @if($is->tipi === 'Kazanıldı' && $is->lisans_bitis)
+                                        @php
+                                            // Aynı müşteri + marka + lisans_bitis için 2026'da yenileme var mı?
+                                            $yenilemeVarMi = \App\Models\TumIsler::where('musteri_id', $is->musteri_id)
+                                                ->where('marka_id', $is->marka_id)
+                                                ->where('lisans_bitis', $is->lisans_bitis)
+                                                ->whereYear('is_guncellenme_tarihi', 2026)
+                                                ->whereIn('tipi', ['Verilecek', 'Verildi', 'Takip Edilecek'])
+                                                ->exists();
+                                        @endphp
+                                        @if(!$yenilemeVarMi)
+                                            <button 
+                                                onclick="yenilemeAcTumIsler({{ $is->id }})"
+                                                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium transition">
+                                                🔄 Yenile
+                                            </button>
+                                        @else
+                                            <span class="text-green-600 text-xs">✓ Açıldı</span>
+                                        @endif
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap text-sm">
+                                    <a href="/tum-isler/{{ $is->id }}/edit" class="text-blue-600 hover:text-blue-800 mr-3" title="Düzenle">
+                                        ✏️
+                                    </a>
+                                    <a href="/tum-isler/{{ $is->id }}/duplicate" class="text-green-600 hover:text-green-800 mr-3" title="Kopyala">
+                                        📋
+                                    </a>
+                                    <form action="/tum-isler/{{ $is->id }}" method="POST" class="inline" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-800" title="Sil">
+                                            🗑️
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="15" class="px-3 py-3 text-center text-gray-500">
+                                    Henüz iş kaydı yok.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+    </div> <!-- max-w-7xl bitiş -->
+
+    <script>
+        $(document).ready(function() {
+            // Select2 başlat
+            $('#musteri-select, #filter-musteri-select').select2({
+                placeholder: 'Müşteri ara...',
+                allowClear: true,
+                language: {
+                    noResults: function() {
+                        return 'Sonuç bulunamadı';
+                    },
+                    searching: function() {
+                        return 'Aranıyor...';
+                    }
+                }
+            });
+            
+            $('#marka-select, #filter-marka-select').select2({
+                placeholder: 'Marka ara...',
+                allowClear: true,
+                language: {
+                    noResults: function() {
+                        return 'Sonuç bulunamadı';
+                    },
+                    searching: function() {
+                        return 'Aranıyor...';
+                    }
+                }
+            });
+            
+            $('#turu-select, #oncelik-select, #register-durum-select').select2({
+                placeholder: 'Seçiniz...',
+                allowClear: true,
+                language: {
+                    noResults: function() {
+                        return 'Sonuç bulunamadı';
+                    }
+                }
+            });
+
+            // Scroll senkronizasyonu
+            const scrollTop = document.getElementById('scroll-top');
+            const scrollBottom = document.getElementById('scroll-bottom');
+            const table = document.getElementById('isler-table');
+            
+            // Üst scroll bar genişliğini ayarla
+            document.getElementById('scroll-content-top').style.width = table.offsetWidth + 'px';
+            
+            // Scroll senkronize et
+            scrollTop.addEventListener('scroll', function() {
+                scrollBottom.scrollLeft = scrollTop.scrollLeft;
+            });
+            
+            scrollBottom.addEventListener('scroll', function() {
+                scrollTop.scrollLeft = scrollBottom.scrollLeft;
+            });
+
+            // Sıralama fonksiyonu
+            let sortDirection = {};
+            
+            document.querySelectorAll('.sortable').forEach(header => {
+                header.addEventListener('click', function() {
+                    const column = this.getAttribute('data-column');
+                    const tbody = document.querySelector('#isler-table tbody');
+                    const rows = Array.from(tbody.querySelectorAll('tr:not(:last-child)'));
+                    
+                    // Sıralama yönünü belirle
+                    if (!sortDirection[column]) {
+                        sortDirection[column] = 'asc';
+                    } else {
+                        sortDirection[column] = sortDirection[column] === 'asc' ? 'desc' : 'asc';
+                    }
+                    
+                    const isAsc = sortDirection[column] === 'asc';
+                    
+                    // İkonları güncelle
+                    document.querySelectorAll('.sort-icon').forEach(icon => icon.textContent = '');
+                    this.querySelector('.sort-icon').textContent = isAsc ? ' ▲' : ' ▼';
+                    
+                    // Satırları sırala
+                    rows.sort((a, b) => {
+                        let aVal = a.getAttribute('data-' + column) || '';
+                        let bVal = b.getAttribute('data-' + column) || '';
+                        
+                        // Sayısal sütunlar için
+                        if (['oncelik', 'teklif_tutari', 'alis_tutari', 'kar_tutari'].includes(column)) {
+                            aVal = parseFloat(aVal) || 0;
+                            bVal = parseFloat(bVal) || 0;
+                            return isAsc ? aVal - bVal : bVal - aVal;
+                        }
+                        
+                        // Tarih sütunları için
+                        if (['kapanis_tarihi', 'lisans_bitis', 'is_guncellenme_tarihi', 'updated_at'].includes(column)) {
+                            aVal = aVal ? new Date(aVal) : new Date(0);
+                            bVal = bVal ? new Date(bVal) : new Date(0);
+                            return isAsc ? aVal - bVal : bVal - aVal;
+                        }
+                        
+                        // Text sütunlar için
+                        return isAsc ? 
+                            aVal.localeCompare(bVal, 'tr') : 
+                            bVal.localeCompare(aVal, 'tr');
+                    });
+                    
+                    // Sıralanmış satırları tekrar ekle
+                    rows.forEach(row => tbody.appendChild(row));
+                });
+            });
+
+            // Sayfa yüklendiğinde scroll genişliğini tekrar ayarla
+            window.addEventListener('load', function() {
+                document.getElementById('scroll-content-top').style.width = table.offsetWidth + 'px';
+            });
+        });
+
+        // Form ve filtre toggle fonksiyonları
+        function toggleForm() {
+            const form = document.getElementById('is-ekle-form');
+            const icon = document.getElementById('form-toggle-icon');
+            
+            if (form && icon) {
+                if (form.style.display === 'none') {
+                    form.style.display = 'block';
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    form.style.display = 'none';
+                    icon.style.transform = 'rotate(0deg)';
+                }
+            }
+        }
+        
+        function toggleFilters() {
+            const filters = document.getElementById('filters-form');
+            const icon = document.getElementById('filter-toggle-icon');
+            
+            if (filters && icon) {
+                if (filters.style.display === 'none') {
+                    filters.style.display = 'block';
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    filters.style.display = 'none';
+                    icon.style.transform = 'rotate(0deg)';
+                }
+            }
+        }
+        
+        // Tipi değiştiğinde kapanış tarihi otomatiği
+        $(document).ready(function() {
+            $('#tipi').on('change', function() {
+                const tipi = $(this).val();
+                const kapanisTarihi = $('#kapanis_tarihi');
+                
+                // Eğer Kazanıldı, Kaybedildi veya Vazgeçildi seçildiyse ve kapanış tarihi boşsa
+                if ((tipi === 'Kazanıldı' || tipi === 'Kaybedildi' || tipi === 'Vazgeçildi') && !kapanisTarihi.val()) {
+                    // Bugünün tarihini set et
+                    const today = new Date().toISOString().split('T')[0];
+                    kapanisTarihi.val(today);
+                }
+            });
+            
+            // Sütun seçici toggle
+            $('#column-toggle-btn').on('click', function(e) {
+                e.stopPropagation();
+                $('#column-menu').toggleClass('hidden');
+                $('#column-arrow').text($('#column-menu').hasClass('hidden') ? '▼' : '▲');
+            });
+            
+            // Dışarı tıklayınca kapat
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('#column-toggle-btn, #column-menu').length) {
+                    $('#column-menu').addClass('hidden');
+                    $('#column-arrow').text('▼');
+                }
+            });
+            
+            // Sütun göster/gizle
+            $('.column-toggle').on('change', function() {
+                const column = $(this).data('column');
+                const isChecked = $(this).is(':checked');
+                const columnIndex = $('th[data-column="' + column + '"]').index();
+                
+                if (columnIndex >= 0) {
+                    // Başlık hücresini göster/gizle
+                    $('thead th').eq(columnIndex).toggle(isChecked);
+                    // Tüm satırlarda o sütunu göster/gizle
+                    $('tbody tr').each(function() {
+                        $(this).find('td').eq(columnIndex).toggle(isChecked);
+                    });
+                }
+                
+                // İşlemler sütunu için (data-column yok)
+                if (column === 'islemler') {
+                    $('thead th:last').toggle(isChecked);
+                    $('tbody tr').each(function() {
+                        $(this).find('td:last').toggle(isChecked);
+                    });
+                }
+                
+                // localStorage'a kaydet
+                saveColumnPreferences();
+            });
+            
+            // Sayfa yüklendiğinde kaydedilmiş sütun tercihlerini yükle
+            loadColumnPreferences();
+        });
+        
+        // Sütun tercihlerini localStorage'a kaydet
+        function saveColumnPreferences() {
+            const preferences = {};
+            $('.column-toggle').each(function() {
+                const column = $(this).data('column');
+                const isChecked = $(this).is(':checked');
+                preferences[column] = isChecked;
+            });
+            localStorage.setItem('tumIslerColumnPreferences', JSON.stringify(preferences));
+        }
+        
+        // Sütun tercihlerini localStorage'dan yükle
+        function loadColumnPreferences() {
+            const saved = localStorage.getItem('tumIslerColumnPreferences');
+            if (!saved) {
+                // İlk yükleme - checked olmayanları gizle
+                $('.column-toggle').each(function() {
+                    if (!$(this).is(':checked')) {
+                        $(this).trigger('change');
+                    }
+                });
+                return;
+            }
+            
+            const preferences = JSON.parse(saved);
+            $('.column-toggle').each(function() {
+                const column = $(this).data('column');
+                if (preferences.hasOwnProperty(column)) {
+                    const shouldBeChecked = preferences[column];
+                    $(this).prop('checked', shouldBeChecked);
+                    
+                    // Sütunu göster/gizle
+                    if (!shouldBeChecked) {
+                        $(this).trigger('change');
+                    }
+                }
+            });
+        }
+        
+        // Filtre Kaydetme ve Yükleme Sistemi
+        function saveCurrentFilter() {
+            const filterName = document.getElementById('filterName').value.trim();
+            if (!filterName) {
+                alert('Lütfen filtre adı girin!');
+                return;
+            }
+            
+            // Form verilerini topla
+            const formData = {};
+            const form = document.getElementById('filterForm');
+            const inputs = form.querySelectorAll('input, select');
+            
+            inputs.forEach(input => {
+                // name attribute'u varsa ve değeri varsa (boş string bile olabilir, undefined olmasın yeter)
+                if (input.name) {
+                    const value = input.value;
+                    // Sadece boş olmayan değerleri kaydet
+                    if (value !== null && value !== undefined && value !== '') {
+                        formData[input.name] = value;
+                        console.log('Kaydedilen alan:', input.name, '=', value); // Debug için
+                    }
+                }
+            });
+            
+            console.log('Kaydedilen filtre:', filterName, formData); // Debug için
+            
+            // localStorage'dan mevcut filtreleri al
+            let savedFilters = JSON.parse(localStorage.getItem('tumIslerFilters') || '{}');
+            
+            // Yeni filtreyi ekle
+            savedFilters[filterName] = formData;
+            
+            // localStorage'a kaydet
+            localStorage.setItem('tumIslerFilters', JSON.stringify(savedFilters));
+            
+            // Dropdown'ı güncelle
+            updateFilterDropdown();
+            
+            // Bilgi mesajı
+            const fieldCount = Object.keys(formData).length;
+            alert('✓ Filtre kaydedildi: ' + filterName + '\n(' + fieldCount + ' alan)');
+            
+            // İsim alanını temizle
+            document.getElementById('filterName').value = '';
+            
+            // Butonları güncelle
+            updateFilterButtons();
+        }
+        
+        function loadFilter(filterName) {
+            // localStorage'dan filtreleri al
+            const savedFilters = JSON.parse(localStorage.getItem('tumIslerFilters') || '{}');
+            const filterData = savedFilters[filterName];
+            
+            if (!filterData) {
+                return;
+            }
+            
+            // Filtre verilerini forma yükle - SADECE filterForm içinden ara
+            const form = document.getElementById('filterForm');
+            Object.keys(filterData).forEach(key => {
+                const input = form.querySelector('[name="' + key + '"]');
+                if (input) {
+                    input.value = filterData[key];
+                    // Select2 için tetikle
+                    if ($(input).hasClass('select2-hidden-accessible')) {
+                        $(input).val(filterData[key]).trigger('change');
+                    }
+                }
+            });
+            
+            // Formu submit et
+            form.submit();
+        }
+        
+        function deleteFilter(filterName) {
+            if (!confirm('Bu filtreyi silmek istediğinize emin misiniz?\n\n' + filterName)) {
+                return;
+            }
+            
+            // localStorage'dan filtreleri al
+            let savedFilters = JSON.parse(localStorage.getItem('tumIslerFilters') || '{}');
+            
+            // Filtreyi sil
+            delete savedFilters[filterName];
+            
+            // localStorage'a kaydet
+            localStorage.setItem('tumIslerFilters', JSON.stringify(savedFilters));
+            
+            // Butonları güncelle
+            updateFilterButtons();
+            
+            alert('✓ Filtre silindi: ' + filterName);
+        }
+        
+        function updateFilterButtons() {
+            const savedFilters = JSON.parse(localStorage.getItem('tumIslerFilters') || '{}');
+            const container = document.getElementById('savedFiltersButtons');
+            
+            if (Object.keys(savedFilters).length === 0) {
+                container.innerHTML = '<p class="text-sm text-gray-500">Henüz kayıtlı filtre yok</p>';
+                return;
+            }
+            
+            let html = '';
+            Object.keys(savedFilters).forEach(filterName => {
+                html += `
+                    <div class="inline-flex items-center gap-0.5 bg-blue-50 hover:bg-blue-100 rounded border border-blue-200 transition-colors">
+                        <button type="button" onclick="loadFilter('${filterName}'); return false;" class="px-2 py-0.5 text-xs font-medium text-blue-700">
+                            ${filterName}
+                        </button>
+                        <button type="button" onclick="deleteFilter('${filterName}'); return false;" class="px-1.5 py-0.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-r text-xs">
+                            ×
+                        </button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Eski fonksiyonlar - geriye uyumluluk için
+        function loadSelectedFilter() {
+            const select = document.getElementById('savedFilters');
+            if (select) {
+                const filterName = select.value;
+                if (filterName) loadFilter(filterName);
+            }
+        }
+        
+        function deleteSelectedFilter() {
+            const select = document.getElementById('savedFilters');
+            const filterName = select.value;
+            
+            if (!filterName) {
+                alert('Lütfen bir filtre seçin!');
+                return;
+            }
+            
+            // localStorage'dan filtreleri al
+            const savedFilters = JSON.parse(localStorage.getItem('tumIslerFilters') || '{}');
+            const filterData = savedFilters[filterName];
+            
+            if (!filterData) {
+                alert('Filtre bulunamadı!');
+                return;
+            }
+            
+            // Formu temizle - TÜM inputları boşalt
+            const form = document.getElementById('filterForm');
+            const allInputs = form.querySelectorAll('input, select');
+            allInputs.forEach(input => {
+                if (input.type === 'text' || input.type === 'date' || input.type === 'number') {
+                    input.value = '';
+                } else if (input.tagName === 'SELECT') {
+                    input.value = '';
+                    // Select2 kullanıyorsa trigger et
+                    if ($(input).hasClass('select2-hidden-accessible')) {
+                        $(input).val('').trigger('change');
+                    }
+                }
+            });
+            
+            // Filtre verilerini forma yükle - SADECE filterForm içinden ara
+            Object.keys(filterData).forEach(key => {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) {
+                    input.value = filterData[key];
+                    
+                    // Select2 kullanıyorsa trigger et
+                    if ($(input).hasClass('select2-hidden-accessible')) {
+                        $(input).val(filterData[key]).trigger('change');
+                    }
+                }
+            });
+            
+            alert('✓ Filtre yüklendi: ' + filterName);
+        }
+        
+        function deleteSelectedFilter() {
+            const select = document.getElementById('savedFilters');
+            const filterName = select.value;
+            
+            if (!filterName) {
+                alert('Lütfen bir filtre seçin!');
+                return;
+            }
+            
+            if (!confirm('Bu filtreyi silmek istediğinizden emin misiniz?\n\n' + filterName)) {
+                return;
+            }
+            
+            // localStorage'dan filtreleri al
+            let savedFilters = JSON.parse(localStorage.getItem('tumIslerFilters') || '{}');
+            
+            // Filtreyi sil
+            delete savedFilters[filterName];
+            
+            // localStorage'a kaydet
+            localStorage.setItem('tumIslerFilters', JSON.stringify(savedFilters));
+            
+            // Dropdown'ı güncelle
+            updateFilterDropdown();
+            
+            alert('✓ Filtre silindi: ' + filterName);
+        }
+        
+        function updateFilterDropdown() {
+            // Artık dropdown yok, sadece butonları güncelle
+            updateFilterButtons();
+        }
+        
+        // Sayfa yüklendiğinde butonları doldur
+        $(document).ready(function() {
+            updateFilterButtons();
+        });
+        
+        // Tüm işler sayfasından yenileme kaydı aç
+        function yenilemeAcTumIsler(isId) {
+            if(!confirm('Bu iş için yenileme kaydı açılsın mı?')) {
+                return;
+            }
+            
+            const button = event.target;
+            button.disabled = true;
+            button.innerHTML = '⏳ Açılıyor...';
+            
+            $.ajax({
+                url: '/api/yenileme-ac',
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}'
+                },
+                data: { is_id: isId },
+                success: function(response) {
+                    alert('✓ Yenileme kaydı oluşturuldu!\n\nYeni iş: ' + response.yeni_is.name);
+                    location.reload(); // Sayfayı yenile
+                },
+                error: function(xhr) {
+                    const error = xhr.responseJSON?.message || 'Hata oluştu!';
+                    alert('❌ ' + error);
+                    button.disabled = false;
+                    button.innerHTML = '🔄 Yenile';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
