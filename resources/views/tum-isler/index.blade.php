@@ -1266,30 +1266,29 @@
             }
         }
         
-        function loadFilter(filterName) {
-            // localStorage'dan filtreleri al
-            const savedFilters = JSON.parse(localStorage.getItem('tumIslerFilters') || '{}');
-            const filterData = savedFilters[filterName];
-            
-            if (!filterData) {
-                return;
-            }
-            
-            // Filtre verilerini forma yükle - SADECE filterForm içinden ara
-            const form = document.getElementById('filterForm');
-            Object.keys(filterData).forEach(key => {
-                const input = form.querySelector('[name="' + key + '"]');
-                if (input) {
-                    input.value = filterData[key];
-                    // Select2 için tetikle
-                    if ($(input).hasClass('select2-hidden-accessible')) {
-                        $(input).val(filterData[key]).trigger('change');
+        async function loadFilter(filterName) {
+            try {
+                const response = await fetch('/api/saved-filters?page=tum-isler');
+                const filters = await response.json();
+                const filter = filters.find(f => f.name === filterName);
+                
+                if (!filter) return;
+                
+                const form = document.getElementById('filterForm');
+                Object.keys(filter.filter_data).forEach(key => {
+                    const input = form.querySelector('[name="' + key + '"]');
+                    if (input) {
+                        input.value = filter.filter_data[key];
+                        if ($(input).hasClass('select2-hidden-accessible')) {
+                            $(input).val(filter.filter_data[key]).trigger('change');
+                        }
                     }
-                }
-            });
-            
-            // Formu submit et
-            form.submit();
+                });
+                
+                form.submit();
+            } catch (error) {
+                console.error('Filter load error:', error);
+            }
         }
         
         async function deleteFilter(filterName) {
