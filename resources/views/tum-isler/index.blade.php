@@ -1499,6 +1499,11 @@
                 }
             });
         }
+
+        // Sayfa yüklendiğinde kayıtlı filtreleri getir
+        document.addEventListener('DOMContentLoaded', function() {
+            updateFilterButtons();
+        });
     </script>
 </body>
 </html>
