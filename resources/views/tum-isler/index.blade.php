@@ -1439,9 +1439,57 @@
             updateFilterButtons();
         }
         
-        // Sayfa yüklendiğinde butonları doldur
+        // localStorage'dan Database'e otomatik migration
+        async function migrateFiltersToDatabase() {
+            const localFilters = JSON.parse(localStorage.getItem('tumIslerFilters') || '{}');
+            
+            if (Object.keys(localFilters).length === 0) {
+                return; // Taşınacak filtre yok
+            }
+            
+            console.log('📦 localStorage\'da ' + Object.keys(localFilters).length + ' filtre bulundu, database\'e taşınıyor...');
+            
+            let successCount = 0;
+            
+            for (const [filterName, filterData] of Object.entries(localFilters)) {
+                try {
+                    const response = await fetch('/api/saved-filters', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            name: filterName,
+                            page: 'tum-isler',
+                            filter_data: filterData
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        successCount++;
+                        console.log('✓ Taşındı: ' + filterName);
+                    }
+                } catch (error) {
+                    console.error('Taşıma hatası (' + filterName + '):', error);
+                }
+            }
+            
+            if (successCount > 0) {
+                // localStorage'ı temizle (artık database'de)
+                localStorage.removeItem('tumIslerFilters');
+                console.log('✅ ' + successCount + ' filtre database\'e taşındı!');
+                
+                // Butonları güncelle
+                updateFilterButtons();
+            }
+        }
+        
+        // Sayfa yüklendiğinde migration yap ve butonları doldur
         $(document).ready(function() {
-            updateFilterButtons();
+            migrateFiltersToDatabase().then(() => {
+                updateFilterButtons();
+            });
         });
         
         // Tüm işler sayfasından yenileme kaydı aç
