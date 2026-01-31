@@ -1484,7 +1484,7 @@
                 url: '/api/yenileme-ac',
                 method: 'POST',
                 headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}'
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') || ''
                 },
                 data: { is_id: isId },
                 success: function(response) {
@@ -1499,11 +1499,6 @@
                 }
             });
         }
-
-        // Sayfa yüklendiğinde kayıtlı filtreleri getir
-        document.addEventListener('DOMContentLoaded', function() {
-            updateFilterButtons();
-        });
     </script>
 </body>
 </html>
