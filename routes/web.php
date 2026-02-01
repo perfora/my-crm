@@ -53,8 +53,25 @@ Route::post('/logout', function() {
 // Protected Routes (require authentication)
 Route::middleware(['auth'])->group(function () {
     
-    // Ana sayfa - Yeni özelleştirilebilir dashboard
-    Route::get('/', fn () => view('pages.dashboard'))->name('home');
+    // Ana sayfa - Telefon algılama ile yönlendirme
+    Route::get('/', function () {
+        $userAgent = request()->header('User-Agent');
+        $isMobile = preg_match('/(android|iphone|ipad|mobile)/i', $userAgent);
+        
+        if ($isMobile) {
+            return redirect('/mobile');
+        }
+        
+        return view('pages.dashboard');
+    })->name('home');
+    
+    // Mobil Routes
+    Route::prefix('mobile')->group(function () {
+        Route::get('/', fn () => view('mobile.index'))->name('mobile.index');
+        Route::get('/yeni-is', fn () => view('mobile.yeni-is'))->name('mobile.yeni-is');
+        Route::get('/yeni-ziyaret', fn () => view('mobile.yeni-ziyaret'))->name('mobile.yeni-ziyaret');
+        Route::get('/raporlar', fn () => view('mobile.raporlar'))->name('mobile.raporlar');
+    });
     
     // Dashboard - Özelleştirilebilir widget sistemi (alias)
     Route::get('/dashboard', fn () => view('pages.dashboard'))->name('dashboard.index');
@@ -646,16 +663,34 @@ Route::delete('/ziyaretler/{id}', function ($id) {
 });
 Route::post('/ziyaretler', function () {
     $validated = request()->validate([
-        'ziyaret_ismi' => 'required|max:255',
+        'ziyaret_ismi' => 'nullable|max:255',
         'musteri_id' => 'nullable|exists:musteriler,id',
         'ziyaret_tarihi' => 'nullable|date',
         'arama_tarihi' => 'nullable|date',
         'tur' => 'nullable|string',
         'durumu' => 'nullable|string',
         'ziyaret_notlari' => 'nullable|string',
+        'notlar' => 'nullable|string', // Mobil form için
     ]);
     
+    // Mobil formdan geliyorsa notlar alanını ziyaret_notlari olarak kaydet
+    if (isset($validated['notlar'])) {
+        $validated['ziyaret_notlari'] = $validated['notlar'];
+        unset($validated['notlar']);
+    }
+    
+    // Ziyaret ismi yoksa müşteri adını kullan
+    if (empty($validated['ziyaret_ismi']) && !empty($validated['musteri_id'])) {
+        $musteri = \App\Models\Musteri::find($validated['musteri_id']);
+        $validated['ziyaret_ismi'] = $musteri ? $musteri->sirket . ' Ziyareti' : 'Ziyaret';
+    }
+    
     \App\Models\Ziyaret::create($validated);
+    
+    // Mobil'den geliyorsa mobil'e yönlendir
+    if (str_contains(request()->header('referer', ''), '/mobile')) {
+        return redirect('/mobile')->with('message', 'Ziyaret başarıyla eklendi.');
+    }
     
     return redirect('/ziyaretler')->with('message', 'Ziyaret başarıyla eklendi.');
 });
@@ -692,7 +727,14 @@ Route::post('/tum-isler', function () {
         return response()->json(['success' => true, 'data' => $is]);
     }
     
-    \App\Models\TumIsler::create($validated);
+    \App\Models\TumIsler::create(array_merge($validated, [
+        'is_guncellenme_tarihi' => now()
+    ]));
+    
+    // Mobil'den geliyorsa mobil'e yönlendir
+    if (str_contains(request()->header('referer', ''), '/mobile')) {
+        return redirect('/mobile')->with('message', 'İş başarıyla eklendi.');
+    }
     
     return redirect('/tum-isler')->with('message', 'İş başarıyla eklendi.');
 });
