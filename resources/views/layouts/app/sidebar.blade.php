@@ -22,11 +22,11 @@
                         {{ __('Tüm İşler') }}
                     </flux:sidebar.item>
                     
-                    <flux:sidebar.item icon="users-3" href="/musteriler" :current="request()->routeIs('musteriler.index') || str_contains(request()->path(), 'musteriler')" wire:navigate>
+                    <flux:sidebar.item icon="users" href="/musteriler" :current="request()->routeIs('musteriler.index') || str_contains(request()->path(), 'musteriler')" wire:navigate>
                         {{ __('Müşteriler') }}
                     </flux:sidebar.item>
                     
-                    <flux:sidebar.item icon="users" href="/kisiler" :current="request()->routeIs('kisiler.index') || str_contains(request()->path(), 'kisiler')" wire:navigate>
+                    <flux:sidebar.item icon="user" href="/kisiler" :current="request()->routeIs('kisiler.index') || str_contains(request()->path(), 'kisiler')" wire:navigate>
                         {{ __('Kişiler') }}
                     </flux:sidebar.item>
                     
