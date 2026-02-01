@@ -15,11 +15,12 @@ class DashboardManager extends Component
     public array $widgets = [];
     public bool $showWidgetForm = false;
     public ?int $editingWidget = null;
-    public ?DashboardDataService $dataService = null;
     public string $selectedDataSource = 'tum_isler';
     public array $selectedColumns = [];
     public array $selectedFilters = [];
     public string $widgetType = 'table';
+    
+    private ?DashboardDataService $dataService = null;
 
     #[On('reorder')]
     public function handleReorder($ids)
@@ -31,6 +32,14 @@ class DashboardManager extends Component
     {
         $this->dataService = new DashboardDataService(app(\App\Services\DashboardFilterService::class));
         $this->loadDashboard();
+    }
+    
+    private function getDataService(): DashboardDataService
+    {
+        if (!$this->dataService) {
+            $this->dataService = new DashboardDataService(app(\App\Services\DashboardFilterService::class));
+        }
+        return $this->dataService;
     }
 
     public function loadDashboard()
@@ -144,12 +153,12 @@ class DashboardManager extends Component
 
     public function getAvailableDataSources()
     {
-        return $this->dataService->getAvailableDataSources();
+        return $this->getDataService()->getAvailableDataSources();
     }
 
     public function getAvailableFilters()
     {
-        return $this->dataService->getAvailableFilters();
+        return $this->getDataService()->getAvailableFilters();
     }
 
     public function getWidgetDataForRender($widgetId)
@@ -157,7 +166,7 @@ class DashboardManager extends Component
         $widget = DashboardWidget::find($widgetId);
         if (!$widget) return [];
 
-        return $this->dataService->getWidgetData(
+        return $this->getDataService()->getWidgetData(
             $widget->data_source,
             $widget->filters ?? [],
             $widget->columns ?? []
