@@ -257,12 +257,13 @@
                             <thead>
                                 <tr class="bg-gray-200 border-b">
                                     @foreach($widget['columns'] ?? [] as $col)
-                                        <th class="px-4 py-3 text-left font-semibold text-gray-700">
-                                            @php
-                                                $dataSource = $widget['data_source'] ?? null;
-                                                $widgetColumns = $widgetSources[$dataSource]['columns'] ?? [];
-                                                $colLabel = $widgetColumns[$col] ?? $col;
-                                            @endphp
+                                        @php
+                                            $dataSource = $widget['data_source'] ?? null;
+                                            $widgetColumns = $widgetSources[$dataSource]['columns'] ?? [];
+                                            $colLabel = $widgetColumns[$col] ?? $col;
+                                            $isNumeric = in_array($col, ['teklif_tutari', 'alis_tutari', 'kur', 'oncelik']);
+                                        @endphp
+                                        <th class="px-4 py-3 {{ $isNumeric ? 'text-right' : 'text-left' }} font-semibold text-gray-700">
                                             {{ $colLabel }}
                                         </th>
                                     @endforeach
@@ -272,34 +273,36 @@
                                 @foreach(array_slice($data, 0, 10) as $row)
                                     <tr class="border-b hover:bg-white transition">
                                         @foreach($widget['columns'] as $col)
-                                            <td class="px-4 py-3 text-gray-800">
-                                                @php
-                                                    $value = $row[$col] ?? '-';
-                                                    
-                                                    // Müşteri ID'yi isimle değiştir
-                                                    if($col === 'musteri_id' && is_numeric($value) && $value !== '-') {
-                                                        $musteri = \App\Models\Musteri::find($value);
-                                                        $value = $musteri ? $musteri->sirket : $value;
+                                            @php
+                                                $value = $row[$col] ?? '-';
+                                                
+                                                // Müşteri ID'yi isimle değiştir
+                                                if($col === 'musteri_id' && is_numeric($value) && $value !== '-') {
+                                                    $musteri = \App\Models\Musteri::find($value);
+                                                    $value = $musteri ? $musteri->sirket : $value;
+                                                }
+                                                
+                                                // Tarihleri formatla
+                                                if(in_array($col, ['kapanis_tarihi', 'is_guncellenme_tarihi', 'created_at', 'updated_at', 'ziyaret_tarihi', 'lisans_bitis_tarihi']) && $value && $value !== '-') {
+                                                    try {
+                                                        $value = \Carbon\Carbon::parse($value)->format('d.m.Y');
+                                                    } catch (\Exception $e) {
+                                                        // Tarih parse edilemezse olduğu gibi bırak
                                                     }
-                                                    
-                                                    // Tarihleri formatla
-                                                    if(in_array($col, ['kapanis_tarihi', 'is_guncellenme_tarihi', 'created_at', 'updated_at', 'ziyaret_tarihi', 'lisans_bitis_tarihi']) && $value && $value !== '-') {
-                                                        try {
-                                                            $value = \Carbon\Carbon::parse($value)->format('d.m.Y');
-                                                        } catch (\Exception $e) {
-                                                            // Tarih parse edilemezse olduğu gibi bırak
-                                                        }
-                                                    }
-                                                    
-                                                    // Sayıları formatla ve $ ekle
-                                                    if($col === 'teklif_tutari' && is_numeric($value)) {
-                                                        $value = '$' . number_format($value, 2, ',', '.');
-                                                    } elseif($col === 'alis_tutari' && is_numeric($value)) {
-                                                        $value = '$' . number_format($value, 2, ',', '.');
-                                                    } elseif(in_array($col, ['kur']) && is_numeric($value)) {
-                                                        $value = number_format($value, 4, ',', '.');
-                                                    }
-                                                @endphp
+                                                }
+                                                
+                                                // Sayıları formatla ve $ ekle
+                                                if($col === 'teklif_tutari' && is_numeric($value)) {
+                                                    $value = '$' . number_format($value, 2, ',', '.');
+                                                } elseif($col === 'alis_tutari' && is_numeric($value)) {
+                                                    $value = '$' . number_format($value, 2, ',', '.');
+                                                } elseif(in_array($col, ['kur']) && is_numeric($value)) {
+                                                    $value = number_format($value, 4, ',', '.');
+                                                }
+                                                
+                                                $isNumeric = in_array($col, ['teklif_tutari', 'alis_tutari', 'kur', 'oncelik']);
+                                            @endphp
+                                            <td class="px-4 py-3 text-gray-800 {{ $isNumeric ? 'text-right font-mono' : 'text-left' }}">
                                                 {{ $value }}
                                             </td>
                                         @endforeach
