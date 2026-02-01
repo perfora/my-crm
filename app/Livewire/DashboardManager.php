@@ -184,6 +184,24 @@ class DashboardManager extends Component
         }
     }
 
+    public function getSelectedColumnsWithLabels(): array
+    {
+        if (!$this->selectedDataSource || empty($this->selectedColumns)) {
+            return [];
+        }
+
+        $sources = $this->getDataService()->getAvailableDataSources();
+        $columns = $sources[$this->selectedDataSource]['columns'] ?? [];
+        
+        $result = [];
+        foreach ($this->selectedColumns as $col) {
+            if (isset($columns[$col])) {
+                $result[$col] = $columns[$col];
+            }
+        }
+        return $result;
+    }
+
     public function render()
     {
         return view('livewire.dashboard-manager');

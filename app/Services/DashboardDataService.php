@@ -145,14 +145,10 @@ class DashboardDataService
                 ]
             ],
             'status' => [
-                'label' => 'Durum',
+                'label' => 'Sütun Değeri ile Filtrele',
                 'params' => [
-                    'field' => ['type' => 'select', 'label' => 'Alan', 'options' => [
-                        'register_durum' => 'Register Durum',
-                        'tipi' => 'Tipi',
-                        'turu' => 'Türü',
-                    ]],
-                    'value' => ['type' => 'text', 'label' => 'Değer', 'placeholder' => 'Örnek: Aktif, Tamamlandı']
+                    'field' => ['type' => 'select', 'label' => 'Sütun', 'options' => []],
+                    'value' => ['type' => 'select', 'label' => 'Değer', 'options' => []]
                 ]
             ],
             'text_search' => [

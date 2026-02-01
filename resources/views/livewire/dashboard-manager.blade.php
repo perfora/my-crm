@@ -136,14 +136,19 @@
                                                 >
                                             @elseif($param['type'] === 'select')
                                                 @if($paramKey === 'field')
-                                                    <!-- Alan seçimi -->
+                                                    <!-- Alan seçimi - sadece seçili sütunları göster -->
+                                                    @php
+                                                        $selectedCols = $this->getSelectedColumnsWithLabels();
+                                                    @endphp
                                                     <select 
                                                         wire:model.live="selectedFilters.{{ $index }}.{{ $paramKey }}"
                                                         class="w-full p-2 border border-orange-300 rounded text-sm bg-white">
                                                         <option value="">-- Seçin --</option>
-                                                        @foreach($param['options'] ?? [] as $optKey => $optLabel)
-                                                            <option value="{{ $optKey }}">{{ $optLabel }}</option>
-                                                        @endforeach
+                                                        @forelse($selectedCols as $colKey => $colLabel)
+                                                            <option value="{{ $colKey }}">{{ $colLabel }}</option>
+                                                        @empty
+                                                            <option value="" disabled>Sütun seçiniz</option>
+                                                        @endforelse
                                                     </select>
                                                 @else
                                                     <!-- Değer seçimi - dinamik olarak alandan getir -->
