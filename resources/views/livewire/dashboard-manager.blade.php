@@ -132,8 +132,17 @@
                                                     type="text" 
                                                     wire:model="selectedFilters.{{ $index }}.{{ $paramKey }}"
                                                     class="w-full p-2 border border-orange-300 rounded text-sm"
-                                                    placeholder="Örnek: is_adi, kar"
+                                                    placeholder="{{ $param['placeholder'] ?? 'Örnek: is_adi, kar' }}"
                                                 >
+                                            @elseif($param['type'] === 'select')
+                                                <select 
+                                                    wire:model="selectedFilters.{{ $index }}.{{ $paramKey }}"
+                                                    class="w-full p-2 border border-orange-300 rounded text-sm bg-white">
+                                                    <option value="">-- Seçin --</option>
+                                                    @foreach($param['options'] ?? [] as $optKey => $optLabel)
+                                                        <option value="{{ $optKey }}">{{ $optLabel }}</option>
+                                                    @endforeach
+                                                </select>
                                             @endif
                                         </div>
                                     @endforeach

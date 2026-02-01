@@ -60,9 +60,9 @@ class DashboardDataService
                     'is_adi' => 'İş Adı',
                     'musteri_id' => 'Müşteri',
                     'durum' => 'Durum',
-                    'teklif' => 'Teklif (TL)',
-                    'aliş' => 'Alış (TL)',
-                    'kar' => 'Kar (TL)',
+                    'teklif' => 'Teklif',
+                    'aliş' => 'Alış',
+                    'kar' => 'Kar',
                     'is_tarihi' => 'İş Tarihi',
                     'created_at' => 'Oluşturma Tarihi',
                     'updated_at' => 'Güncellenme Tarihi',
@@ -147,7 +147,12 @@ class DashboardDataService
             'status' => [
                 'label' => 'Durum',
                 'params' => [
-                    'value' => ['type' => 'select', 'label' => 'Durum', 'options' => ['active' => 'Aktif', 'inactive' => 'İnaktif']]
+                    'field' => ['type' => 'select', 'label' => 'Alan', 'options' => [
+                        'register_durum' => 'Register Durum',
+                        'tipi' => 'Tipi',
+                        'turu' => 'Türü',
+                    ]],
+                    'value' => ['type' => 'text', 'label' => 'Değer', 'placeholder' => 'Örnek: Aktif, Tamamlandı']
                 ]
             ],
             'text_search' => [
