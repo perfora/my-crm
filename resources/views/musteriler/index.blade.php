@@ -731,8 +731,14 @@
                         // Update data attribute for filtering
                         cell.closest('tr').attr('data-' + field, newValue);
                     },
-                    error: function() {
-                        alert('Kaydedilemedi!');
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error:', {
+                            status: xhr.status,
+                            statusText: xhr.statusText,
+                            responseText: xhr.responseText,
+                            error: error
+                        });
+                        alert('Kaydedilemedi! Hata: ' + (xhr.responseJSON?.message || xhr.statusText));
                         cell.html(originalContent);
                         cell.removeClass('editing');
                         isSaving = false;
