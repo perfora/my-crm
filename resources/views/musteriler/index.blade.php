@@ -343,7 +343,12 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="turu" data-id="{{ $musteri->id }}" data-value="{{ $musteri->turu }}">
                                     @if($musteri->turu)
-                                        <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                                        @php
+                                            $defaultTuruList = ['Netcom', 'Bayi', 'Resmi Kurum', 'Üniversite', 'Belediye', 'Hastane', 'Özel Sektör', 'Tedarikçi', 'Üretici', 'Diğer'];
+                                            $isDefault = in_array($musteri->turu, $defaultTuruList);
+                                            $badgeColor = $isDefault ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800';
+                                        @endphp
+                                        <span class="px-2 py-1 text-xs rounded-full {{ $badgeColor }}">
                                             {{ $musteri->turu }}
                                         </span>
                                     @else
@@ -394,6 +399,10 @@
     </div>
 
     <script>
+        // Global değişkenler
+        let existingTuruValues = @json($existingTuruValues);
+        const defaultTuruValues = ['Netcom', 'Bayi', 'Resmi Kurum', 'Üniversite', 'Belediye', 'Hastane', 'Özel Sektör', 'Tedarikçi', 'Üretici', 'Diğer'];
+        
         $(document).ready(function() {
             // Select2 başlat
             $('#derece-select, #turu-select, .select2-filter').select2({
@@ -639,8 +648,7 @@
                     <option value="4 - Hiç" ${currentValue === '4 - Hiç' ? 'selected' : ''}>4 - Hiç</option>
                 `;
             } else if (field === 'turu') {
-                // Veritabanından mevcut türleri çek
-                const existingTuruValues = @json($existingTuruValues);
+                // Global listeyi kullan
                 options = '<option value="">Seçiniz</option>';
                 existingTuruValues.forEach(function(value) {
                     const selected = currentValue === value ? 'selected' : '';
@@ -714,13 +722,10 @@
                     success: function(response) {
                         cell.data('value', newValue);
                         
-                        // Eğer turu alanı için yeni bir değer eklendiyse, listeye ekle
-                        if (field === 'turu' && newValue) {
-                            const existingTuruValues = @json($existingTuruValues);
-                            if (!existingTuruValues.includes(newValue)) {
-                                existingTuruValues.push(newValue);
-                                existingTuruValues.sort();
-                            }
+                        // Eğer turu alanı için yeni bir değer eklendiyse, global listeye ekle
+                        if (field === 'turu' && newValue && !existingTuruValues.includes(newValue)) {
+                            existingTuruValues.push(newValue);
+                            existingTuruValues.sort();
                         }
                         
                         // Rebuild the badge/display
@@ -731,7 +736,10 @@
                                 else if (newValue === '2 - Orta') badgeClass = 'bg-yellow-100 text-yellow-800';
                                 else if (newValue === '3- Düşük') badgeClass = 'bg-green-100 text-green-800';
                             } else if (field === 'turu') {
-                                badgeClass = 'bg-blue-100 text-blue-800';
+                                // Varsayılan türler için mavi, yeni eklenenler için mor
+                                badgeClass = defaultTuruValues.includes(newValue) 
+                                    ? 'bg-blue-100 text-blue-800' 
+                                    : 'bg-purple-100 text-purple-800';
                             }
                             cell.html(`<span class="px-2 py-1 text-xs rounded-full ${badgeClass}">${newValue}</span>`);
                         } else {
