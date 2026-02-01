@@ -138,14 +138,15 @@ class DashboardFilterService
      */
     public function formatFilterLabel(array $filter): string
     {
-        return match ($filter['type'] ?? null) {
-            'license_expiring' => "Lisansı {$filter['days'] ?? 30} gün içinde biten",
+        $type = $filter['type'] ?? 'unknown';
+        return match ($type) {
+            'license_expiring' => "Lisansı " . ($filter['days'] ?? 30) . " gün içinde biten",
             'license_expired' => 'Lisansı süresi dolmuş',
-            'not_updated_days' => "{$filter['days'] ?? 30} gündür güncellenmemiş",
-            'updated_after' => "Şuradan sonra güncellenen: {$filter['date'] ?? ''}",
-            'status' => "Durum: {$filter['value'] ?? ''}",
-            'text_search' => "{$filter['field'] ?? 'Ad'} içinde: {$filter['value'] ?? ''}",
-            'numeric_range' => "{$filter['field'] ?? 'Alan'}: {$filter['min'] ?? '0'} - {$filter['max'] ?? 'sınırsız'}",
+            'not_updated_days' => ($filter['days'] ?? 30) . " gündür güncellenmemiş",
+            'updated_after' => "Şuradan sonra güncellenen: " . ($filter['date'] ?? ''),
+            'status' => "Durum: " . ($filter['value'] ?? ''),
+            'text_search' => ($filter['field'] ?? 'Ad') . " içinde: " . ($filter['value'] ?? ''),
+            'numeric_range' => ($filter['field'] ?? 'Alan') . ": " . ($filter['min'] ?? '0') . " - " . ($filter['max'] ?? 'sınırsız'),
             default => 'Bilinmeyen filtre',
         };
     }
