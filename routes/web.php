@@ -53,10 +53,10 @@ Route::post('/logout', function() {
 // Protected Routes (require authentication)
 Route::middleware(['auth'])->group(function () {
     
-    // Ana sayfa
-    Route::get('/', fn () => view('dashboard'))->name('home');
+    // Ana sayfa - Yeni özelleştirilebilir dashboard
+    Route::get('/', fn () => view('pages.dashboard'))->name('home');
     
-    // Dashboard - Özelleştirilebilir widget sistemi
+    // Dashboard - Özelleştirilebilir widget sistemi (alias)
     Route::get('/dashboard', fn () => view('pages.dashboard'))->name('dashboard.index');
 
 // API: Filter Widget Data
