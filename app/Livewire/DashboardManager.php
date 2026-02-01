@@ -11,15 +11,15 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardManager extends Component
 {
-    public $dashboard;
-    public $widgets = [];
-    public $showWidgetForm = false;
-    public $editingWidget = null;
-    public $dataService;
-    public $selectedDataSource = 'tum_isler';
-    public $selectedColumns = [];
-    public $selectedFilters = [];
-    public $widgetType = 'table';
+    public ?Dashboard $dashboard = null;
+    public array $widgets = [];
+    public bool $showWidgetForm = false;
+    public ?int $editingWidget = null;
+    public ?DashboardDataService $dataService = null;
+    public string $selectedDataSource = 'tum_isler';
+    public array $selectedColumns = [];
+    public array $selectedFilters = [];
+    public string $widgetType = 'table';
 
     #[On('reorder')]
     public function handleReorder($ids)
