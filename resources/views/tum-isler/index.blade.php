@@ -1595,7 +1595,6 @@
                     url: '/tum-isler/' + id,
                     method: 'PUT',
                     data: {
-                        _token: '{{ csrf_token() }}',
                         [field]: newValue
                     },
                     success: function(response) {
@@ -1680,7 +1679,6 @@
                     url: '/tum-isler/' + id,
                     method: 'PUT',
                     data: {
-                        _token: '{{ csrf_token() }}',
                         [field]: newValue
                     },
                     success: function(response) {
