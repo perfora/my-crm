@@ -168,12 +168,13 @@
                     <h3 class="font-bold text-lg">
                         @php
                             $sources = $this->getAvailableDataSources();
-                            $label = isset($sources[$widget['data_source']]) ? ($sources[$widget['data_source']]['label'] ?? $widget['data_source']) : $widget['data_source'];
+                            $dataSource = $widget['data_source'] ?? 'unknown';
+                            $label = isset($sources[$dataSource]) ? ($sources[$dataSource]['label'] ?? $dataSource) : $dataSource;
                         @endphp
                         {{ $label }}
                     </h3>
                     <p class="text-sm text-gray-600">
-                        Tip: <span class="font-semibold">{{ ucfirst($widget['type']) }}</span>
+                        Tip: <span class="font-semibold">{{ ucfirst($widget['type'] ?? 'table') }}</span>
                         | Sütunlar: <span class="font-semibold">{{ count($widget['columns'] ?? []) }}</span>
                         | Filtreler: <span class="font-semibold">{{ count($widget['filters'] ?? []) }}</span>
                     </p>
@@ -206,9 +207,14 @@
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="bg-gray-200 border-b">
-                                    @foreach($widget['columns'] as $col)
+                                    @foreach($widget['columns'] ?? [] as $col)
                                         <th class="px-4 py-3 text-left font-semibold text-gray-700">
-                                            {{ $widgetSources[$widget['data_source']]['columns'][$col] ?? $col }}
+                                            @php
+                                                $dataSource = $widget['data_source'] ?? null;
+                                                $widgetColumns = $widgetSources[$dataSource]['columns'] ?? [];
+                                                $colLabel = $widgetColumns[$col] ?? $col;
+                                            @endphp
+                                            {{ $colLabel }}
                                         </th>
                                     @endforeach
                                 </tr>
