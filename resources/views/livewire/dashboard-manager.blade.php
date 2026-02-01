@@ -1,117 +1,149 @@
 <div class="p-6 bg-white rounded-lg shadow">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">Dashboard</h1>
+        <div>
+            <h2 class="text-2xl font-bold">Özel Widget Alanı</h2>
+            <p class="text-sm text-gray-600 mt-1">Tüm İşler, Müşteriler, Kişiler vb. tablolarından istediğin verileri filtrele ve göster</p>
+        </div>
         <button 
             wire:click="openAddWidget" 
-            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-            + Widget Ekle
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-semibold">
+            + Yeni Widget
         </button>
     </div>
 
     <!-- Widget Ekleme/Düzenleme Formu -->
     @if($showWidgetForm)
-    <div class="mb-6 p-4 bg-gray-100 rounded-lg border-l-4 border-blue-600">
-        <h2 class="text-xl font-bold mb-4">{{ $editingWidget ? 'Widget Düzenle' : 'Yeni Widget' }}</h2>
-
-        <!-- Veri Kaynağı Seçimi -->
-        <div class="mb-4">
-            <label class="block font-semibold mb-2">Veri Kaynağı</label>
-            <select wire:model.live="selectedDataSource" class="w-full p-2 border rounded">
-                @foreach($this->getAvailableDataSources() as $key => $source)
-                    <option value="{{ $key }}">{{ $source['label'] }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <!-- Widget Tipi -->
-        <div class="mb-4">
-            <label class="block font-semibold mb-2">Görünüm Tipi</label>
-            <select wire:model="widgetType" class="w-full p-2 border rounded">
-                <option value="table">Tablo</option>
-                <option value="chart">Grafik</option>
-                <option value="calendar">Takvim</option>
-                <option value="metric">KPI</option>
-            </select>
-        </div>
-
-        <!-- Sütun Seçimi -->
-        @if($selectedDataSource)
-        <div class="mb-4">
-            <label class="block font-semibold mb-2">Sütunlar</label>
-            <div class="grid grid-cols-2 gap-2">
-                @foreach($this->getAvailableDataSources()[$selectedDataSource]['columns'] as $key => $label)
-                    <label class="flex items-center">
-                        <input 
-                            type="checkbox" 
-                            wire:click="toggleColumn('{{ $key }}')"
-                            {{ in_array($key, $selectedColumns ?? []) ? 'checked' : '' }}
-                            class="mr-2"
-                        >
-                        {{ $label }}
-                    </label>
-                @endforeach
-            </div>
-        </div>
-        @endif
-
-        <!-- Filtre Seçimi -->
-        <div class="mb-4">
-            <label class="block font-semibold mb-2">Filtreler</label>
-            @foreach($selectedFilters as $index => $filter)
-                <div class="mb-3 p-3 bg-white rounded border">
-                    <div class="flex justify-between mb-2">
-                        <select wire:model="selectedFilters.{{ $index }}.type" class="flex-1 p-2 border rounded mr-2">
-                            @foreach($this->getAvailableFilters() as $fkey => $fvalue)
-                                <option value="{{ $fkey }}">{{ $fvalue['label'] }}</option>
-                            @endforeach
-                        </select>
-                        <button wire:click="removeFilter({{ $index }})" class="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600">
-                            Sil
-                        </button>
-                    </div>
-                    
-                    <!-- Filtre Parametreleri -->
-                    @php $filterConfig = $this->getAvailableFilters()[$selectedFilters[$index]['type'] ?? 'text_search'] ?? null; @endphp
-                    @if($filterConfig && !empty($filterConfig['params']))
-                        @foreach($filterConfig['params'] as $paramKey => $param)
-                            <div class="mb-2">
-                                <label class="block text-sm mb-1">{{ $param['label'] }}</label>
-                                @if($param['type'] === 'number')
-                                    <input 
-                                        type="number" 
-                                        wire:model="selectedFilters.{{ $index }}.{{ $paramKey }}"
-                                        class="w-full p-2 border rounded"
-                                    >
-                                @elseif($param['type'] === 'date')
-                                    <input 
-                                        type="date" 
-                                        wire:model="selectedFilters.{{ $index }}.{{ $paramKey }}"
-                                        class="w-full p-2 border rounded"
-                                    >
-                                @elseif($param['type'] === 'text')
-                                    <input 
-                                        type="text" 
-                                        wire:model="selectedFilters.{{ $index }}.{{ $paramKey }}"
-                                        class="w-full p-2 border rounded"
-                                    >
-                                @endif
-                            </div>
-                        @endforeach
-                    @endif
-                </div>
-            @endforeach
-            <button wire:click="addFilter" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                + Filtre Ekle
+    <div class="mb-8 p-6 bg-blue-50 rounded-lg border-2 border-blue-300">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-blue-900">
+                {{ $editingWidget ? '✏️ Widget Düzenle' : '➕ Yeni Widget Oluştur' }}
+            </h2>
+            <button 
+                wire:click="$set('showWidgetForm', false)" 
+                class="text-gray-500 hover:text-gray-700 text-2xl">
+                ✕
             </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Adım 1: Veri Kaynağı -->
+            <div class="bg-white rounded-lg p-4 border-l-4 border-blue-600">
+                <label class="block font-bold text-lg mb-3 text-blue-900">1️⃣ Tablo Seç</label>
+                <select wire:model.live="selectedDataSource" class="w-full p-3 border-2 border-blue-300 rounded font-semibold bg-blue-50">
+                    @foreach($this->getAvailableDataSources() as $key => $source)
+                        <option value="{{ $key }}">{{ $source['label'] }}</option>
+                    @endforeach
+                </select>
+                <p class="text-xs text-gray-600 mt-2">Hangi tablodan veri görmek istiyorsun?</p>
+            </div>
+
+            <!-- Adım 2: Widget Tipi -->
+            <div class="bg-white rounded-lg p-4 border-l-4 border-green-600">
+                <label class="block font-bold text-lg mb-3 text-green-900">2️⃣ Görünüm</label>
+                <select wire:model="widgetType" class="w-full p-3 border-2 border-green-300 rounded font-semibold bg-green-50">
+                    <option value="table">📊 Tablo</option>
+                    <option value="metric">📈 KPI</option>
+                    <option value="chart">📉 Grafik (yakında)</option>
+                    <option value="calendar">📅 Takvim (yakında)</option>
+                </select>
+                <p class="text-xs text-gray-600 mt-2">Verileri nasıl görmek istiyorsun?</p>
+            </div>
+
+            <!-- Adım 3: Sütun Seçimi -->
+            @if($selectedDataSource)
+            <div class="bg-white rounded-lg p-4 border-l-4 border-purple-600">
+                <label class="block font-bold text-lg mb-3 text-purple-900">3️⃣ Sütunlar</label>
+                <div class="space-y-2 max-h-40 overflow-y-auto">
+                    @foreach($this->getAvailableDataSources()[$selectedDataSource]['columns'] as $key => $label)
+                        <label class="flex items-center p-2 hover:bg-purple-50 rounded cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                wire:click="toggleColumn('{{ $key }}')"
+                                {{ in_array($key, $selectedColumns ?? []) ? 'checked' : '' }}
+                                class="w-4 h-4 text-purple-600 rounded mr-2"
+                            >
+                            <span class="text-sm">{{ $label }}</span>
+                        </label>
+                    @endforeach
+                </div>
+                <p class="text-xs text-gray-600 mt-2">Hangi sütunları görmek istiyorsun?</p>
+            </div>
+            @endif
+        </div>
+
+        <!-- Filtreler (Genişletilmiş) -->
+        <div class="mt-6 bg-white rounded-lg p-4 border-l-4 border-orange-600">
+            <div class="flex justify-between items-center mb-4">
+                <label class="block font-bold text-lg text-orange-900">🔍 Filtreler</label>
+                <button wire:click="addFilter" class="px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 text-sm font-semibold">
+                    + Filtre Ekle
+                </button>
+            </div>
+            
+            @if(!empty($selectedFilters))
+                <div class="space-y-3">
+                    @foreach($selectedFilters as $index => $filter)
+                        <div class="p-3 bg-orange-50 rounded border-l-4 border-orange-300">
+                            <div class="flex justify-between items-start mb-3">
+                                <select wire:model="selectedFilters.{{ $index }}.type" class="flex-1 p-2 border border-orange-300 rounded font-semibold text-sm">
+                                    @foreach($this->getAvailableFilters() as $fkey => $fvalue)
+                                        <option value="{{ $fkey }}">{{ $fvalue['label'] }}</option>
+                                    @endforeach
+                                </select>
+                                <button 
+                                    wire:click="removeFilter({{ $index }})" 
+                                    class="ml-2 px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm">
+                                    🗑️
+                                </button>
+                            </div>
+                            
+                            <!-- Filtre Parametreleri -->
+                            @php $filterConfig = $this->getAvailableFilters()[$selectedFilters[$index]['type'] ?? 'text_search'] ?? null; @endphp
+                            @if($filterConfig && !empty($filterConfig['params']))
+                                <div class="grid grid-cols-2 gap-2">
+                                    @foreach($filterConfig['params'] as $paramKey => $param)
+                                        <div>
+                                            <label class="block text-xs font-semibold text-gray-700 mb-1">{{ $param['label'] }}</label>
+                                            @if($param['type'] === 'number')
+                                                <input 
+                                                    type="number" 
+                                                    wire:model="selectedFilters.{{ $index }}.{{ $paramKey }}"
+                                                    placeholder="{{ $param['default'] ?? '' }}"
+                                                    class="w-full p-2 border border-orange-300 rounded text-sm"
+                                                >
+                                            @elseif($param['type'] === 'date')
+                                                <input 
+                                                    type="date" 
+                                                    wire:model="selectedFilters.{{ $index }}.{{ $paramKey }}"
+                                                    class="w-full p-2 border border-orange-300 rounded text-sm"
+                                                >
+                                            @elseif($param['type'] === 'text')
+                                                <input 
+                                                    type="text" 
+                                                    wire:model="selectedFilters.{{ $index }}.{{ $paramKey }}"
+                                                    class="w-full p-2 border border-orange-300 rounded text-sm"
+                                                    placeholder="Örnek: is_adi, kar"
+                                                >
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="text-sm text-gray-600 italic">Filtre eklemek istersen "+ Filtre Ekle" butonuna tıkla</p>
+            @endif
         </div>
 
         <!-- Kaydet/İptal -->
-        <div class="flex gap-2">
-            <button wire:click="saveWidget" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                Kaydet
+        <div class="flex gap-3 mt-6">
+            <button wire:click="saveWidget" class="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-bold">
+                ✅ Kaydet
             </button>
-            <button wire:click="$set('showWidgetForm', false)" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">
-                İptal
+            <button wire:click="$set('showWidgetForm', false)" class="flex-1 px-4 py-3 bg-gray-400 text-white rounded-lg hover:bg-gray-500 font-bold">
+                ❌ İptal
             </button>
         </div>
     </div>
@@ -157,23 +189,34 @@
                 
                 @if($widget['type'] === 'table')
                     @if(!empty($data))
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm border-collapse">
+                    <div class="overflow-x-auto bg-gray-50 rounded">
+                        <table class="w-full text-sm">
                             <thead>
-                                <tr class="bg-gray-200">
+                                <tr class="bg-gray-200 border-b">
                                     @foreach($widget['columns'] as $col)
-                                        <th class="border p-2 text-left">
+                                        <th class="px-4 py-3 text-left font-semibold text-gray-700">
                                             {{ $sources[$widget['data_source']]['columns'][$col] ?? $col }}
                                         </th>
                                     @endforeach
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach(array_slice($data, 0, 5) as $row)
-                                    <tr class="border-b hover:bg-gray-50">
+                                @foreach(array_slice($data, 0, 10) as $row)
+                                    <tr class="border-b hover:bg-white transition">
                                         @foreach($widget['columns'] as $col)
-                                            <td class="border p-2">
-                                                {{ $row[$col] ?? '-' }}
+                                            <td class="px-4 py-3 text-gray-800">
+                                                @php
+                                                    $value = $row[$col] ?? '-';
+                                                    // Tarihleri formatla
+                                                    if(in_array($col, ['is_tarihi', 'created_at', 'updated_at', 'ziyaret_tarihi', 'lisans_bitis_tarihi']) && $value && $value !== '-') {
+                                                        $value = \Carbon\Carbon::parse($value)->format('d.m.Y');
+                                                    }
+                                                    // Sayıları formatla (kar, teklif, alış, vb.)
+                                                    if(in_array($col, ['kar', 'teklif', 'aliş']) && is_numeric($value)) {
+                                                        $value = number_format($value, 0, ',', '.');
+                                                    }
+                                                @endphp
+                                                {{ $value }}
                                             </td>
                                         @endforeach
                                     </tr>
@@ -181,19 +224,21 @@
                             </tbody>
                         </table>
                     </div>
-                    <p class="text-xs text-gray-500 mt-2">Toplam: {{ count($data) }} kayıt (ilk 5 gösteriliyor)</p>
+                    <p class="text-xs text-gray-500 mt-2 font-semibold">📊 {{ count($data) }} kayıt toplam (ilk 10 gösteriliyor)</p>
                     @else
-                        <p class="text-gray-500 italic">Veri yok</p>
+                        <div class="text-center py-8 text-gray-500">
+                            <p class="text-lg">📭 Bu filtreyle eşleşen veri yok</p>
+                        </div>
                     @endif
                 @elseif($widget['type'] === 'metric')
-                    <div class="grid grid-cols-3 gap-4">
-                        <div class="bg-blue-100 p-4 rounded text-center">
-                            <p class="text-2xl font-bold text-blue-700">{{ count($data) }}</p>
-                            <p class="text-sm text-gray-600">Toplam Kayıt</p>
+                    <div class="grid grid-cols-4 gap-4">
+                        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded text-center">
+                            <p class="text-3xl font-bold text-blue-600">{{ count($data) }}</p>
+                            <p class="text-sm text-gray-600 mt-1">Toplam</p>
                         </div>
                     </div>
                 @else
-                    <p class="text-gray-500 italic">{{ ucfirst($widget['type']) }} tipi henüz başlangıç aşamasında</p>
+                    <p class="text-gray-500 italic text-center py-8">🔄 {{ ucfirst($widget['type']) }} görünümü yakında kullanılabilir</p>
                 @endif
             </div>
         </div>
