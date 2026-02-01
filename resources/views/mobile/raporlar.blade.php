@@ -123,60 +123,6 @@
                 </div>
             </div>
 
-            <!-- 2026 Kazanılan İşler -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">📅 2026 Kazanılan İşler</h2>
-                <div class="space-y-3">
-                    @forelse($kazanilan2026 as $is)
-                        <div class="border-l-4 border-blue-500 pl-3 py-2">
-                            <div class="font-semibold text-gray-800">{{ $is->name }}</div>
-                            <div class="text-sm text-gray-600">
-                                {{ $is->musteri ? $is->musteri->sirket : '-' }}
-                            </div>
-                            <div class="flex justify-between items-center mt-1">
-                                <span class="text-xs text-gray-400">
-                                    {{ \Carbon\Carbon::parse($is->kapanis_tarihi)->format('d.m.Y') }}
-                                </span>
-                                @if($is->teklif_tutari)
-                                    <span class="text-sm font-bold text-blue-600">
-                                        ${{ number_format($is->teklif_tutari, 0, ',', '.') }}
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-                    @empty
-                        <div class="text-center text-gray-500 py-4">Henüz kazanılan iş yok</div>
-                    @endforelse
-                </div>
-            </div>
-
-            <!-- Bekleyen İşler -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">⏳ Bekleyen İşler</h2>
-                <div class="space-y-3">
-                    @forelse($bekleyenIsler as $is)
-                        <div class="border-l-4 border-red-500 pl-3 py-2">
-                            <div class="font-semibold text-gray-800">{{ $is->name }}</div>
-                            <div class="text-sm text-gray-600">
-                                {{ $is->musteri ? $is->musteri->sirket : '-' }}
-                            </div>
-                            <div class="flex justify-between items-center mt-1">
-                                <span class="text-xs px-2 py-1 bg-red-100 text-red-800 rounded-full font-semibold">
-                                    Öncelik {{ $is->oncelik }}
-                                </span>
-                                @if($is->teklif_tutari)
-                                    <span class="text-sm font-bold text-gray-700">
-                                        ${{ number_format($is->teklif_tutari, 0, ',', '.') }}
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-                    @empty
-                        <div class="text-center text-gray-500 py-4">Bekleyen iş yok</div>
-                    @endforelse
-                </div>
-            </div>
-
             <!-- Yüksek Potansiyel Müşteriler -->
             <div class="bg-white rounded-lg shadow-lg p-6">
                 <h2 class="text-xl font-bold text-gray-800 mb-4">🎯 Yüksek Potansiyel Müşteriler</h2>
@@ -205,29 +151,12 @@
                 </div>
             </div>
 
-            <!-- Son İşler -->
+            <!-- Bekleyen & Planlanan Ziyaretler -->
             <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">📋 Son İşler</h2>
+                <h2 class="text-xl font-bold text-gray-800 mb-4">� Bekleyen & Planlanan Ziyaretler</h2>
+                <div class="text-xs text-gray-500 mb-3">Beklemede ve Planlandı durumunda</div>
                 <div class="space-y-3">
-                    @foreach(\App\Models\TumIsler::with('musteri')->orderBy('created_at', 'desc')->limit(5)->get() as $is)
-                        <div class="border-l-4 border-green-500 pl-3 py-2">
-                            <div class="font-semibold text-gray-800">{{ $is->name }}</div>
-                            <div class="text-sm text-gray-600">
-                                {{ $is->musteri ? $is->musteri->sirket : '-' }}
-                            </div>
-                            <div class="text-xs text-gray-400 mt-1">
-                                {{ $is->created_at->diffForHumans() }}
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-
-            <!-- Son Ziyaretler -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">🚗 Son Ziyaretler</h2>
-                <div class="space-y-3">
-                    @foreach(\App\Models\Ziyaret::with('musteri')->orderBy('ziyaret_tarihi', 'desc')->limit(5)->get() as $ziyaret)
+                    @forelse(\App\Models\Ziyaret::whereIn('durumu', ['Beklemede', 'Planlandı'])->with('musteri')->orderBy('ziyaret_tarihi', 'asc')->limit(10)->get() as $ziyaret)
                         <div class="border-l-4 border-purple-500 pl-3 py-2">
                             <div class="font-semibold text-gray-800">
                                 {{ $ziyaret->musteri ? $ziyaret->musteri->sirket : '-' }}
@@ -235,11 +164,15 @@
                             <div class="text-sm text-gray-600">
                                 {{ \Carbon\Carbon::parse($ziyaret->ziyaret_tarihi)->format('d.m.Y') }}
                             </div>
-                            <div class="text-xs text-gray-400">
-                                {{ $ziyaret->durumu }}
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-xs px-2 py-1 {{ $ziyaret->durumu == 'Beklemede' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800' }} rounded-full font-semibold">
+                                    {{ $ziyaret->durumu }}
+                                </span>
                             </div>
                         </div>
-                    @endforeach
+                    @empty
+                        <div class="text-center text-gray-500 py-4">Bekleyen veya planlanan ziyaret yok</div>
+                    @endforelse
                 </div>
             </div>
         </div>
