@@ -51,13 +51,18 @@
 
             <!-- Adım 3: Sütun Seçimi -->
             @if($selectedDataSource)
+            @php
+                $dataSources = $this->getAvailableDataSources();
+                $columns = $dataSources[$selectedDataSource]['columns'] ?? [];
+            @endphp
+            @if(!empty($columns))
             <div class="bg-white rounded-lg p-4 border-l-4 border-purple-600">
                 <label class="block font-bold text-lg mb-3 text-purple-900">3️⃣ Sütunlar</label>
                 <div class="space-y-2 max-h-40 overflow-y-auto">
-                    @foreach($this->getAvailableDataSources()[$selectedDataSource]['columns'] as $key => $label)
+                    @foreach($columns as $key => $label)
                         <label class="flex items-center p-2 hover:bg-purple-50 rounded cursor-pointer">
-                            <input 
-                                type="checkbox" 
+                            <input
+                                type="checkbox"
                                 wire:click="toggleColumn('{{ $key }}')"
                                 {{ in_array($key, $selectedColumns ?? []) ? 'checked' : '' }}
                                 class="w-4 h-4 text-purple-600 rounded mr-2"
@@ -68,6 +73,7 @@
                 </div>
                 <p class="text-xs text-gray-600 mt-2">Hangi sütunları görmek istiyorsun?</p>
             </div>
+            @endif
             @endif
         </div>
 
@@ -160,9 +166,9 @@
             <div class="flex justify-between items-start mb-3">
                 <div class="flex-1">
                     <h3 class="font-bold text-lg">
-                        @php 
+                        @php
                             $sources = $this->getAvailableDataSources();
-                            $label = $sources[$widget['data_source']]['label'] ?? $widget['data_source'];
+                            $label = isset($sources[$widget['data_source']]) ? ($sources[$widget['data_source']]['label'] ?? $widget['data_source']) : $widget['data_source'];
                         @endphp
                         {{ $label }}
                     </h3>
@@ -189,8 +195,11 @@
 
             <!-- Widget İçeriği (Preview) -->
             <div class="mt-4 border-t pt-4">
-                @php $data = $this->getWidgetDataForRender($widget['id']); @endphp
-                
+                @php
+                    $data = $this->getWidgetDataForRender($widget['id']);
+                    $widgetSources = $this->getAvailableDataSources();
+                @endphp
+
                 @if($widget['type'] === 'table')
                     @if(!empty($data))
                     <div class="overflow-x-auto bg-gray-50 rounded">
@@ -199,7 +208,7 @@
                                 <tr class="bg-gray-200 border-b">
                                     @foreach($widget['columns'] as $col)
                                         <th class="px-4 py-3 text-left font-semibold text-gray-700">
-                                            {{ $sources[$widget['data_source']]['columns'][$col] ?? $col }}
+                                            {{ $widgetSources[$widget['data_source']]['columns'][$col] ?? $col }}
                                         </th>
                                     @endforeach
                                 </tr>
