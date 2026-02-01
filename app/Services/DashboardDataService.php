@@ -63,7 +63,9 @@ class DashboardDataService
                     'turu' => 'Türü',
                     'oncelik' => 'Öncelik',
                     'teklif_tutari' => 'Teklif',
+                    'teklif_doviz' => 'Teklif Döviz',
                     'alis_tutari' => 'Alış',
+                    'alis_doviz' => 'Alış Döviz',
                     'kapanis_tarihi' => 'Kapanış Tarihi',
                     'is_guncellenme_tarihi' => 'Güncellenme Tarihi',
                 ]

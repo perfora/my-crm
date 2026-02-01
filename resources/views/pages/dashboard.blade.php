@@ -4,15 +4,17 @@
     $isler2025 = \App\Models\TumIsler::whereYear('is_guncellenme_tarihi', 2025)
         ->where('tipi', 'Kazanıldı')
         ->get();
-    $toplamTeklif2025 = $isler2025->sum('teklif');
-    $kar2025 = $isler2025->sum('kar');
+    $toplamTeklif2025 = $isler2025->sum('teklif_tutari');
+    $toplamAlış2025 = $isler2025->sum('alis_tutari');
+    $kar2025 = $toplamTeklif2025 - $toplamAlış2025;
     $karOrani2025 = $toplamTeklif2025 > 0 ? ($kar2025 / $toplamTeklif2025 * 100) : 0;
     
     $isler2026 = \App\Models\TumIsler::whereYear('is_guncellenme_tarihi', 2026)
         ->where('tipi', 'Kazanıldı')
         ->get();
-    $toplamTeklif2026 = $isler2026->sum('teklif');
-    $kar2026 = $isler2026->sum('kar');
+    $toplamTeklif2026 = $isler2026->sum('teklif_tutari');
+    $toplamAlış2026 = $isler2026->sum('alis_tutari');
+    $kar2026 = $toplamTeklif2026 - $toplamAlış2026;
     $karOrani2026 = $toplamTeklif2026 > 0 ? ($kar2026 / $toplamTeklif2026 * 100) : 0;
     
     // Toplam müşteri ve işler
