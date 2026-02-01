@@ -78,9 +78,16 @@
                     })
                     ->map(function($musteri) {
                         $musteri->toplam_teklif = $musteri->tumIsler->sum('teklif_tutari');
+                        $musteri->kazanilan_tutar = $musteri->tumIsler->where('tipi', 'Kazanıldı')->sum('teklif_tutari');
                         return $musteri;
                     })
-                    ->sortByDesc('toplam_teklif')
+                    ->filter(function($musteri) {
+                        return $musteri->toplam_teklif > 0; // Teklifi olan müşteriler
+                    })
+                    ->sortByDesc(function($musteri) {
+                        // Önce kazanılanları, sonra kazanamayanları - her ikisi de teklif tutarına göre
+                        return [$musteri->kazanilan_tutar > 0 ? 1 : 0, $musteri->toplam_teklif];
+                    })
                     ->take(10);
             @endphp
 
