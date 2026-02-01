@@ -16,6 +16,28 @@
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
+
+                <flux:sidebar.group :heading="__('CRM')" class="grid">
+                    <flux:sidebar.item icon="briefcase" href="/tum-isler" :current="request()->routeIs('tum-isler.index') || str_contains(request()->path(), 'tum-isler')" wire:navigate>
+                        {{ __('Tüm İşler') }}
+                    </flux:sidebar.item>
+                    
+                    <flux:sidebar.item icon="users-3" href="/musteriler" :current="request()->routeIs('musteriler.index') || str_contains(request()->path(), 'musteriler')" wire:navigate>
+                        {{ __('Müşteriler') }}
+                    </flux:sidebar.item>
+                    
+                    <flux:sidebar.item icon="users" href="/kisiler" :current="request()->routeIs('kisiler.index') || str_contains(request()->path(), 'kisiler')" wire:navigate>
+                        {{ __('Kişiler') }}
+                    </flux:sidebar.item>
+                    
+                    <flux:sidebar.item icon="map-pin" href="/ziyaretler" :current="request()->routeIs('ziyaretler.index') || str_contains(request()->path(), 'ziyaretler')" wire:navigate>
+                        {{ __('Ziyaretler') }}
+                    </flux:sidebar.item>
+                    
+                    <flux:sidebar.item icon="tag" href="/markalar" :current="request()->routeIs('markalar.index') || str_contains(request()->path(), 'markalar')" wire:navigate>
+                        {{ __('Markalar') }}
+                    </flux:sidebar.item>
+                </flux:sidebar.group>
             </flux:sidebar.nav>
 
             <flux:spacer />
