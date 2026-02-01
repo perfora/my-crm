@@ -659,6 +659,7 @@
             // Enable custom value creation for Türü field only
             if (field === 'turu') {
                 select2Config.tags = true;
+                select2Config.selectOnClose = true;
                 select2Config.createTag = function (params) {
                     const term = $.trim(params.term);
                     if (term === '') {
@@ -690,6 +691,7 @@
                 isSaving = true;
                 
                 const newValue = select.val();
+                console.log('Saving value:', newValue);
                 
                 if (!newValue) {
                     isSaving = false;
@@ -739,15 +741,22 @@
             }
             
             // Handle both select from list and new tag creation
-            select.on('select2:select', function() {
+            select.on('select2:select', function(e) {
+                console.log('select2:select triggered', e.params.data);
                 setTimeout(saveSelect, 100);
             });
+            select.on('select2:selecting', function(e) {
+                console.log('select2:selecting triggered', e.params.args.data);
+            });
             select.on('select2:close', function() {
-                if (cell.hasClass('editing') && !isSaving) {
-                    select.select2('destroy');
-                    cell.html(originalContent);
-                    cell.removeClass('editing');
-                }
+                console.log('select2:close triggered, isSaving:', isSaving);
+                setTimeout(function() {
+                    if (cell.hasClass('editing') && !isSaving) {
+                        select.select2('destroy');
+                        cell.html(originalContent);
+                        cell.removeClass('editing');
+                    }
+                }, 200);
             });
         });
 
