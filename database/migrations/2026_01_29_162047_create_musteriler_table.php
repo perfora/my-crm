@@ -19,11 +19,8 @@ return new class extends Migration
             // Derece: 1-Sık, 2-Orta, 3-Düşük, 4-Hiç
             $table->enum('derece', ['1 -Sık', '2 - Orta', '3- Düşük', '4 - Hiç'])->nullable();
             
-            // Türü
-            $table->enum('turu', [
-                'Netcom', 'Bayi', 'Resmi Kurum', 'Üniversite', 
-                'Belediye', 'Hastane', 'Özel Sektör', 'Tedarikçi', 'Üretici'
-            ])->nullable();
+            // Türü - string olarak değiştirildi, kullanıcılar yeni değer girebilsin
+            $table->string('turu')->nullable();
             
             $table->timestamps();
         });
