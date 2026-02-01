@@ -715,6 +715,11 @@
                         @php
                             $query = \App\Models\TumIsler::with(['musteri', 'marka']);
                             
+                            // İş Adı Filtresi
+                            if(request('name')) {
+                                $query->where('name', 'LIKE', '%' . request('name') . '%');
+                            }
+                            
                             // Tipi filtresi önce (yıl filtresi buna bağlı)
                             if(request('tipi')) {
                                 $query->where('tipi', request('tipi'));
@@ -731,8 +736,17 @@
                                     $query->whereYear('is_guncellenme_tarihi', request('yil'));
                                 }
                             }
+                            if(request('durum')) {
+                                $query->where('durum', request('durum'));
+                            }
                             if(request('turu')) {
                                 $query->where('turu', request('turu'));
+                            }
+                            if(request('oncelik')) {
+                                $query->where('oncelik', request('oncelik'));
+                            }
+                            if(request('register_durum')) {
+                                $query->where('register_durum', request('register_durum'));
                             }
                             if(request('musteri_id')) {
                                 $query->where('musteri_id', request('musteri_id'));
@@ -740,35 +754,57 @@
                             if(request('marka_id')) {
                                 $query->where('marka_id', request('marka_id'));
                             }
+                            if(request('teklif_min')) {
+                                $query->where('teklif_tutari', '>=', request('teklif_min'));
+                            }
+                            if(request('teklif_max')) {
+                                $query->where('teklif_tutari', '<=', request('teklif_max'));
+                            }
+                            if(request('alis_min')) {
+                                $query->where('alis_tutari', '>=', request('alis_min'));
+                            }
+                            if(request('alis_max')) {
+                                $query->where('alis_tutari', '<=', request('alis_max'));
+                            }
                             
                             // Tarih aralığı filtreleri
-                            if(request('acilis_start')) {
-                                $query->whereDate('is_guncellenme_tarihi', '>=', request('acilis_start'));
+                            if(request('kar_min') || request('kar_max')) {
+                                $filtered = $query->get()->filter(function($is) {
+                                    $kar = ($is->teklif_tutari ?? 0) - ($is->alis_tutari ?? 0);
+                                    $minOk = !request('kar_min') || $kar >= request('kar_min');
+                                    $maxOk = !request('kar_max') || $kar <= request('kar_max');
+                                    return $minOk && $maxOk;
+                                });
+                                $isler = $filtered->sortByDesc('is_guncellenme_tarihi')->values();
+                            } else {
+                                if(request('acilis_start')) {
+                                    $query->whereDate('is_guncellenme_tarihi', '>=', request('acilis_start'));
+                                }
+                                if(request('acilis_end')) {
+                                    $query->whereDate('is_guncellenme_tarihi', '<=', request('acilis_end'));
+                                }
+                                if(request('kapanis_start')) {
+                                    $query->whereDate('kapanis_tarihi', '>=', request('kapanis_start'));
+                                }
+                                if(request('kapanis_end')) {
+                                    $query->whereDate('kapanis_tarihi', '<=', request('kapanis_end'));
+                                }
+                                if(request('lisans_start')) {
+                                    $query->whereDate('lisans_bitis', '>=', request('lisans_start'));
+                                }
+                                if(request('lisans_end')) {
+                                    $query->whereDate('lisans_bitis', '<=', request('lisans_end'));
+                                }
+                                if(request('updated_start')) {
+                                    $query->whereDate('updated_at', '>=', request('updated_start'));
+                                }
+                                if(request('updated_end')) {
+                                    $query->whereDate('updated_at', '<=', request('updated_end'));
+                                }
+                                
+                                // En son açılan işler üstte (açılış tarihine göre)
+                                $isler = $query->orderBy('is_guncellenme_tarihi', 'DESC')->get();
                             }
-                            if(request('acilis_end')) {
-                                $query->whereDate('is_guncellenme_tarihi', '<=', request('acilis_end'));
-                            }
-                            if(request('kapanis_start')) {
-                                $query->whereDate('kapanis_tarihi', '>=', request('kapanis_start'));
-                            }
-                            if(request('kapanis_end')) {
-                                $query->whereDate('kapanis_tarihi', '<=', request('kapanis_end'));
-                            }
-                            if(request('lisans_start')) {
-                                $query->whereDate('lisans_bitis', '>=', request('lisans_start'));
-                            }
-                            if(request('lisans_end')) {
-                                $query->whereDate('lisans_bitis', '<=', request('lisans_end'));
-                            }
-                            if(request('updated_start')) {
-                                $query->whereDate('updated_at', '>=', request('updated_start'));
-                            }
-                            if(request('updated_end')) {
-                                $query->whereDate('updated_at', '<=', request('updated_end'));
-                            }
-                            
-                            // En son açılan işler üstte (açılış tarihine göre)
-                            $isler = $query->orderBy('is_guncellenme_tarihi', 'DESC')->get();
                         @endphp
                         
                         @forelse($isler as $is)
