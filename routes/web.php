@@ -430,6 +430,38 @@ Route::delete('/markalar/{id}', function ($id) {
     return redirect('/markalar')->with('message', 'Marka silindi.');
 });
 
+// İş Tipleri, Türleri ve Öncelik Routes (AJAX inline creation için)
+Route::post('/is-tipleri', function () {
+    $validated = request()->validate(['name' => 'required|max:255|unique:is_tipleri']);
+    $tip = \App\Models\IsTipi::create($validated);
+    
+    if (request()->ajax() || request()->wantsJson()) {
+        return response()->json(['success' => true, 'data' => $tip]);
+    }
+    return back()->with('message', 'İş tipi eklendi.');
+});
+
+Route::post('/is-turleri', function () {
+    $validated = request()->validate(['name' => 'required|max:255|unique:is_turleri']);
+    $tur = \App\Models\IsTuru::create($validated);
+    
+    if (request()->ajax() || request()->wantsJson()) {
+        return response()->json(['success' => true, 'data' => $tur]);
+    }
+    return back()->with('message', 'İş türü eklendi.');
+});
+
+Route::post('/oncelikler', function () {
+    $validated = request()->validate(['name' => 'required|max:255|unique:oncelikler']);
+    $oncelik = \App\Models\Oncelik::create($validated);
+    
+    if (request()->ajax() || request()->wantsJson()) {
+        return response()->json(['success' => true, 'data' => $oncelik]);
+    }
+    return back()->with('message', 'Öncelik eklendi.');
+});
+});
+
 // Müşteriler (Firmalar) routes
 Route::get('/musteriler', fn () => view('musteriler.index'));
 Route::get('/raporlar', fn () => view('raporlar.index'));

@@ -1782,36 +1782,32 @@
             
             let options = '';
             if (field === 'tipi') {
-                options = `
-                    <option value="">Seçiniz</option>
-                    <option value="Verilecek" ${currentValue === 'Verilecek' ? 'selected' : ''}>Verilecek</option>
-                    <option value="Verildi" ${currentValue === 'Verildi' ? 'selected' : ''}>Verildi</option>
-                    <option value="Takip Edilecek" ${currentValue === 'Takip Edilecek' ? 'selected' : ''}>Takip Edilecek</option>
-                    <option value="Kazanıldı" ${currentValue === 'Kazanıldı' ? 'selected' : ''}>Kazanıldı</option>
-                    <option value="Kaybedildi" ${currentValue === 'Kaybedildi' ? 'selected' : ''}>Kaybedildi</option>
-                    <option value="Vazgeçildi" ${currentValue === 'Vazgeçildi' ? 'selected' : ''}>Vazgeçildi</option>
-                    <option value="Tamamlandı" ${currentValue === 'Tamamlandı' ? 'selected' : ''}>Tamamlandı</option>
-                    <option value="Askıda" ${currentValue === 'Askıda' ? 'selected' : ''}>Askıda</option>
-                    <option value="Register" ${currentValue === 'Register' ? 'selected' : ''}>Register</option>
-                `;
+                options = '<option value="">Seçiniz</option>';
+                @php
+                    $isTipleri = \App\Models\IsTipi::orderBy('name')->get();
+                @endphp
+                @foreach($isTipleri as $tip)
+                    options += `<option value="{{ $tip->name }}" ${currentValue === '{{ $tip->name }}' ? 'selected' : ''}>{{ $tip->name }}</option>`;
+                @endforeach
+                options += '<option value="__new__" style="color: green; font-weight: bold;">➕ Yeni Tip Ekle</option>';
             } else if (field === 'turu') {
-                options = `
-                    <option value="">Seçiniz</option>
-                    <option value="Cihaz" ${currentValue === 'Cihaz' ? 'selected' : ''}>Cihaz</option>
-                    <option value="Yazılım ve Lisans" ${currentValue === 'Yazılım ve Lisans' ? 'selected' : ''}>Yazılım ve Lisans</option>
-                    <option value="Cihaz ve Lisans" ${currentValue === 'Cihaz ve Lisans' ? 'selected' : ''}>Cihaz ve Lisans</option>
-                    <option value="Yenileme" ${currentValue === 'Yenileme' ? 'selected' : ''}>Yenileme</option>
-                    <option value="Destek" ${currentValue === 'Destek' ? 'selected' : ''}>Destek</option>
-                    <option value="Hizmet Alımı" ${currentValue === 'Hizmet Alımı' ? 'selected' : ''}>Hizmet Alımı</option>
-                `;
+                options = '<option value="">Seçiniz</option>';
+                @php
+                    $isTurleri = \App\Models\IsTuru::orderBy('name')->get();
+                @endphp
+                @foreach($isTurleri as $tur)
+                    options += `<option value="{{ $tur->name }}" ${currentValue === '{{ $tur->name }}' ? 'selected' : ''}>{{ $tur->name }}</option>`;
+                @endforeach
+                options += '<option value="__new__" style="color: green; font-weight: bold;">➕ Yeni Tür Ekle</option>';
             } else if (field === 'oncelik') {
-                options = `
-                    <option value="">Seçiniz</option>
-                    <option value="1" ${currentValue === '1' ? 'selected' : ''}>1 (Yüksek)</option>
-                    <option value="2" ${currentValue === '2' ? 'selected' : ''}>2</option>
-                    <option value="3" ${currentValue === '3' ? 'selected' : ''}>3</option>
-                    <option value="4" ${currentValue === '4' ? 'selected' : ''}>4 (Düşük)</option>
-                `;
+                options = '<option value="">Seçiniz</option>';
+                @php
+                    $oncelikler = \App\Models\Oncelik::orderBy('sira')->get();
+                @endphp
+                @foreach($oncelikler as $oncelik)
+                    options += `<option value="{{ $oncelik->name }}" ${currentValue === '{{ $oncelik->name }}' ? 'selected' : ''}>{{ $oncelik->name }}</option>`;
+                @endforeach
+                options += '<option value="__new__" style="color: green; font-weight: bold;">➕ Yeni Öncelik Ekle</option>';
             } else if (field === 'musteri_id') {
                 options = '<option value="">Seçiniz</option>';
                 @php
@@ -1891,6 +1887,81 @@
                             },
                             error: function() {
                                 alert('Müşteri eklenemedi!');
+                                select.val('');
+                                cell.html(originalContent);
+                                cell.removeClass('editing');
+                            }
+                        });
+                    } else if (field === 'tipi') {
+                        const tipi = prompt('Yeni iş tipini giriniz:');
+                        if (!tipi || tipi.trim() === '') {
+                            select.val('');
+                            return;
+                        }
+                        
+                        $.ajax({
+                            url: '/is-tipleri',
+                            method: 'POST',
+                            data: { name: tipi.trim() },
+                            success: function(response) {
+                                select.find('option[value="__new__"]').before(
+                                    `<option value="${response.data.name}" selected>${response.data.name}</option>`
+                                );
+                                select.val(response.data.name);
+                                saveSelect();
+                            },
+                            error: function() {
+                                alert('İş tipi eklenemedi!');
+                                select.val('');
+                                cell.html(originalContent);
+                                cell.removeClass('editing');
+                            }
+                        });
+                    } else if (field === 'turu') {
+                        const turu = prompt('Yeni iş türünü giriniz:');
+                        if (!turu || turu.trim() === '') {
+                            select.val('');
+                            return;
+                        }
+                        
+                        $.ajax({
+                            url: '/is-turleri',
+                            method: 'POST',
+                            data: { name: turu.trim() },
+                            success: function(response) {
+                                select.find('option[value="__new__"]').before(
+                                    `<option value="${response.data.name}" selected>${response.data.name}</option>`
+                                );
+                                select.val(response.data.name);
+                                saveSelect();
+                            },
+                            error: function() {
+                                alert('İş türü eklenemedi!');
+                                select.val('');
+                                cell.html(originalContent);
+                                cell.removeClass('editing');
+                            }
+                        });
+                    } else if (field === 'oncelik') {
+                        const oncelik = prompt('Yeni öncelik giriniz:');
+                        if (!oncelik || oncelik.trim() === '') {
+                            select.val('');
+                            return;
+                        }
+                        
+                        $.ajax({
+                            url: '/oncelikler',
+                            method: 'POST',
+                            data: { name: oncelik.trim() },
+                            success: function(response) {
+                                select.find('option[value="__new__"]').before(
+                                    `<option value="${response.data.name}" selected>${response.data.name}</option>`
+                                );
+                                select.val(response.data.name);
+                                saveSelect();
+                            },
+                            error: function() {
+                                alert('Öncelik eklenemedi!');
                                 select.val('');
                                 cell.html(originalContent);
                                 cell.removeClass('editing');
