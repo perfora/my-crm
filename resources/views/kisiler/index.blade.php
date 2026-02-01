@@ -21,6 +21,11 @@
         .select2-container--default .select2-selection--single .select2-selection__arrow {
             height: 40px;
         }
+        /* Inline editing Select2 max-height */
+        .select2-dropdown-inline-edit .select2-results {
+            max-height: 250px;
+            overflow-y: auto;
+        }
         .scroll-sync {
             overflow-x: auto;
         }
@@ -624,7 +629,7 @@
             });
         });
         
-        // Firma select field
+        // Firma select field with Select2
         $(document).on('click', '.editable-select:not(.editing)', function() {
             const cell = $(this);
             const field = cell.data('field');
@@ -639,13 +644,25 @@
                 options += `<option value="{{ $m->id }}" ${currentValue == "{{ $m->id }}" ? 'selected' : ''}>{{ $m->sirket }}</option>`;
             @endforeach
             
-            cell.html(`<select class="w-full px-2 py-1 border rounded">${options}</select>`);
+            cell.html(`<select class="inline-edit-select w-full px-2 py-1 border rounded">${options}</select>`);
             const select = cell.find('select');
-            select.focus();
+            
+            // Initialize Select2
+            select.select2({
+                dropdownParent: $('body'),
+                width: '100%',
+                minimumResultsForSearch: 0,
+                dropdownCssClass: 'select2-dropdown-inline-edit'
+            });
+            
+            select.select2('open');
             
             function saveSelect() {
                 const newValue = select.val();
                 const newText = select.find('option:selected').text();
+                
+                // Destroy Select2
+                select.select2('destroy');
                 
                 $.ajax({
                     url: '/kisiler/' + id,
@@ -674,16 +691,14 @@
                 });
             }
             
-            select.on('change', saveSelect);
-            select.on('blur', function() {
-                cell.html(originalContent);
-                cell.removeClass('editing');
-            });
-            select.on('keydown', function(e) {
-                if (e.which === 27) {
+            select.on('select2:select', saveSelect);
+            select.on('select2:close', function() {
+                if (cell.hasClass('editing')) {
+                    select.select2('destroy');
                     cell.html(originalContent);
                     cell.removeClass('editing');
                 }
+            });
             });
         });
     </script>

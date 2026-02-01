@@ -599,6 +599,21 @@ Route::get('/kisiler/{id}/edit', function ($id) {
 Route::put('/kisiler/{id}', function ($id) {
     $kisi = \App\Models\Kisi::findOrFail($id);
     
+    // AJAX inline editing için
+    if (request()->ajax() && request()->has(request()->keys()[1])) {
+        $field = request()->keys()[1]; // _token sonraki field
+        $value = request()->input($field);
+        
+        $kisi->update([$field => $value]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Güncellendi',
+            'data' => $kisi
+        ]);
+    }
+    
+    // Normal form submit için
     $validated = request()->validate([
         'ad_soyad' => 'required|max:255',
         'telefon_numarasi' => 'nullable|string',
