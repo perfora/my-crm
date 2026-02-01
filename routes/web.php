@@ -55,6 +55,9 @@ Route::middleware(['auth'])->group(function () {
     
     // Ana sayfa
     Route::get('/', fn () => view('dashboard'))->name('home');
+    
+    // Dashboard - Özelleştirilebilir widget sistemi
+    Route::get('/dashboard', fn () => view('pages.dashboard'))->name('dashboard.index');
 
 // API: Filter Widget Data
 Route::post('/api/filter-widget-data', function(Request $request) {
