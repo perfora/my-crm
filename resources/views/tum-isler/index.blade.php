@@ -831,7 +831,7 @@
                                 data-alis_tutari="{{ $is->alis_tutari ?? 0 }}" 
                                 data-kar_tutari="{{ $is->kar_tutari ?? 0 }}" 
                                 data-is_guncellenme_tarihi="{{ $is->is_guncellenme_tarihi }}">
-                                <td class="px-3 py-3 whitespace-nowrap">
+                                <td class="px-3 py-3 whitespace-nowrap editable-cell" data-field="name" data-id="{{ $is->id }}" data-value="{{ $is->name }}">
                                     <div class="flex items-center gap-2">
                                         <span>{{ $is->name }}</span>
                                         @if($is->notion_id)
@@ -866,7 +866,7 @@
                                         {{ $is->tipi ?? '-' }}
                                     </span>
                                 </td>
-                                <td class="px-3 py-3 whitespace-nowrap editable-cell" data-field="durum" data-id="{{ $is->id }}" data-value="{{ $is->durum }}">
+                                <td class="px-3 py-3 whitespace-nowrap">
                                     @if($is->durum)
                                         {{ $is->durum }}
                                     @else
@@ -1574,7 +1574,7 @@
             }
         });
 
-        // Inline editing - Text fields (Durum)
+        // Inline editing - Text fields (Durum, Name)
         $(document).on('click', '.editable-cell:not(.editing)', function(e) {
             e.stopPropagation();
             const cell = $(this);
@@ -1602,7 +1602,19 @@
                     },
                     success: function(response) {
                         cell.data('value', newValue);
-                        cell.html(newValue || '-');
+                        
+                        // Special handling for name field with Notion badge
+                        if (field === 'name' && response.data.notion_id) {
+                            const notionBadge = `<a href="${response.data.notion_url}" target="_blank" 
+                                               class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition"
+                                               title="Notion'da aç">
+                                                🔗 Notion
+                                            </a>`;
+                            cell.html(`<div class="flex items-center gap-2"><span>${newValue}</span>${notionBadge}</div>`);
+                        } else {
+                            cell.html(newValue || '-');
+                        }
+                        
                         cell.removeClass('editing');
                     },
                     error: function() {
@@ -1628,11 +1640,14 @@
         });
 
         // Inline editing - Select fields (Tipi, Turu, Oncelik)
-        $(document).on('click', '.editable-select:not(.editing)', function() {
+        $(document).on('click', '.editable-select:not(.editing)', function(e) {
+            e.stopPropagation();
             const cell = $(this);
             const field = cell.data('field');
             const id = cell.data('id');
             const currentValue = cell.data('value') || '';
+            
+            console.log('Editable select clicked:', field, id, currentValue);
             
             cell.addClass('editing');
             const originalContent = cell.html();
