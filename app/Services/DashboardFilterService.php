@@ -150,4 +150,23 @@ class DashboardFilterService
             default => 'Bilinmeyen filtre',
         };
     }
+
+    /**
+     * Bir alan'ın benzersiz değerlerini getir
+     */
+    public function getDistinctValues(Builder $query, string $field): array
+    {
+        try {
+            $values = $query->whereNotNull($field)
+                ->distinct()
+                ->pluck($field)
+                ->filter(fn($val) => !empty($val))
+                ->take(50)
+                ->toArray();
+            
+            return array_map(fn($val) => (string)$val, $values);
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
 }

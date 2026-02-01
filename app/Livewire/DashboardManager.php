@@ -173,6 +173,17 @@ class DashboardManager extends Component
         );
     }
 
+    public function getFieldValues(string $dataSource, string $field): array
+    {
+        try {
+            $query = $this->getDataService()->getBaseQuery($dataSource);
+            $filterService = app(\App\Services\DashboardFilterService::class);
+            return $filterService->getDistinctValues($query, $field);
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
     public function render()
     {
         return view('livewire.dashboard-manager');

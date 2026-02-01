@@ -135,15 +135,34 @@
                                                     placeholder="{{ $param['placeholder'] ?? 'Örnek: is_adi, kar' }}"
                                                 >
                                             @elseif($param['type'] === 'select')
-                                                <select 
-                                                    wire:model="selectedFilters.{{ $index }}.{{ $paramKey }}"
-                                                    class="w-full p-2 border border-orange-300 rounded text-sm bg-white">
-                                                    <option value="">-- Seçin --</option>
-                                                    @foreach($param['options'] ?? [] as $optKey => $optLabel)
-                                                        <option value="{{ $optKey }}">{{ $optLabel }}</option>
-                                                    @endforeach
-                                                </select>
-                                            @endif
+                                                @if($paramKey === 'field')
+                                                    <!-- Alan seçimi -->
+                                                    <select 
+                                                        wire:model.live="selectedFilters.{{ $index }}.{{ $paramKey }}"
+                                                        class="w-full p-2 border border-orange-300 rounded text-sm bg-white">
+                                                        <option value="">-- Seçin --</option>
+                                                        @foreach($param['options'] ?? [] as $optKey => $optLabel)
+                                                            <option value="{{ $optKey }}">{{ $optLabel }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                @else
+                                                    <!-- Değer seçimi - dinamik olarak alandan getir -->
+                                                    @php
+                                                        $selectedField = $selectedFilters[$index]['field'] ?? null;
+                                                        $fieldValues = $selectedField ? $this->getFieldValues($selectedDataSource, $selectedField) : [];
+                                                    @endphp
+                                                    <select 
+                                                        wire:model="selectedFilters.{{ $index }}.{{ $paramKey }}"
+                                                        class="w-full p-2 border border-orange-300 rounded text-sm bg-white">
+                                                        <option value="">-- Seçin --</option>
+                                                        @forelse($fieldValues as $val)
+                                                            <option value="{{ $val }}">{{ $val }}</option>
+                                                        @empty
+                                                            <option value="" disabled>Değer yok</option>
+                                                        @endforelse
+                                                    </select>
+                                                @endif
+                                            
                                         </div>
                                     @endforeach
                                 </div>
