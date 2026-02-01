@@ -727,7 +727,14 @@
                 });
             }
             
+            // Handle both select from list and new tag creation
             select.on('select2:select', saveSelect);
+            select.on('change', function() {
+                // This fires when a new tag is created with Enter
+                if (select.val() && cell.hasClass('editing')) {
+                    saveSelect();
+                }
+            });
             select.on('select2:close', function() {
                 if (cell.hasClass('editing')) {
                     select.select2('destroy');
