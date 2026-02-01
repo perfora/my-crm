@@ -103,7 +103,7 @@ class DashboardFilterService
 
         // Müşteri için özel işlem - ismi ID'ye çevir
         if ($field === 'musteri_id') {
-            $customer = \App\Models\Musteri::where('adi', $value)->first();
+            $customer = \App\Models\Musteri::where('sirket', $value)->first();
             if ($customer) {
                 return $query->where('musteri_id', $customer->id);
             }
@@ -169,7 +169,7 @@ class DashboardFilterService
                     ->toArray();
                 
                 $customers = \App\Models\Musteri::whereIn('id', $customerIds)
-                    ->pluck('adi', 'id')
+                    ->pluck('sirket', 'id')
                     ->toArray();
                 
                 return array_values($customers);
