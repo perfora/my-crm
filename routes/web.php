@@ -460,7 +460,6 @@ Route::post('/oncelikler', function () {
     }
     return back()->with('message', 'Öncelik eklendi.');
 });
-});
 
 // Müşteriler (Firmalar) routes
 Route::get('/musteriler', fn () => view('musteriler.index'));
