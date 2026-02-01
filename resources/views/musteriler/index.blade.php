@@ -193,6 +193,7 @@
                 <table id="musteriler-table" class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlemler</th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="sirket">Şirket <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="sehir">Şehir <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="telefon">Telefon <span class="sort-icon"></span></th>
@@ -203,7 +204,6 @@
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="ziyaret_adeti">Ziyaret Adeti <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="toplam_teklif">Toplam Teklif <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="kazanildi_toplami">Kazanıldı <span class="sort-icon"></span></th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlemler</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -222,6 +222,18 @@
                                 data-ziyaret_adeti="{{ $musteri->ziyaret_adeti }}" 
                                 data-toplam_teklif="{{ $musteri->toplam_teklif }}" 
                                 data-kazanildi_toplami="{{ $musteri->kazanildi_toplami }}">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <a href="/musteriler/{{ $musteri->id }}/edit" class="text-blue-600 hover:text-blue-800 mr-3">
+                                        ✏️ Düzenle
+                                    </a>
+                                    <form action="/musteriler/{{ $musteri->id }}" method="POST" class="inline" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-800">
+                                            🗑️ Sil
+                                        </button>
+                                    </form>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap font-medium">
                                     <a href="/musteriler/{{ $musteri->id }}" class="text-blue-600 hover:text-blue-800 hover:underline">
                                         {{ $musteri->sirket }}
@@ -279,22 +291,10 @@
                                 <td class="px-6 py-4 whitespace-nowrap font-semibold text-green-600">
                                     ${{ number_format($musteri->kazanildi_toplami, 2) }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    <a href="/musteriler/{{ $musteri->id }}/edit" class="text-blue-600 hover:text-blue-800 mr-3">
-                                        ✏️ Düzenle
-                                    </a>
-                                    <form action="/musteriler/{{ $musteri->id }}" method="POST" class="inline" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-800">
-                                            🗑️ Sil
-                                        </button>
-                                    </form>
-                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="12" class="px-6 py-4 text-center text-gray-500">
+                                <td colspan="11" class="px-6 py-4 text-center text-gray-500">
                                     Henüz müşteri kaydı yok.
                                 </td>
                             </tr>
