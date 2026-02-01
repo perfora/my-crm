@@ -1575,11 +1575,14 @@
         });
 
         // Inline editing - Text fields (Durum)
-        $(document).on('click', '.editable-cell:not(.editing)', function() {
+        $(document).on('click', '.editable-cell:not(.editing)', function(e) {
+            e.stopPropagation();
             const cell = $(this);
             const field = cell.data('field');
             const id = cell.data('id');
             const currentValue = cell.data('value') || '';
+            
+            console.log('Editable cell clicked:', field, id, currentValue);
             
             cell.addClass('editing');
             const originalContent = cell.html();
