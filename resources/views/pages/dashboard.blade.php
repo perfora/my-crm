@@ -20,7 +20,7 @@
         // Özet Veriler
         $toplamMusteri = \App\Models\Musteri::count();
         $toplamKisiler = \App\Models\Kisi::count();
-        $toplamZiyaretler = \App\Models\Ziyaret::whereYear('tarih', 2026)->count();
+        $toplamZiyaretler = \App\Models\Ziyaret::whereYear('ziyaret_tarihi', 2026)->count();
         $toplamIsler = \App\Models\TumIsler::whereYear('created_at', 2026)->count();
         
         // 2025 Kazanılan İşler
@@ -70,7 +70,7 @@
             ->get();
             
         $yaklasanZiyaretler = \App\Models\Ziyaret::whereIn('durumu', ['Beklemede', 'Planlandı'])
-            ->orderBy('tarih', 'asc')
+            ->orderBy('ziyaret_tarihi', 'asc')
             ->limit(10)
             ->get();
     @endphp
@@ -329,13 +329,13 @@
                             @forelse($yaklasanZiyaretler as $ziyaret)
                             <tr class="border-b hover:bg-gray-50">
                                 <td class="px-4 py-3">{{ $ziyaret->musteri->sirket ?? '-' }}</td>
-                                <td class="px-4 py-3">{{ $ziyaret->tarih ? \Carbon\Carbon::parse($ziyaret->tarih)->format('d.m.Y') : '-' }}</td>
+                                <td class="px-4 py-3">{{ $ziyaret->ziyaret_tarihi ? \Carbon\Carbon::parse($ziyaret->ziyaret_tarihi)->format('d.m.Y') : '-' }}</td>
                                 <td class="px-4 py-3">
                                     <span class="px-2 py-1 rounded text-xs font-semibold {{ $ziyaret->durumu == 'Beklemede' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800' }}">
                                         {{ $ziyaret->durumu }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-3 text-gray-600">{{ Str::limit($ziyaret->notlar ?? '-', 40) }}</td>
+                                <td class="px-4 py-3 text-gray-600">{{ Str::limit($ziyaret->ziyaret_notlari ?? '-', 40) }}</td>
                             </tr>
                             @empty
                             <tr>
