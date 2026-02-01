@@ -145,7 +145,7 @@ class DashboardManager extends Component
     public function toggleColumn($columnKey)
     {
         if (in_array($columnKey, $this->selectedColumns ?? [])) {
-            $this->selectedColumns = array_filter($this->selectedColumns, fn($c) => $c !== $columnKey);
+            $this->selectedColumns = array_values(array_filter($this->selectedColumns, fn($c) => $c !== $columnKey));
         } else {
             $this->selectedColumns[] = $columnKey;
         }
