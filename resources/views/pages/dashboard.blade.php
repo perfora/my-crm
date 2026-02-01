@@ -55,8 +55,7 @@
         
         // Widget Verileri
         $bekleyenIsler = \App\Models\TumIsler::where('oncelik', '1')
-            ->where('turu', 'Yenileme')
-            ->whereNotIn('tipi', ['Kazanıldı', 'Kaybedildi'])
+            ->where('tipi', 'Verilecek')
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
