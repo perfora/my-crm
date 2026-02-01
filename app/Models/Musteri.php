@@ -57,7 +57,8 @@ class Musteri extends Model
     public function getZiyaretGunAttribute()
     {
         if ($this->en_son_ziyaret) {
-            return (int) now()->diffInDays($this->en_son_ziyaret);
+            // Bugünden son ziyaret tarihini çıkar (pozitif = geçmiş, negatif = gelecek)
+            return (int) \Carbon\Carbon::parse($this->en_son_ziyaret)->diffInDays(now(), false);
         }
         return null;
     }
