@@ -683,8 +683,18 @@
             select.select2(select2Config);
             select.select2('open');
             
+            let isSaving = false;
+            
             function saveSelect() {
+                if (isSaving) return;
+                isSaving = true;
+                
                 const newValue = select.val();
+                
+                if (!newValue) {
+                    isSaving = false;
+                    return;
+                }
                 
                 // Destroy Select2
                 select.select2('destroy');
@@ -723,20 +733,17 @@
                         alert('Kaydedilemedi!');
                         cell.html(originalContent);
                         cell.removeClass('editing');
+                        isSaving = false;
                     }
                 });
             }
             
             // Handle both select from list and new tag creation
-            select.on('select2:select', saveSelect);
-            select.on('change', function() {
-                // This fires when a new tag is created with Enter
-                if (select.val() && cell.hasClass('editing')) {
-                    saveSelect();
-                }
+            select.on('select2:select', function() {
+                setTimeout(saveSelect, 100);
             });
             select.on('select2:close', function() {
-                if (cell.hasClass('editing')) {
+                if (cell.hasClass('editing') && !isSaving) {
                     select.select2('destroy');
                     cell.html(originalContent);
                     cell.removeClass('editing');
