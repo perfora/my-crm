@@ -617,6 +617,10 @@ Route::delete('/kisiler/{id}', function ($id) {
     $kisi = \App\Models\Kisi::findOrFail($id);
     $kisi->delete();
     
+    if (request()->ajax()) {
+        return response()->json(['success' => true, 'message' => 'Kişi silindi.']);
+    }
+    
     return redirect('/kisiler')->with('message', 'Kişi silindi.');
 });
 Route::post('/kisiler', function () {

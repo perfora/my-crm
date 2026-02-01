@@ -31,6 +31,16 @@
         .sortable:hover {
             background-color: #f3f4f6;
         }
+        .editable-cell, .editable-select {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .editable-cell:hover, .editable-select:hover {
+            background-color: #fef3c7 !important;
+        }
+        .editing {
+            padding: 0 !important;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -165,6 +175,58 @@
 
         <!-- Liste -->
         <div class="bg-white rounded-lg shadow overflow-hidden">
+            <!-- Toolbar -->
+            <div class="px-6 py-4 border-b">
+                <div class="flex items-center justify-between">
+                    <!-- Sol: Aksiyon Butonları -->
+                    <div class="flex items-center gap-3">
+                        <button onclick="addNewRow()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2 transition">
+                            ➕ Ekle
+                        </button>
+                        <button onclick="duplicateSelected()" id="btn-duplicate" disabled class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            📋 Kopyala
+                        </button>
+                        <button onclick="deleteSelected()" id="btn-delete" disabled class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            🗑️ Sil
+                        </button>
+                        <span id="selection-count" class="text-sm text-gray-600"></span>
+                    </div>
+                    
+                    <!-- Sağ: Sütun Seçici -->
+                    <div class="relative inline-block">
+                        <button id="column-toggle-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded flex items-center gap-2">
+                            <span>📊 Sütunlar</span>
+                            <span id="column-arrow">▼</span>
+                        </button>
+                        <div id="column-menu" class="hidden absolute right-0 mt-2 w-56 bg-white border rounded-lg shadow-lg z-50 p-3 max-h-96 overflow-y-auto">
+                            <div class="space-y-2">
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="ad_soyad" checked> Ad Soyad
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="firma" checked> Firma
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="telefon" checked> Telefon
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="email"> Email
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="bolum" checked> Bölüm
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="gorev"> Görev
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="url"> URL
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Üst scroll bar -->
             <div id="scroll-top" class="scroll-sync" style="overflow-x: auto; height: 20px;">
                 <div id="scroll-content-top" style="height: 1px;"></div>
@@ -174,12 +236,16 @@
                 <table id="kisiler-table" class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th class="px-3 py-3 text-center">
+                                <input type="checkbox" id="select-all" class="cursor-pointer">
+                            </th>
                             <th class="sortable px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-32" data-column="ad_soyad">Ad Soyad <span class="sort-icon"></span></th>
                             <th class="sortable px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-40" data-column="firma">Firma <span class="sort-icon"></span></th>
                             <th class="sortable px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-32" data-column="telefon_numarasi">Telefon <span class="sort-icon"></span></th>
+                            <th class="sortable px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-32" data-column="email_adresi">Email <span class="sort-icon"></span></th>
                             <th class="sortable px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-24" data-column="bolum">Bölüm <span class="sort-icon"></span></th>
+                            <th class="sortable px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-24" data-column="gorev">Görev <span class="sort-icon"></span></th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-20">URL</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-24">İşlemler</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -206,10 +272,15 @@
                         @forelse($kisiler as $kisi)
                             <tr data-ad_soyad="{{ $kisi->ad_soyad }}" 
                                 data-firma_id="{{ $kisi->musteri_id ?? '' }}"
+                                data-telefon_numarasi="{{ $kisi->telefon_numarasi ?? '' }}"
+                                data-email_adresi="{{ $kisi->email_adresi ?? '' }}"
                                 data-bolum="{{ $kisi->bolum ?? '' }}" 
                                 data-gorev="{{ $kisi->gorev ?? '' }}">
-                                <td class="px-4 py-4 whitespace-nowrap font-medium text-sm">{{ $kisi->ad_soyad }}</td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm">
+                                <td class="px-3 py-4 whitespace-nowrap text-center">
+                                    <input type="checkbox" class="row-checkbox cursor-pointer" data-id="{{ $kisi->id }}">
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap font-medium text-sm editable-cell" data-field="ad_soyad" data-id="{{ $kisi->id }}" data-value="{{ $kisi->ad_soyad }}">{{ $kisi->ad_soyad }}</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm editable-select" data-field="musteri_id" data-id="{{ $kisi->id }}" data-value="{{ $kisi->musteri_id ?? '' }}">
                                     @if($kisi->musteri)
                                         <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
                                             {{ $kisi->musteri->sirket }}
@@ -218,9 +289,11 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm">{{ $kisi->telefon_numarasi ?? '-' }}</td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm">{{ $kisi->bolum ?? '-' }}</td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm">
+                                <td class="px-4 py-4 whitespace-nowrap text-sm editable-cell" data-field="telefon_numarasi" data-id="{{ $kisi->id }}" data-value="{{ $kisi->telefon_numarasi }}">{{ $kisi->telefon_numarasi ?? '-' }}</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm editable-cell" data-field="email_adresi" data-id="{{ $kisi->id }}" data-value="{{ $kisi->email_adresi }}">{{ $kisi->email_adresi ?? '-' }}</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm editable-cell" data-field="bolum" data-id="{{ $kisi->id }}" data-value="{{ $kisi->bolum }}">{{ $kisi->bolum ?? '-' }}</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm editable-cell" data-field="gorev" data-id="{{ $kisi->id }}" data-value="{{ $kisi->gorev }}">{{ $kisi->gorev ?? '-' }}</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm editable-cell" data-field="url" data-id="{{ $kisi->id }}" data-value="{{ $kisi->url }}">
                                     @if($kisi->url)
                                         <a href="{{ $kisi->url }}" target="_blank" class="text-blue-600 hover:underline">
                                             🔗 Link
@@ -229,22 +302,10 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm">
-                                    <a href="/kisiler/{{ $kisi->id }}/edit" class="text-blue-600 hover:text-blue-800 mr-3">
-                                        ✏️ Düzenle
-                                    </a>
-                                    <form action="/kisiler/{{ $kisi->id }}" method="POST" class="inline" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-800">
-                                            🗑️ Sil
-                                        </button>
-                                    </form>
-                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                <td colspan="8" class="px-6 py-4 text-center text-gray-500">
                                     Henüz kişi kaydı yok.
                                 </td>
                             </tr>
@@ -395,6 +456,234 @@
             // Sayfa yüklendiğinde scroll genişliğini tekrar ayarla
             window.addEventListener('load', function() {
                 document.getElementById('scroll-content-top').style.width = table.offsetWidth + 'px';
+            });
+        });
+
+        // ==================== TOOLBAR İŞLEVLERİ ====================
+        
+        // Checkbox selection management
+        let selectedIds = [];
+        
+        $('#select-all').on('change', function() {
+            const isChecked = $(this).is(':checked');
+            $('.row-checkbox').prop('checked', isChecked);
+            updateSelection();
+        });
+        
+        $(document).on('change', '.row-checkbox', function() {
+            updateSelection();
+        });
+        
+        function updateSelection() {
+            selectedIds = $('.row-checkbox:checked').map(function() {
+                return $(this).data('id');
+            }).get();
+            
+            $('#btn-duplicate, #btn-delete').prop('disabled', selectedIds.length === 0);
+            
+            if (selectedIds.length > 0) {
+                $('#selection-count').text(selectedIds.length + ' kayıt seçili');
+            } else {
+                $('#selection-count').text('');
+                $('#select-all').prop('checked', false);
+            }
+        }
+        
+        // Bulk delete
+        window.deleteSelected = function() {
+            if (selectedIds.length === 0) return;
+            
+            if (!confirm(selectedIds.length + ' kayıt silinecek. Emin misiniz?')) return;
+            
+            let deleteCount = 0;
+            selectedIds.forEach(id => {
+                $.ajax({
+                    url: '/kisiler/' + id,
+                    method: 'DELETE',
+                    data: { _token: '{{ csrf_token() }}' },
+                    success: function() {
+                        deleteCount++;
+                        if (deleteCount === selectedIds.length) {
+                            location.reload();
+                        }
+                    }
+                });
+            });
+        };
+        
+        // Duplicate selected
+        window.duplicateSelected = function() {
+            if (selectedIds.length === 0) return;
+            window.location.href = '/kisiler/' + selectedIds[0] + '/edit?duplicate=1';
+        };
+        
+        // Add new row
+        window.addNewRow = function() {
+            const form = document.getElementById('kisi-ekle-form');
+            if (form.style.display === 'none') {
+                toggleForm();
+            }
+            setTimeout(() => {
+                document.querySelector('#kisi-ekle-form input[name="ad_soyad"]').focus();
+            }, 100);
+        };
+        
+        // ==================== SÜTUN GÖRÜNÜRLÜKcontrôlÜ ====================
+        
+        $('#column-toggle-btn').on('click', function(e) {
+            e.stopPropagation();
+            $('#column-menu').toggleClass('hidden');
+            $('#column-arrow').text($('#column-menu').hasClass('hidden') ? '▼' : '▲');
+        });
+        
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('#column-toggle-btn, #column-menu').length) {
+                $('#column-menu').addClass('hidden');
+                $('#column-arrow').text('▼');
+            }
+        });
+        
+        $('.column-toggle').on('change', function() {
+            const column = $(this).data('column');
+            const isVisible = $(this).is(':checked');
+            const columnIndex = getColumnIndex(column);
+            
+            if (columnIndex !== -1) {
+                $(`#kisiler-table thead tr th:eq(${columnIndex})`).toggle(isVisible);
+                $(`#kisiler-table tbody tr`).each(function() {
+                    $(this).find(`td:eq(${columnIndex})`).toggle(isVisible);
+                });
+            }
+            
+            setTimeout(() => {
+                document.getElementById('scroll-content-top').style.width = document.getElementById('kisiler-table').offsetWidth + 'px';
+            }, 100);
+        });
+        
+        function getColumnIndex(columnName) {
+            const columns = ['checkbox', 'ad_soyad', 'firma', 'telefon', 'email', 'bolum', 'gorev', 'url'];
+            return columns.indexOf(columnName);
+        }
+        
+        // ==================== INLINE EDITING ====================
+        
+        // Text fields
+        $(document).on('click', '.editable-cell:not(.editing)', function() {
+            const cell = $(this);
+            const field = cell.data('field');
+            const id = cell.data('id');
+            const currentValue = cell.data('value') || '';
+            
+            cell.addClass('editing');
+            const originalContent = cell.html();
+            
+            cell.html(`<input type="text" class="w-full px-2 py-1 border rounded" value="${currentValue}" />`);
+            const input = cell.find('input');
+            input.focus();
+            
+            function saveEdit() {
+                const newValue = input.val();
+                
+                $.ajax({
+                    url: '/kisiler/' + id,
+                    method: 'PUT',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        [field]: newValue
+                    },
+                    success: function(response) {
+                        cell.data('value', newValue);
+                        
+                        // For URL field, rebuild the link
+                        if (field === 'url' && newValue) {
+                            cell.html(`<a href="${newValue}" target="_blank" class="text-blue-600 hover:underline">🔗 Link</a>`);
+                        } else {
+                            cell.html(newValue || '-');
+                        }
+                        
+                        cell.removeClass('editing');
+                        cell.closest('tr').attr('data-' + field, newValue);
+                    },
+                    error: function() {
+                        alert('Kaydedilemedi!');
+                        cell.html(originalContent);
+                        cell.removeClass('editing');
+                    }
+                });
+            }
+            
+            input.on('blur', saveEdit);
+            input.on('keypress', function(e) {
+                if (e.which === 13) saveEdit();
+            });
+            input.on('keydown', function(e) {
+                if (e.which === 27) {
+                    cell.html(originalContent);
+                    cell.removeClass('editing');
+                }
+            });
+        });
+        
+        // Firma select field
+        $(document).on('click', '.editable-select:not(.editing)', function() {
+            const cell = $(this);
+            const field = cell.data('field');
+            const id = cell.data('id');
+            const currentValue = cell.data('value') || '';
+            
+            cell.addClass('editing');
+            const originalContent = cell.html();
+            
+            let options = '<option value="">Seçiniz</option>';
+            @foreach(\App\Models\Musteri::orderBy('sirket')->get() as $m)
+                options += `<option value="{{ $m->id }}" ${currentValue == "{{ $m->id }}" ? 'selected' : ''}>{{ $m->sirket }}</option>`;
+            @endforeach
+            
+            cell.html(`<select class="w-full px-2 py-1 border rounded">${options}</select>`);
+            const select = cell.find('select');
+            select.focus();
+            
+            function saveSelect() {
+                const newValue = select.val();
+                const newText = select.find('option:selected').text();
+                
+                $.ajax({
+                    url: '/kisiler/' + id,
+                    method: 'PUT',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        [field]: newValue
+                    },
+                    success: function(response) {
+                        cell.data('value', newValue);
+                        
+                        if (newValue) {
+                            cell.html(`<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${newText}</span>`);
+                        } else {
+                            cell.html('-');
+                        }
+                        
+                        cell.removeClass('editing');
+                        cell.closest('tr').attr('data-' + field, newValue);
+                    },
+                    error: function() {
+                        alert('Kaydedilemedi!');
+                        cell.html(originalContent);
+                        cell.removeClass('editing');
+                    }
+                });
+            }
+            
+            select.on('change', saveSelect);
+            select.on('blur', function() {
+                cell.html(originalContent);
+                cell.removeClass('editing');
+            });
+            select.on('keydown', function(e) {
+                if (e.which === 27) {
+                    cell.html(originalContent);
+                    cell.removeClass('editing');
+                }
             });
         });
     </script>
