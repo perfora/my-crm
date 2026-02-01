@@ -127,7 +127,7 @@
             <div class="bg-white rounded-lg shadow-lg p-6">
                 <h2 class="text-xl font-bold text-gray-800 mb-4">📅 2026 Kazanılan İşler</h2>
                 <div class="space-y-3">
-                    @forelse($kazanilan2${{ number_format($is->teklif_tutari, 0, ',', '.') }}
+                    @forelse($kazanilan2026 as $is)
                         <div class="border-l-4 border-blue-500 pl-3 py-2">
                             <div class="font-semibold text-gray-800">{{ $is->name }}</div>
                             <div class="text-sm text-gray-600">
@@ -139,7 +139,7 @@
                                 </span>
                                 @if($is->teklif_tutari)
                                     <span class="text-sm font-bold text-blue-600">
-                                        {{ number_format($is->teklif_tutari, 0, ',', '.') }} ₺
+                                        ${{ number_format($is->teklif_tutari, 0, ',', '.') }}
                                     </span>
                                 @endif
                             </div>
