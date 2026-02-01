@@ -1,21 +1,21 @@
 <x-layouts::app.sidebar>
 @php
     // Üst özetler - 2025 ve 2026 verileri
-    $isler2025 = \App\Models\TumIsler::whereYear('is_guncellenme_tarihi', 2025)
-        ->where('tipi', 'Kazanıldı')
+    $isler2025 = \App\Models\TumIsler::where('tipi', 'Kazanıldı')
+        ->whereYear('kapanis_tarihi', 2025)
         ->get();
+    $adet2025 = $isler2025->count();
     $toplamTeklif2025 = $isler2025->sum('teklif_tutari');
     $toplamAlış2025 = $isler2025->sum('alis_tutari');
     $kar2025 = $toplamTeklif2025 - $toplamAlış2025;
-    $karOrani2025 = $toplamTeklif2025 > 0 ? ($kar2025 / $toplamTeklif2025 * 100) : 0;
     
-    $isler2026 = \App\Models\TumIsler::whereYear('is_guncellenme_tarihi', 2026)
-        ->where('tipi', 'Kazanıldı')
+    $isler2026 = \App\Models\TumIsler::where('tipi', 'Kazanıldı')
+        ->whereYear('kapanis_tarihi', 2026)
         ->get();
+    $adet2026 = $isler2026->count();
     $toplamTeklif2026 = $isler2026->sum('teklif_tutari');
     $toplamAlış2026 = $isler2026->sum('alis_tutari');
     $kar2026 = $toplamTeklif2026 - $toplamAlış2026;
-    $karOrani2026 = $toplamTeklif2026 > 0 ? ($kar2026 / $toplamTeklif2026 * 100) : 0;
     
     // Toplam müşteri ve işler
     $toplamMusteri = \App\Models\Musteri::count();
@@ -40,25 +40,18 @@
 
         <!-- 2025 Karlılık -->
         <div class="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
-            <p class="text-gray-600 text-sm font-semibold uppercase">2025 Kar</p>
-            <p class="text-2xl font-bold text-purple-600">{{ number_format($kar2025, 0, ',', '.') }} ₺</p>
-            <p class="text-xs text-gray-500 mt-1">%{{ number_format($karOrani2025, 1, ',', '.') }} mar.</p>
+            <p class="text-gray-600 text-sm font-semibold uppercase">2025 Kazanılan</p>
+            <p class="text-3xl font-bold text-purple-600">{{ $adet2025 }}</p>
+            <p class="text-sm text-gray-700 mt-2">Teklif: ${{ number_format($toplamTeklif2025, 2, ',', '.') }}</p>
+            <p class="text-sm text-gray-700">Kar: ${{ number_format($kar2025, 2, ',', '.') }}</p>
         </div>
 
         <!-- 2026 Karlılık -->
         <div class="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
-            <p class="text-gray-600 text-sm font-semibold uppercase">2026 Kar</p>
-            <p class="text-2xl font-bold text-orange-600">{{ number_format($kar2026, 0, ',', '.') }} ₺</p>
-            <p class="text-xs text-gray-500 mt-1">%{{ number_format($karOrani2026, 1, ',', '.') }} mar.</p>
-        </div>
-
-        <!-- Yıllık Karşılaştırma -->
-        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
-            <p class="text-gray-600 text-sm font-semibold uppercase">Kar Farkı</p>
-            @php $karFarki = $kar2026 - $kar2025; @endphp
-            <p class="text-2xl font-bold {{ $karFarki >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                {{ $karFarki >= 0 ? '+' : '' }}{{ number_format($karFarki, 0, ',', '.') }} ₺
-            </p>
+            <p class="text-gray-600 text-sm font-semibold uppercase">2026 Kazanılan</p>
+            <p class="text-3xl font-bold text-orange-600">{{ $adet2026 }}</p>
+            <p class="text-sm text-gray-700 mt-2">Teklif: ${{ number_format($toplamTeklif2026, 2, ',', '.') }}</p>
+            <p class="text-sm text-gray-700">Kar: ${{ number_format($kar2026, 2, ',', '.') }}</p>
         </div>
     </div>
 
