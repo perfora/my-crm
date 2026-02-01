@@ -133,7 +133,7 @@ class DashboardManager extends Component
 
     public function addFilter()
     {
-        $this->selectedFilters[] = ['type' => 'text_search', 'field' => 'name', 'value' => ''];
+        $this->selectedFilters[] = ['type' => 'status', 'field' => '', 'value' => ''];
     }
 
     public function removeFilter($index)
