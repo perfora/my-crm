@@ -1567,6 +1567,13 @@
             });
         }
 
+        // jQuery AJAX Setup - CSRF Token
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
         // Inline editing - Text fields (Durum)
         $(document).on('click', '.editable-cell:not(.editing)', function() {
             const cell = $(this);
