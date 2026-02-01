@@ -94,12 +94,12 @@
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium mb-1">Teklif Tutarı (TL)</label>
+                        <label class="block text-sm font-medium mb-1">Teklif Tutarı</label>
                         <input type="number" step="0.01" name="teklif_tutari" value="{{ $is->teklif_tutari }}" class="w-full border rounded px-3 py-2">
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium mb-1">Alış Tutarı (TL)</label>
+                        <label class="block text-sm font-medium mb-1">Alış Tutarı</label>
                         <input type="number" step="0.01" name="alis_tutari" value="{{ $is->alis_tutari }}" class="w-full border rounded px-3 py-2">
                     </div>
                     

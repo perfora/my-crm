@@ -853,7 +853,7 @@
                                         @if($is->teklif_doviz === 'USD')
                                             ${{ number_format($is->teklif_tutari, 2) }}
                                         @else
-                                            {{ number_format($is->teklif_tutari, 2) }} TL
+                                            {{ number_format($is->teklif_tutari, 2) }}
                                         @endif
                                         @php
                                             $orig = null;
@@ -884,7 +884,7 @@
                                         @if($is->alis_doviz === 'USD')
                                             ${{ number_format($is->alis_tutari, 2) }}
                                         @else
-                                            {{ number_format($is->alis_tutari, 2) }} TL
+                                            {{ number_format($is->alis_tutari, 2) }}
                                         @endif
                                         @php
                                             $origAlis = null;
@@ -908,7 +908,7 @@
                                             @if($isUsd)
                                                 ${{ number_format($is->kar_tutari, 2) }}
                                             @else
-                                                {{ number_format($is->kar_tutari, 2) }} TL
+                                                {{ number_format($is->kar_tutari, 2) }}
                                             @endif
                                             ({{ number_format($is->kar_orani, 1) }}%)
                                         </span>
