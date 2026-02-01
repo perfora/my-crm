@@ -635,60 +635,74 @@
 
         <!-- Liste -->
         <div class="bg-white rounded-lg shadow overflow-hidden">
-            <!-- Sütun Seçici -->
-            <div class="px-6 py-4 flex justify-end border-b">
-                <div class="relative inline-block">
-                    <button id="column-toggle-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded flex items-center gap-2">
-                        <span>📊 Sütunlar</span>
-                        <span id="column-arrow">▼</span>
-                    </button>
-                    <div id="column-menu" class="hidden absolute right-0 mt-2 w-56 bg-white border rounded-lg shadow-lg z-50 p-3 max-h-96 overflow-y-auto">
-                        <div class="space-y-2">
-                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                <input type="checkbox" class="column-toggle" data-column="name" checked> İş Adı
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                <input type="checkbox" class="column-toggle" data-column="musteri" checked> Müşteri
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                <input type="checkbox" class="column-toggle" data-column="marka" checked> Marka
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                <input type="checkbox" class="column-toggle" data-column="tipi" checked> Tipi
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                <input type="checkbox" class="column-toggle" data-column="durum"> Durum
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                <input type="checkbox" class="column-toggle" data-column="turu"> Türü
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                <input type="checkbox" class="column-toggle" data-column="oncelik" checked> Öncelik
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                <input type="checkbox" class="column-toggle" data-column="kapanis_tarihi" checked> Kapanış
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                <input type="checkbox" class="column-toggle" data-column="lisans_bitis"> Lisans Bitiş
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                <input type="checkbox" class="column-toggle" data-column="teklif_tutari" checked> Teklif
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                <input type="checkbox" class="column-toggle" data-column="alis_tutari"> Alış
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                <input type="checkbox" class="column-toggle" data-column="kar_tutari"> Kar
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                <input type="checkbox" class="column-toggle" data-column="is_guncellenme_tarihi" checked> Açılış
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                <input type="checkbox" class="column-toggle" data-column="updated_at"> Güncelleme
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                <input type="checkbox" class="column-toggle" data-column="islemler" checked> İşlemler
-                            </label>
+            <!-- Toolbar -->
+            <div class="px-6 py-4 border-b">
+                <div class="flex items-center justify-between">
+                    <!-- Sol: Aksiyon Butonları -->
+                    <div class="flex items-center gap-3">
+                        <button onclick="addNewRow()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2 transition">
+                            ➕ Ekle
+                        </button>
+                        <button onclick="duplicateSelected()" id="btn-duplicate" disabled class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            📋 Kopyala
+                        </button>
+                        <button onclick="deleteSelected()" id="btn-delete" disabled class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            🗑️ Sil
+                        </button>
+                        <span id="selection-count" class="text-sm text-gray-600"></span>
+                    </div>
+                    
+                    <!-- Sağ: Sütun Seçici -->
+                    <div class="relative inline-block">
+                        <button id="column-toggle-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded flex items-center gap-2">
+                            <span>📊 Sütunlar</span>
+                            <span id="column-arrow">▼</span>
+                        </button>
+                        <div id="column-menu" class="hidden absolute right-0 mt-2 w-56 bg-white border rounded-lg shadow-lg z-50 p-3 max-h-96 overflow-y-auto">
+                            <div class="space-y-2">
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="name" checked> İş Adı
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="musteri" checked> Müşteri
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="marka" checked> Marka
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="tipi" checked> Tipi
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="durum"> Durum
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="turu"> Türü
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="oncelik" checked> Öncelik
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="kapanis_tarihi" checked> Kapanış
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="lisans_bitis"> Lisans Bitiş
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="teklif_tutari" checked> Teklif
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="alis_tutari"> Alış
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="kar_tutari"> Kar
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="is_guncellenme_tarihi" checked> Açılış
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="updated_at"> Güncelleme
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -703,6 +717,9 @@
                 <table id="isler-table" class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th class="px-3 py-3 text-center">
+                                <input type="checkbox" id="select-all" class="cursor-pointer">
+                            </th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="name">İş Adı <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="musteri">Müşteri <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="marka">Marka <span class="sort-icon"></span></th>
@@ -718,7 +735,6 @@
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="is_guncellenme_tarihi">Açılış <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="updated_at">Güncelleme <span class="sort-icon"></span></th>
                             <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase">Yenileme</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlemler</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -831,6 +847,9 @@
                                 data-alis_tutari="{{ $is->alis_tutari ?? 0 }}" 
                                 data-kar_tutari="{{ $is->kar_tutari ?? 0 }}" 
                                 data-is_guncellenme_tarihi="{{ $is->is_guncellenme_tarihi }}">
+                                <td class="px-3 py-3 text-center">
+                                    <input type="checkbox" class="row-checkbox cursor-pointer" data-id="{{ $is->id }}">
+                                </td>
                                 <td class="px-3 py-3 whitespace-nowrap editable-cell" data-field="name" data-id="{{ $is->id }}" data-value="{{ $is->name }}">
                                     <div class="flex items-center gap-2">
                                         <span>{{ $is->name }}</span>
@@ -963,25 +982,10 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-3 py-3 whitespace-nowrap text-sm">
-                                    <a href="/tum-isler/{{ $is->id }}/edit" class="text-blue-600 hover:text-blue-800 mr-3" title="Düzenle">
-                                        ✏️
-                                    </a>
-                                    <a href="/tum-isler/{{ $is->id }}/duplicate" class="text-green-600 hover:text-green-800 mr-3" title="Kopyala">
-                                        📋
-                                    </a>
-                                    <form action="/tum-isler/{{ $is->id }}" method="POST" class="inline" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-800" title="Sil">
-                                            🗑️
-                                        </button>
-                                    </form>
-                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="15" class="px-3 py-3 text-center text-gray-500">
+                                <td colspan="16" class="px-3 py-3 text-center text-gray-500">
                                     Henüz iş kaydı yok.
                                 </td>
                             </tr>
@@ -1140,6 +1144,145 @@
         
         // Tipi değiştiğinde kapanış tarihi otomatiği
         $(document).ready(function() {
+            // ============================================
+            // CHECKBOX SEÇİM YÖNETİMİ
+            // ============================================
+            let selectedIds = [];
+            
+            // Tümünü seç/bırak
+            $('#select-all').on('change', function() {
+                const isChecked = $(this).is(':checked');
+                $('.row-checkbox').prop('checked', isChecked);
+                updateSelection();
+            });
+            
+            // Tek checkbox değişikliği
+            $(document).on('change', '.row-checkbox', function() {
+                updateSelection();
+                
+                // Tümünü seç checkbox'ını güncelle
+                const totalCheckboxes = $('.row-checkbox').length;
+                const checkedCheckboxes = $('.row-checkbox:checked').length;
+                $('#select-all').prop('checked', totalCheckboxes === checkedCheckboxes);
+            });
+            
+            // Seçimleri güncelle
+            function updateSelection() {
+                selectedIds = [];
+                $('.row-checkbox:checked').each(function() {
+                    selectedIds.push($(this).data('id'));
+                });
+                
+                // Buton durumlarını güncelle
+                const hasSelection = selectedIds.length > 0;
+                $('#btn-duplicate').prop('disabled', !hasSelection);
+                $('#btn-delete').prop('disabled', !hasSelection);
+                
+                // Seçim sayısını göster
+                if (hasSelection) {
+                    $('#selection-count').text(selectedIds.length + ' kayıt seçili');
+                } else {
+                    $('#selection-count').text('');
+                }
+            }
+            
+            // ============================================
+            // BULK İŞLEMLER
+            // ============================================
+            
+            // Toplu Silme
+            window.deleteSelected = function() {
+                if (selectedIds.length === 0) return;
+                
+                if (!confirm(selectedIds.length + ' kayıt silinecek. Emin misiniz?')) return;
+                
+                let completed = 0;
+                selectedIds.forEach(id => {
+                    $.ajax({
+                        url: '/tum-isler/' + id,
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function() {
+                            completed++;
+                            if (completed === selectedIds.length) {
+                                location.reload();
+                            }
+                        }
+                    });
+                });
+            };
+            
+            // Toplu Kopyalama
+            window.duplicateSelected = function() {
+                if (selectedIds.length === 0) return;
+                
+                if (!confirm(selectedIds.length + ' kayıt kopyalanacak. Emin misiniz?')) return;
+                
+                // İlk seçili kaydı kopyala
+                window.location.href = '/tum-isler/' + selectedIds[0] + '/duplicate';
+            };
+            
+            // Yeni Satır Ekleme
+            window.addNewRow = function() {
+                // Seçili satır var mı kontrol et
+                let insertPosition;
+                if (selectedIds.length > 0) {
+                    // İlk seçili satırın üstüne ekle
+                    insertPosition = $('.row-checkbox[data-id="' + selectedIds[0] + '"]').closest('tr');
+                } else {
+                    // En üste ekle
+                    insertPosition = $('#isler-table tbody tr:first');
+                }
+                
+                const newRow = `
+                    <tr class="new-row bg-yellow-50">
+                        <td class="px-3 py-3 text-center">
+                            <input type="checkbox" disabled class="opacity-50">
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap editable-cell" data-field="name" data-id="new" data-value="">
+                            <span class="text-gray-400">İş adı giriniz...</span>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap editable-select" data-field="musteri_id" data-id="new" data-value="">
+                            <span class="text-gray-400">Müşteri seçiniz...</span>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap editable-select" data-field="marka_id" data-id="new" data-value="">
+                            <span class="text-gray-400">Marka seçiniz...</span>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap editable-select" data-field="tipi" data-id="new" data-value="">
+                            <span class="text-gray-400">Tip seçiniz...</span>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">-</td>
+                        <td class="px-3 py-3 whitespace-nowrap editable-select" data-field="turu" data-id="new" data-value="">-</td>
+                        <td class="px-3 py-3 whitespace-nowrap editable-select" data-field="oncelik" data-id="new" data-value="">-</td>
+                        <td class="px-3 py-3 whitespace-nowrap editable-date" data-field="kapanis_tarihi" data-id="new" data-value="">-</td>
+                        <td class="px-3 py-3 whitespace-nowrap editable-date" data-field="lisans_bitis" data-id="new" data-value="">-</td>
+                        <td class="px-3 py-3 whitespace-nowrap editable-number" data-field="teklif_tutari" data-id="new" data-value="">-</td>
+                        <td class="px-3 py-3 whitespace-nowrap editable-number" data-field="alis_tutari" data-id="new" data-value="">-</td>
+                        <td class="px-3 py-3 whitespace-nowrap">-</td>
+                        <td class="px-3 py-3 whitespace-nowrap editable-date" data-field="is_guncellenme_tarihi" data-id="new" data-value="">-</td>
+                        <td class="px-3 py-3 whitespace-nowrap">-</td>
+                        <td class="px-3 py-3 whitespace-nowrap text-center">-</td>
+                    </tr>
+                `;
+                
+                if (insertPosition.length > 0) {
+                    insertPosition.before(newRow);
+                } else {
+                    $('#isler-table tbody').prepend(newRow);
+                }
+                
+                // İlk hücreye odaklan
+                setTimeout(() => {
+                    $('.new-row .editable-cell').first().click();
+                }, 100);
+            };
+            
+            // ============================================
+            // MEVCUT KOD
+            // ============================================
+            
             $('#tipi').on('change', function() {
                 const tipi = $(this).val();
                 const kapanisTarihi = $('#kapanis_tarihi');
@@ -1179,14 +1322,6 @@
                     // Tüm satırlarda o sütunu göster/gizle
                     $('tbody tr').each(function() {
                         $(this).find('td').eq(columnIndex).toggle(isChecked);
-                    });
-                }
-                
-                // İşlemler sütunu için (data-column yok)
-                if (column === 'islemler') {
-                    $('thead th:last').toggle(isChecked);
-                    $('tbody tr').each(function() {
-                        $(this).find('td:last').toggle(isChecked);
                     });
                 }
                 
@@ -1565,35 +1700,57 @@
             function saveEdit() {
                 const newValue = input.val();
                 
-                $.ajax({
-                    url: '/tum-isler/' + id,
-                    method: 'PUT',
-                    data: {
-                        [field]: newValue
-                    },
-                    success: function(response) {
-                        cell.data('value', newValue);
-                        
-                        // Special handling for name field with Notion badge
-                        if (field === 'name' && response.data.notion_id) {
-                            const notionBadge = `<a href="${response.data.notion_url}" target="_blank" 
-                                               class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition"
-                                               title="Notion'da aç">
-                                                🔗 Notion
-                                            </a>`;
-                            cell.html(`<div class="flex items-center gap-2"><span>${newValue}</span>${notionBadge}</div>`);
-                        } else {
-                            cell.html(newValue || '-');
+                // Yeni satır mı kontrol et
+                if (id === 'new') {
+                    // Yeni kayıt oluştur
+                    $.ajax({
+                        url: '/tum-isler',
+                        method: 'POST',
+                        data: {
+                            [field]: newValue
+                        },
+                        success: function(response) {
+                            // Sayfayı yenile
+                            location.reload();
+                        },
+                        error: function() {
+                            alert('Kayıt oluşturulamadı!');
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
                         }
-                        
-                        cell.removeClass('editing');
-                    },
-                    error: function() {
-                        alert('Kaydedilemedi!');
-                        cell.html(originalContent);
-                        cell.removeClass('editing');
-                    }
-                });
+                    });
+                } else {
+                    // Mevcut kayıt güncelle
+                    $.ajax({
+                        url: '/tum-isler/' + id,
+                        method: 'PUT',
+                        data: {
+                            [field]: newValue
+                        },
+                        success: function(response) {
+                            cell.data('value', newValue);
+                            
+                            // Special handling for name field with Notion badge
+                            if (field === 'name' && response.data.notion_id) {
+                                const notionBadge = `<a href="${response.data.notion_url}" target="_blank" 
+                                                   class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition"
+                                                   title="Notion'da aç">
+                                                    🔗 Notion
+                                                </a>`;
+                                cell.html(`<div class="flex items-center gap-2"><span>${newValue}</span>${notionBadge}</div>`);
+                            } else {
+                                cell.html(newValue || '-');
+                            }
+                            
+                            cell.removeClass('editing');
+                        },
+                        error: function() {
+                            alert('Kaydedilemedi!');
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
+                        }
+                    });
+                }
             }
             
             input.on('blur', saveEdit);
@@ -1680,52 +1837,74 @@
             function saveSelect() {
                 const newValue = select.val();
                 
-                $.ajax({
-                    url: '/tum-isler/' + id,
-                    method: 'PUT',
-                    data: {
-                        [field]: newValue
-                    },
-                    success: function(response) {
-                        cell.data('value', newValue);
-                        
-                        // Rebuild the display
-                        if (field === 'tipi') {
-                            cell.html(`<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${newValue || '-'}</span>`);
-                        } else if (field === 'turu') {
-                            cell.html(newValue || '-');
-                        } else if (field === 'oncelik') {
-                            if (newValue) {
-                                let badgeClass = 'bg-gray-100 text-gray-800';
-                                if (newValue === '1') badgeClass = 'bg-red-100 text-red-800';
-                                else if (newValue === '2') badgeClass = 'bg-yellow-100 text-yellow-800';
-                                else if (newValue === '3') badgeClass = 'bg-green-100 text-green-800';
-                                cell.html(`<span class="px-2 py-1 text-xs rounded-full ${badgeClass}">${newValue}</span>`);
-                            } else {
-                                cell.html('-');
-                            }
-                        } else if (field === 'musteri_id') {
-                            if (response.data.musteri) {
-                                cell.html(`<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${response.data.musteri.sirket}</span>`);
-                            } else {
-                                cell.html('-');
-                            }
-                        } else if (field === 'marka_id') {
-                            if (response.data.marka) {
-                                cell.html(`<span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">${response.data.marka.name}</span>`);
-                            } else {
-                                cell.html('-');
-                            }
+                // Yeni satır mı kontrol et
+                if (id === 'new') {
+                    // Yeni kayıt oluştur
+                    $.ajax({
+                        url: '/tum-isler',
+                        method: 'POST',
+                        data: {
+                            [field]: newValue
+                        },
+                        success: function(response) {
+                            // Sayfayı yenile
+                            location.reload();
+                        },
+                        error: function() {
+                            alert('Kayıt oluşturulamadı!');
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
                         }
-                        
-                        cell.removeClass('editing');
-                    },
-                    error: function() {
-                        alert('Kaydedilemedi!');
-                        cell.html(originalContent);
-                        cell.removeClass('editing');
-                    }
-                });
+                    });
+                } else {
+                    // Mevcut kayıt güncelle
+                    $.ajax({
+                        url: '/tum-isler/' + id,
+                        method: 'PUT',
+                        data: {
+                            [field]: newValue
+                        },
+                        success: function(response) {
+                            cell.data('value', newValue);
+                            
+                            // Rebuild the display
+                            if (field === 'tipi') {
+                                cell.html(`<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${newValue || '-'}</span>`);
+                            } else if (field === 'turu') {
+                                cell.html(newValue || '-');
+                            } else if (field === 'oncelik') {
+                                if (newValue) {
+                                    let badgeClass = 'bg-gray-100 text-gray-800';
+                                    if (newValue === '1') badgeClass = 'bg-red-100 text-red-800';
+                                    else if (newValue === '2') badgeClass = 'bg-yellow-100 text-yellow-800';
+                                    else if (newValue === '3') badgeClass = 'bg-green-100 text-green-800';
+                                    cell.html(`<span class="px-2 py-1 text-xs rounded-full ${badgeClass}">${newValue}</span>`);
+                                } else {
+                                    cell.html('-');
+                                }
+                            } else if (field === 'musteri_id') {
+                                if (response.data.musteri) {
+                                    cell.html(`<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${response.data.musteri.sirket}</span>`);
+                                } else {
+                                    cell.html('-');
+                                }
+                            } else if (field === 'marka_id') {
+                                if (response.data.marka) {
+                                    cell.html(`<span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">${response.data.marka.name}</span>`);
+                                } else {
+                                    cell.html('-');
+                                }
+                            }
+                            
+                            cell.removeClass('editing');
+                        },
+                        error: function() {
+                            alert('Kaydedilemedi!');
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
+                        }
+                    });
+                }
             }
             
             select.on('change', saveSelect);

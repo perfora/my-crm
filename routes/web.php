@@ -624,7 +624,7 @@ Route::post('/ziyaretler', function () {
 Route::get('/tum-isler', fn () => view('tum-isler.index'));
 Route::post('/tum-isler', function () {
     $validated = request()->validate([
-        'name' => 'required|max:255',
+        'name' => 'nullable|max:255',
         'musteri_id' => 'nullable|exists:musteriler,id',
         'marka_id' => 'nullable|exists:markalar,id',
         'tipi' => 'nullable|string',
@@ -641,6 +641,15 @@ Route::post('/tum-isler', function () {
         'gecmis_notlar' => 'nullable|string',
         'aciklama' => 'nullable|string',
     ]);
+    
+    // AJAX inline editing için yeni kayıt
+    if (request()->ajax() || request()->wantsJson()) {
+        $is = \App\Models\TumIsler::create(array_merge($validated, [
+            'is_guncellenme_tarihi' => now()
+        ]));
+        $is->load(['musteri', 'marka']);
+        return response()->json(['success' => true, 'data' => $is]);
+    }
     
     \App\Models\TumIsler::create($validated);
     
