@@ -68,7 +68,7 @@
             ->limit(10)
             ->get();
             
-        $yaklasanZiyaretler = \App\Models\Ziyaret::where('tarih', '>=', now())
+        $yaklasanZiyaretler = \App\Models\Ziyaret::whereIn('durumu', ['Beklemede', 'Planlandı'])
             ->orderBy('tarih', 'asc')
             ->limit(10)
             ->get();
@@ -311,8 +311,8 @@
             @if($showYaklasanZiyaretler)
             <div class="bg-white rounded-lg shadow-lg border-t-4 border-purple-500">
                 <div class="p-4 border-b bg-purple-50">
-                    <h3 class="text-xl font-bold text-purple-800">📅 Yaklaşan Ziyaretler</h3>
-                    <p class="text-sm text-gray-600">Gelecek ziyaret planları</p>
+                    <h3 class="text-xl font-bold text-purple-800">📅 Bekleyen & Planlanan Ziyaretler</h3>
+                    <p class="text-sm text-gray-600">Beklemede ve Planlandı durumunda</p>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
@@ -320,6 +320,7 @@
                             <tr>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-700">Müşteri</th>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-700">Tarih</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Durum</th>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-700">Notlar</th>
                             </tr>
                         </thead>
@@ -327,12 +328,17 @@
                             @forelse($yaklasanZiyaretler as $ziyaret)
                             <tr class="border-b hover:bg-gray-50">
                                 <td class="px-4 py-3">{{ $ziyaret->musteri->sirket ?? '-' }}</td>
-                                <td class="px-4 py-3">{{ date('d.m.Y', strtotime($ziyaret->tarih)) }}</td>
-                                <td class="px-4 py-3 text-gray-600">{{ Str::limit($ziyaret->notlar ?? '-', 50) }}</td>
+                                <td class="px-4 py-3">{{ $ziyaret->tarih ? \Carbon\Carbon::parse($ziyaret->tarih)->format('d.m.Y') : '-' }}</td>
+                                <td class="px-4 py-3">
+                                    <span class="px-2 py-1 rounded text-xs font-semibold {{ $ziyaret->durumu == 'Beklemede' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800' }}">
+                                        {{ $ziyaret->durumu }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-gray-600">{{ Str::limit($ziyaret->notlar ?? '-', 40) }}</td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="3" class="px-4 py-8 text-center text-gray-500">Yaklaşan ziyaret yok</td>
+                                <td colspan="4" class="px-4 py-8 text-center text-gray-500">Bekleyen veya planlanan ziyaret yok</td>
                             </tr>
                             @endforelse
                         </tbody>
