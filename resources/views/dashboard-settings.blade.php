@@ -44,7 +44,11 @@
                             'yaklasan_ziyaretler' => ['name' => 'Yaklaşan Ziyaretler', 'desc' => 'Planlanmış ziyaretler'],
                         ];
                         
-                        $currentSettings = json_decode(file_get_contents(storage_path('app/widget-settings.json')), true) ?? [];
+                        $settingsFile = storage_path('app/widget-settings.json');
+                        $currentSettings = [];
+                        if(file_exists($settingsFile)) {
+                            $currentSettings = json_decode(file_get_contents($settingsFile), true) ?? [];
+                        }
                         
                         foreach($availableWidgets as $key => $widget) {
                             if(!isset($currentSettings[$key])) {
