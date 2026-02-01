@@ -123,6 +123,33 @@
                 </div>
             </div>
 
+            <!-- Bekleyen İşler -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">⏳ Bekleyen İşler</h2>
+                <div class="space-y-3">
+                    @forelse($bekleyenIsler as $is)
+                        <div class="border-l-4 border-red-500 pl-3 py-2">
+                            <div class="font-semibold text-gray-800">{{ $is->name }}</div>
+                            <div class="text-sm text-gray-600">
+                                {{ $is->musteri ? $is->musteri->sirket : '-' }}
+                            </div>
+                            <div class="flex justify-between items-center mt-1">
+                                <span class="text-xs px-2 py-1 bg-red-100 text-red-800 rounded-full font-semibold">
+                                    Öncelik {{ $is->oncelik }}
+                                </span>
+                                @if($is->teklif_tutari)
+                                    <span class="text-sm font-bold text-gray-700">
+                                        ${{ number_format($is->teklif_tutari, 0, ',', '.') }}
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center text-gray-500 py-4">Bekleyen iş yok</div>
+                    @endforelse
+                </div>
+            </div>
+
             <!-- Yüksek Potansiyel Müşteriler -->
             <div class="bg-white rounded-lg shadow-lg p-6">
                 <h2 class="text-xl font-bold text-gray-800 mb-4">🎯 Yüksek Potansiyel Müşteriler</h2>
