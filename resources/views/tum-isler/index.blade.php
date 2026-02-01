@@ -32,6 +32,16 @@
         .sortable:hover {
             background-color: #f3f4f6;
         }
+        .editable-cell, .editable-select {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .editable-cell:hover, .editable-select:hover {
+            background-color: #fef3c7 !important;
+        }
+        .editing {
+            padding: 0 !important;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -851,20 +861,20 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-3 py-3 whitespace-nowrap">
+                                <td class="px-3 py-3 whitespace-nowrap editable-select" data-field="tipi" data-id="{{ $is->id }}" data-value="{{ $is->tipi }}">
                                     <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
                                         {{ $is->tipi ?? '-' }}
                                     </span>
                                 </td>
-                                <td class="px-3 py-3 whitespace-nowrap">
+                                <td class="px-3 py-3 whitespace-nowrap editable-cell" data-field="durum" data-id="{{ $is->id }}" data-value="{{ $is->durum }}">
                                     @if($is->durum)
                                         {{ $is->durum }}
                                     @else
                                         -
                                     @endif
                                 </td>
-                                <td class="px-3 py-3 whitespace-nowrap">{{ $is->turu ?? '-' }}</td>
-                                <td class="px-3 py-3 whitespace-nowrap">
+                                <td class="px-3 py-3 whitespace-nowrap editable-select" data-field="turu" data-id="{{ $is->id }}" data-value="{{ $is->turu }}">{{ $is->turu ?? '-' }}</td>
+                                <td class="px-3 py-3 whitespace-nowrap editable-select" data-field="oncelik" data-id="{{ $is->id }}" data-value="{{ $is->oncelik }}">
                                     @if($is->oncelik)
                                         <span class="px-2 py-1 text-xs rounded-full 
                                             @if($is->oncelik == '1') bg-red-100 text-red-800
@@ -1556,6 +1566,158 @@
                 }
             });
         }
+
+        // Inline editing - Text fields (Durum)
+        $(document).on('click', '.editable-cell:not(.editing)', function() {
+            const cell = $(this);
+            const field = cell.data('field');
+            const id = cell.data('id');
+            const currentValue = cell.data('value') || '';
+            
+            cell.addClass('editing');
+            const originalContent = cell.html();
+            
+            cell.html(`<input type="text" class="w-full px-2 py-1 border rounded text-sm" value="${currentValue}" />`);
+            const input = cell.find('input');
+            input.focus();
+            
+            function saveEdit() {
+                const newValue = input.val();
+                
+                $.ajax({
+                    url: '/tum-isler/' + id,
+                    method: 'PUT',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        [field]: newValue
+                    },
+                    success: function(response) {
+                        cell.data('value', newValue);
+                        cell.html(newValue || '-');
+                        cell.removeClass('editing');
+                    },
+                    error: function() {
+                        alert('Kaydedilemedi!');
+                        cell.html(originalContent);
+                        cell.removeClass('editing');
+                    }
+                });
+            }
+            
+            input.on('blur', saveEdit);
+            input.on('keypress', function(e) {
+                if (e.which === 13) { // Enter
+                    saveEdit();
+                }
+            });
+            input.on('keydown', function(e) {
+                if (e.which === 27) { // Escape
+                    cell.html(originalContent);
+                    cell.removeClass('editing');
+                }
+            });
+        });
+
+        // Inline editing - Select fields (Tipi, Turu, Oncelik)
+        $(document).on('click', '.editable-select:not(.editing)', function() {
+            const cell = $(this);
+            const field = cell.data('field');
+            const id = cell.data('id');
+            const currentValue = cell.data('value') || '';
+            
+            cell.addClass('editing');
+            const originalContent = cell.html();
+            
+            let options = '';
+            if (field === 'tipi') {
+                options = `
+                    <option value="">Seçiniz</option>
+                    <option value="Verilecek" ${currentValue === 'Verilecek' ? 'selected' : ''}>Verilecek</option>
+                    <option value="Verildi" ${currentValue === 'Verildi' ? 'selected' : ''}>Verildi</option>
+                    <option value="Takip Edilecek" ${currentValue === 'Takip Edilecek' ? 'selected' : ''}>Takip Edilecek</option>
+                    <option value="Kazanıldı" ${currentValue === 'Kazanıldı' ? 'selected' : ''}>Kazanıldı</option>
+                    <option value="Kaybedildi" ${currentValue === 'Kaybedildi' ? 'selected' : ''}>Kaybedildi</option>
+                    <option value="Vazgeçildi" ${currentValue === 'Vazgeçildi' ? 'selected' : ''}>Vazgeçildi</option>
+                    <option value="Tamamlandı" ${currentValue === 'Tamamlandı' ? 'selected' : ''}>Tamamlandı</option>
+                    <option value="Askıda" ${currentValue === 'Askıda' ? 'selected' : ''}>Askıda</option>
+                    <option value="Register" ${currentValue === 'Register' ? 'selected' : ''}>Register</option>
+                `;
+            } else if (field === 'turu') {
+                options = `
+                    <option value="">Seçiniz</option>
+                    <option value="Cihaz" ${currentValue === 'Cihaz' ? 'selected' : ''}>Cihaz</option>
+                    <option value="Yazılım ve Lisans" ${currentValue === 'Yazılım ve Lisans' ? 'selected' : ''}>Yazılım ve Lisans</option>
+                    <option value="Cihaz ve Lisans" ${currentValue === 'Cihaz ve Lisans' ? 'selected' : ''}>Cihaz ve Lisans</option>
+                    <option value="Yenileme" ${currentValue === 'Yenileme' ? 'selected' : ''}>Yenileme</option>
+                    <option value="Destek" ${currentValue === 'Destek' ? 'selected' : ''}>Destek</option>
+                    <option value="Hizmet Alımı" ${currentValue === 'Hizmet Alımı' ? 'selected' : ''}>Hizmet Alımı</option>
+                `;
+            } else if (field === 'oncelik') {
+                options = `
+                    <option value="">Seçiniz</option>
+                    <option value="1" ${currentValue === '1' ? 'selected' : ''}>1 (Yüksek)</option>
+                    <option value="2" ${currentValue === '2' ? 'selected' : ''}>2</option>
+                    <option value="3" ${currentValue === '3' ? 'selected' : ''}>3</option>
+                    <option value="4" ${currentValue === '4' ? 'selected' : ''}>4 (Düşük)</option>
+                `;
+            }
+            
+            cell.html(`<select class="w-full px-2 py-1 border rounded text-sm">${options}</select>`);
+            const select = cell.find('select');
+            select.focus();
+            
+            function saveSelect() {
+                const newValue = select.val();
+                
+                $.ajax({
+                    url: '/tum-isler/' + id,
+                    method: 'PUT',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        [field]: newValue
+                    },
+                    success: function(response) {
+                        cell.data('value', newValue);
+                        
+                        // Rebuild the display
+                        if (field === 'tipi') {
+                            cell.html(`<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${newValue || '-'}</span>`);
+                        } else if (field === 'turu') {
+                            cell.html(newValue || '-');
+                        } else if (field === 'oncelik') {
+                            if (newValue) {
+                                let badgeClass = 'bg-gray-100 text-gray-800';
+                                if (newValue === '1') badgeClass = 'bg-red-100 text-red-800';
+                                else if (newValue === '2') badgeClass = 'bg-yellow-100 text-yellow-800';
+                                else if (newValue === '3') badgeClass = 'bg-green-100 text-green-800';
+                                cell.html(`<span class="px-2 py-1 text-xs rounded-full ${badgeClass}">${newValue}</span>`);
+                            } else {
+                                cell.html('-');
+                            }
+                        }
+                        
+                        cell.removeClass('editing');
+                    },
+                    error: function() {
+                        alert('Kaydedilemedi!');
+                        cell.html(originalContent);
+                        cell.removeClass('editing');
+                    }
+                });
+            }
+            
+            select.on('change', saveSelect);
+            select.on('blur', function() {
+                cell.html(originalContent);
+                cell.removeClass('editing');
+            });
+            select.on('keydown', function(e) {
+                if (e.which === 27) { // Escape
+                    cell.html(originalContent);
+                    cell.removeClass('editing');
+                }
+            });
+        });
     </script>
     
     <!-- Ayrı JavaScript Dosyaları -->

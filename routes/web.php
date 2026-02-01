@@ -667,6 +667,38 @@ Route::get('/tum-isler/{id}/duplicate', function ($id) {
 Route::put('/tum-isler/{id}', function ($id) {
     $is = \App\Models\TumIsler::findOrFail($id);
     
+    // AJAX inline editing için
+    if (request()->ajax() || request()->wantsJson()) {
+        $validated = request()->validate([
+            'name' => 'sometimes|required|max:255',
+            'musteri_id' => 'nullable|exists:musteriler,id',
+            'marka_id' => 'nullable|exists:markalar,id',
+            'tipi' => 'nullable|string',
+            'durum' => 'nullable|string',
+            'turu' => 'nullable|string',
+            'oncelik' => 'nullable|string',
+            'kaybedilme_nedeni' => 'nullable|string',
+            'register_durum' => 'nullable|string',
+            'teklif_tutari' => 'nullable|numeric',
+            'alis_tutari' => 'nullable|numeric',
+            'kur' => 'nullable|numeric',
+            'kapanis_tarihi' => 'nullable|date',
+            'lisans_bitis' => 'nullable|date',
+            'notlar' => 'nullable|string',
+            'gecmis_notlar' => 'nullable|string',
+            'aciklama' => 'nullable|string',
+        ]);
+        
+        $is->update($validated);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Güncellendi',
+            'data' => $is
+        ]);
+    }
+    
+    // Normal form submit için
     $validated = request()->validate([
         'name' => 'required|max:255',
         'musteri_id' => 'nullable|exists:musteriler,id',
