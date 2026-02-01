@@ -1,6 +1,4 @@
-@extends('layouts.app')
-
-@section('content')
+<x-layouts::app.sidebar>
 @php
     // Üst özetler - 2025 ve 2026 verileri
     $isler2025 = \App\Models\TumIsler::whereYear('is_guncellenme_tarihi', 2025)
@@ -22,6 +20,7 @@
     $toplamIsler = \App\Models\TumIsler::count();
 @endphp
 
+<flux:main>
 <div class="container mx-auto px-4 py-8">
     <!-- Üst Özet Kartları -->
     <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
@@ -65,5 +64,5 @@
     <div class="mt-12">
         <livewire:dashboard-manager />
     </div>
-</div>
-@endsection
+</flux:main>
+</x-layouts::app.sidebar>
