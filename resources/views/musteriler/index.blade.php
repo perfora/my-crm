@@ -270,6 +270,23 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <button type="button" onclick="openTuruManager()" class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition">
+                        🏷️ Türleri Yönet
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Türü Yönetimi Modal -->
+            <div id="turu-manager-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+                <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold">Türleri Yönet</h3>
+                        <button onclick="closeTuruManager()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                    </div>
+                    <div id="turu-list" class="space-y-2 max-h-96 overflow-y-auto">
+                        <!-- Türler buraya yüklenecek -->
+                    </div>
                 </div>
             </div>
             
@@ -343,12 +360,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="turu" data-id="{{ $musteri->id }}" data-value="{{ $musteri->turu }}">
                                     @if($musteri->turu)
-                                        @php
-                                            $defaultTuruList = ['Netcom', 'Bayi', 'Resmi Kurum', 'Üniversite', 'Belediye', 'Hastane', 'Özel Sektör', 'Tedarikçi', 'Üretici', 'Diğer'];
-                                            $isDefault = in_array($musteri->turu, $defaultTuruList);
-                                            $badgeColor = $isDefault ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800';
-                                        @endphp
-                                        <span class="px-2 py-1 text-xs rounded-full {{ $badgeColor }}">
+                                        <span class="px-2 py-1 text-xs rounded-full" data-turu-badge="{{ $musteri->turu }}">
                                             {{ $musteri->turu }}
                                         </span>
                                     @else
@@ -403,7 +415,59 @@
         let existingTuruValues = @json($existingTuruValues);
         const defaultTuruValues = ['Netcom', 'Bayi', 'Resmi Kurum', 'Üniversite', 'Belediye', 'Hastane', 'Özel Sektör', 'Tedarikçi', 'Üretici', 'Diğer'];
         
+        // Renk paleti - her yeni tür için farklı renk
+        const colorPalette = [
+            'bg-purple-100 text-purple-800',
+            'bg-pink-100 text-pink-800',
+            'bg-indigo-100 text-indigo-800',
+            'bg-teal-100 text-teal-800',
+            'bg-orange-100 text-orange-800',
+            'bg-lime-100 text-lime-800',
+            'bg-cyan-100 text-cyan-800',
+            'bg-rose-100 text-rose-800',
+            'bg-amber-100 text-amber-800',
+            'bg-emerald-100 text-emerald-800',
+            'bg-sky-100 text-sky-800',
+            'bg-violet-100 text-violet-800',
+            'bg-fuchsia-100 text-fuchsia-800',
+        ];
+        
+        // Her türe atanmış rengi sakla
+        const turuColors = {};
+        
+        // Varsayılan türler için mavi renk ata
+        defaultTuruValues.forEach(val => {
+            turuColors[val] = 'bg-blue-100 text-blue-800';
+        });
+        
+        // Mevcut custom türler için renk ata
+        let colorIndex = 0;
+        existingTuruValues.forEach(val => {
+            if (!defaultTuruValues.includes(val)) {
+                turuColors[val] = colorPalette[colorIndex % colorPalette.length];
+                colorIndex++;
+            }
+        });
+        
+        // Yeni tür için renk al
+        function getColorForTuru(turu) {
+            if (turuColors[turu]) {
+                return turuColors[turu];
+            }
+            // Yeni değer - sonraki rengi kullan
+            const color = colorPalette[Object.keys(turuColors).filter(k => !defaultTuruValues.includes(k)).length % colorPalette.length];
+            turuColors[turu] = color;
+            return color;
+        }
+        
         $(document).ready(function() {
+            // Sayfa yüklendiğinde tüm turu badge'lerine renk uygula
+            $('[data-turu-badge]').each(function() {
+                const turu = $(this).data('turu-badge');
+                const color = getColorForTuru(turu);
+                $(this).addClass(color);
+            });
+            
             // Select2 başlat
             $('#derece-select, #turu-select, .select2-filter').select2({
                 placeholder: 'Seçiniz...',
@@ -736,10 +800,8 @@
                                 else if (newValue === '2 - Orta') badgeClass = 'bg-yellow-100 text-yellow-800';
                                 else if (newValue === '3- Düşük') badgeClass = 'bg-green-100 text-green-800';
                             } else if (field === 'turu') {
-                                // Varsayılan türler için mavi, yeni eklenenler için mor
-                                badgeClass = defaultTuruValues.includes(newValue) 
-                                    ? 'bg-blue-100 text-blue-800' 
-                                    : 'bg-purple-100 text-purple-800';
+                                // Renk paletinden al
+                                badgeClass = getColorForTuru(newValue);
                             }
                             cell.html(`<span class="px-2 py-1 text-xs rounded-full ${badgeClass}">${newValue}</span>`);
                         } else {
@@ -917,6 +979,65 @@
                 }
             });
         });
+    </script>
+    
+    <script>
+        // Tür yönetimi fonksiyonları
+        function openTuruManager() {
+            // Modal'ı aç
+            $('#turu-manager-modal').removeClass('hidden');
+            
+            // Listeyi doldur
+            const turuList = $('#turu-list');
+            turuList.html('');
+            
+            existingTuruValues.forEach(function(turu) {
+                const color = getColorForTuru(turu);
+                const isDefault = defaultTuruValues.includes(turu);
+                const deleteBtn = isDefault ? '' : `<button onclick="deleteTuru('${turu}')" class="text-red-500 hover:text-red-700 font-bold">✕</button>`;
+                
+                turuList.append(`
+                    <div class="flex items-center justify-between p-2 border rounded hover:bg-gray-50">
+                        <span class="px-2 py-1 text-xs rounded-full ${color}">${turu}</span>
+                        ${deleteBtn}
+                    </div>
+                `);
+            });
+        }
+        
+        function closeTuruManager() {
+            $('#turu-manager-modal').addClass('hidden');
+        }
+        
+        function deleteTuru(turu) {
+            if (!confirm(`"${turu}" türünü silmek istediğinize emin misiniz? Bu türe sahip müşterilerde tür bilgisi silinecek.`)) {
+                return;
+            }
+            
+            // Veritabanında bu türe sahip müşterileri güncelle
+            $.ajax({
+                url: '/musteriler/delete-turu',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    turu: turu
+                },
+                success: function() {
+                    // Listeden kaldır
+                    existingTuruValues = existingTuruValues.filter(t => t !== turu);
+                    delete turuColors[turu];
+                    
+                    // Modal'ı güncelle
+                    openTuruManager();
+                    
+                    // Sayfayı yenile
+                    location.reload();
+                },
+                error: function() {
+                    alert('Silme işlemi başarısız oldu!');
+                }
+            });
+        }
     </script>
 </body>
 </html>

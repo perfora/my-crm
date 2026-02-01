@@ -590,6 +590,16 @@ Route::delete('/musteriler/{id}', function ($id) {
     return redirect('/musteriler')->with('message', 'Müşteri silindi.');
 });
 
+// Turu silme route'u
+Route::post('/musteriler/delete-turu', function () {
+    $turu = request('turu');
+    
+    // Bu türe sahip tüm müşterilerde turu null yap
+    \App\Models\Musteri::where('turu', $turu)->update(['turu' => null]);
+    
+    return response()->json(['success' => true, 'message' => 'Tür silindi.']);
+});
+
 // Kişiler routes
 Route::get('/kisiler', fn () => view('kisiler.index'));
 Route::get('/kisiler/{id}/edit', function ($id) {
