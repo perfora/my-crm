@@ -98,7 +98,11 @@
                             </div>
                             
                             <!-- Filtre Parametreleri -->
-                            @php $filterConfig = $this->getAvailableFilters()[$selectedFilters[$index]['type'] ?? 'text_search'] ?? null; @endphp
+                            @php
+                                $filterType = $selectedFilters[$index]['type'] ?? 'text_search';
+                                $availableFilters = $this->getAvailableFilters();
+                                $filterConfig = $availableFilters[$filterType] ?? null;
+                            @endphp
                             @if($filterConfig && !empty($filterConfig['params']))
                                 <div class="grid grid-cols-2 gap-2">
                                     @foreach($filterConfig['params'] as $paramKey => $param)
