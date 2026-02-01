@@ -58,6 +58,12 @@
             @if(!empty($columns))
             <div class="bg-white rounded-lg p-4 border-l-4 border-purple-600">
                 <label class="block font-bold text-lg mb-3 text-purple-900">3️⃣ Sütunlar</label>
+                
+                {{-- Debug: Seçili sütunları göster --}}
+                <div class="mb-2 text-xs bg-yellow-100 p-2 rounded">
+                    <strong>Debug - Seçili Sütunlar:</strong> {{ json_encode($selectedColumns ?? []) }}
+                </div>
+                
                 <div class="space-y-2 max-h-40 overflow-y-auto">
                     @foreach($columns as $key => $label)
                         <label class="flex items-center p-2 hover:bg-purple-50 rounded cursor-pointer">
@@ -67,7 +73,7 @@
                                 {{ in_array($key, $selectedColumns ?? []) ? 'checked' : '' }}
                                 class="w-4 h-4 text-purple-600 rounded mr-2"
                             >
-                            <span class="text-sm">{{ $label }}</span>
+                            <span class="text-sm">{{ $label }} <span class="text-gray-400">(key: {{ $key }})</span></span>
                         </label>
                     @endforeach
                 </div>
