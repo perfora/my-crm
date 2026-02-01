@@ -5,6 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Raporlar - Mobil</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .widget-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .widget-content.open {
+            max-height: 2000px;
+            transition: max-height 0.5s ease-in;
+        }
+        .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+        .toggle-icon.open {
+            transform: rotate(180deg);
+        }
+    </style>
 </head>
 <body class="bg-gray-100">
     <div class="min-h-screen">
@@ -131,9 +148,13 @@
             </div>
 
             <!-- Bekleyen İşler -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">⏳ Bekleyen İşler</h2>
-                <div class="space-y-3">
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-4 flex justify-between items-center cursor-pointer active:bg-gray-50" onclick="toggleWidget('bekleyen-isler')">
+                    <h2 class="text-lg font-bold text-gray-800">⏳ Bekleyen İşler</h2>
+                    <span class="toggle-icon text-2xl" id="bekleyen-isler-icon">▼</span>
+                </div>
+                <div class="widget-content" id="bekleyen-isler-content">
+                    <div class="p-4 pt-0 space-y-3">
                     @forelse($bekleyenIsler as $is)
                         <div class="border-l-4 border-red-500 pl-3 py-2">
                             <div class="font-semibold text-gray-800">{{ $is->name }}</div>
@@ -154,14 +175,20 @@
                     @empty
                         <div class="text-center text-gray-500 py-4">Bekleyen iş yok</div>
                     @endforelse
+                    </div>
                 </div>
             </div>
 
             <!-- Yüksek Potansiyel Müşteriler -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">🎯 Yüksek Potansiyel Müşteriler</h2>
-                <div class="text-xs text-gray-500 mb-3">Konya, 60+ gün ziyaret edilmemiş</div>
-                <div class="space-y-3">
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-4 flex justify-between items-center cursor-pointer active:bg-gray-50" onclick="toggleWidget('yuksek-potansiyel')">
+                    <h2 class="text-lg font-bold text-gray-800">🎯 Yüksek Potansiyel</h2>
+                    <span class="toggle-icon text-2xl" id="yuksek-potansiyel-icon">▼</span>
+                </div>
+                <div class="widget-content" id="yuksek-potansiyel-content">
+                    <div class="p-4 pt-0">
+                        <div class="text-xs text-gray-500 mb-3">Konya, 60+ gün ziyaret edilmemiş</div>
+                        <div class="space-y-3">
                     @forelse($yuksekPotansiyel as $musteri)
                         <div class="border-l-4 border-orange-500 pl-3 py-2">
                             <div class="font-semibold text-gray-800">{{ $musteri->sirket }}</div>
@@ -182,14 +209,21 @@
                     @empty
                         <div class="text-center text-gray-500 py-4">Potansiyel müşteri yok</div>
                     @endforelse
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Bekleyen & Planlanan Ziyaretler -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">� Bekleyen & Planlanan Ziyaretler</h2>
-                <div class="text-xs text-gray-500 mb-3">Beklemede ve Planlandı durumunda</div>
-                <div class="space-y-3">
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-4 flex justify-between items-center cursor-pointer active:bg-gray-50" onclick="toggleWidget('bekleyen-ziyaretler')">
+                    <h2 class="text-lg font-bold text-gray-800">📅 Bekleyen Ziyaretler</h2>
+                    <span class="toggle-icon text-2xl" id="bekleyen-ziyaretler-icon">▼</span>
+                </div>
+                <div class="widget-content" id="bekleyen-ziyaretler-content">
+                    <div class="p-4 pt-0">
+                        <div class="text-xs text-gray-500 mb-3">Beklemede ve Planlandı durumunda</div>
+                        <div class="space-y-3">
                     @forelse(\App\Models\Ziyaret::whereIn('durumu', ['Beklemede', 'Planlandı'])->with('musteri')->orderBy('ziyaret_tarihi', 'asc')->limit(10)->get() as $ziyaret)
                         <div class="border-l-4 border-purple-500 pl-3 py-2">
                             <div class="font-semibold text-gray-800">
@@ -207,9 +241,21 @@
                     @empty
                         <div class="text-center text-gray-500 py-4">Bekleyen veya planlanan ziyaret yok</div>
                     @endforelse
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        function toggleWidget(widgetId) {
+            const content = document.getElementById(widgetId + '-content');
+            const icon = document.getElementById(widgetId + '-icon');
+            
+            content.classList.toggle('open');
+            icon.classList.toggle('open');
+        }
+    </script>
 </body>
 </html>
