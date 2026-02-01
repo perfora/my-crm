@@ -194,6 +194,73 @@
 
         <!-- Liste -->
         <div class="bg-white rounded-lg shadow overflow-hidden">
+            <!-- Toolbar -->
+            <div class="px-6 py-4 border-b">
+                <div class="flex items-center justify-between">
+                    <!-- Sol: Aksiyon Butonları -->
+                    <div class="flex items-center gap-3">
+                        <button onclick="addNewRow()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2 transition">
+                            ➕ Ekle
+                        </button>
+                        <button onclick="duplicateSelected()" id="btn-duplicate" disabled class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            📋 Kopyala
+                        </button>
+                        <button onclick="deleteSelected()" id="btn-delete" disabled class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            🗑️ Sil
+                        </button>
+                        <span id="selection-count" class="text-sm text-gray-600"></span>
+                    </div>
+                    
+                    <!-- Sağ: Sütun Seçici -->
+                    <div class="relative inline-block">
+                        <button id="column-toggle-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded flex items-center gap-2">
+                            <span>📊 Sütunlar</span>
+                            <span id="column-arrow">▼</span>
+                        </button>
+                        <div id="column-menu" class="hidden absolute right-0 mt-2 w-56 bg-white border rounded-lg shadow-lg z-50 p-3 max-h-96 overflow-y-auto">
+                            <div class="space-y-2">
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="sirket" checked> Şirket
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="sehir" checked> Şehir
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="telefon" checked> Telefon
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="derece" checked> Derece
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="turu" checked> Türü
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="adres"> Adres
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="notlar"> Notlar
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="en_son_ziyaret" checked> Son Ziyaret
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="ziyaret_gun" checked> Ziyaret Gün
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="ziyaret_adeti" checked> Ziyaret Adeti
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="toplam_teklif" checked> Toplam Teklif
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="kazanildi_toplami" checked> Kazanıldı
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Üst scroll bar -->
             <div id="scroll-top" class="scroll-sync" style="overflow-x: auto; height: 20px;">
                 <div id="scroll-content-top" style="height: 1px;"></div>
@@ -203,12 +270,16 @@
                 <table id="musteriler-table" class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlemler</th>
+                            <th class="px-3 py-3 text-center">
+                                <input type="checkbox" id="select-all" class="cursor-pointer">
+                            </th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="sirket">Şirket <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="sehir">Şehir <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="telefon">Telefon <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="derece">Derece <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="turu">Türü <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="adres">Adres <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="notlar">Notlar <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="en_son_ziyaret">Son Ziyaret <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="ziyaret_gun">Ziyaret Gün <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="ziyaret_adeti">Ziyaret Adeti <span class="sort-icon"></span></th>
@@ -224,7 +295,9 @@
                         @forelse($musteriler as $musteri)
                             <tr data-sirket="{{ $musteri->sirket }}" 
                                 data-sehir="{{ $musteri->sehir ?? '' }}" 
-                                data-telefon="{{ $musteri->telefon ?? '' }}" 
+                                data-telefon="{{ $musteri->telefon ?? '' }}"
+                                data-adres="{{ $musteri->adres ?? '' }}"
+                                data-notlar="{{ $musteri->notlar ?? '' }}"
                                 data-derece="{{ $musteri->derece ?? '' }}" 
                                 data-turu="{{ $musteri->turu ?? '' }}" 
                                 data-en_son_ziyaret="{{ $musteri->en_son_ziyaret ?? '' }}" 
@@ -232,19 +305,10 @@
                                 data-ziyaret_adeti="{{ $musteri->ziyaret_adeti }}" 
                                 data-toplam_teklif="{{ $musteri->toplam_teklif }}" 
                                 data-kazanildi_toplami="{{ $musteri->kazanildi_toplami }}">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    <a href="/musteriler/{{ $musteri->id }}/edit" class="text-blue-600 hover:text-blue-800 mr-3">
-                                        ✏️ Düzenle
-                                    </a>
-                                    <form action="/musteriler/{{ $musteri->id }}" method="POST" class="inline" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-800">
-                                            🗑️ Sil
-                                        </button>
-                                    </form>
+                                <td class="px-3 py-4 whitespace-nowrap text-center">
+                                    <input type="checkbox" class="row-checkbox cursor-pointer" data-id="{{ $musteri->id }}">
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap font-medium">
+                                <td class="px-6 py-4 whitespace-nowrap font-medium editable-cell" data-field="sirket" data-id="{{ $musteri->id }}" data-value="{{ $musteri->sirket }}">
                                     <a href="/musteriler/{{ $musteri->id }}" class="text-blue-600 hover:text-blue-800 hover:underline">
                                         {{ $musteri->sirket }}
                                     </a>
@@ -274,6 +338,8 @@
                                         -
                                     @endif
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="adres" data-id="{{ $musteri->id }}" data-value="{{ $musteri->adres }}">{{ $musteri->adres ?? '-' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="notlar" data-id="{{ $musteri->id }}" data-value="{{ $musteri->notlar }}">{{ $musteri->notlar ?? '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $musteri->en_son_ziyaret ? $musteri->en_son_ziyaret->format('d.m.Y') : '-' }}
                                 </td>
@@ -304,7 +370,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="11" class="px-6 py-4 text-center text-gray-500">
+                                <td colspan="13" class="px-6 py-4 text-center text-gray-500">
                                     Henüz müşteri kaydı yok.
                                 </td>
                             </tr>
@@ -628,6 +694,138 @@
                 if (e.which === 27) { // Escape
                     cell.html(originalContent);
                     cell.removeClass('editing');
+                }
+            });
+        });
+
+        // ==================== TOOLBAR İŞLEVLERİ ====================
+        
+        // Checkbox selection management
+        let selectedIds = [];
+        
+        $('#select-all').on('change', function() {
+            const isChecked = $(this).is(':checked');
+            $('.row-checkbox').prop('checked', isChecked);
+            updateSelection();
+        });
+        
+        $(document).on('change', '.row-checkbox', function() {
+            updateSelection();
+        });
+        
+        function updateSelection() {
+            selectedIds = $('.row-checkbox:checked').map(function() {
+                return $(this).data('id');
+            }).get();
+            
+            // Update button states
+            $('#btn-duplicate, #btn-delete').prop('disabled', selectedIds.length === 0);
+            
+            // Update counter
+            if (selectedIds.length > 0) {
+                $('#selection-count').text(selectedIds.length + ' kayıt seçili');
+            } else {
+                $('#selection-count').text('');
+                $('#select-all').prop('checked', false);
+            }
+        }
+        
+        // Bulk delete
+        window.deleteSelected = function() {
+            if (selectedIds.length === 0) return;
+            
+            if (!confirm(selectedIds.length + ' kayıt silinecek. Emin misiniz?')) return;
+            
+            let deleteCount = 0;
+            selectedIds.forEach(id => {
+                $.ajax({
+                    url: '/musteriler/' + id,
+                    method: 'DELETE',
+                    data: { _token: '{{ csrf_token() }}' },
+                    success: function() {
+                        deleteCount++;
+                        if (deleteCount === selectedIds.length) {
+                            location.reload();
+                        }
+                    }
+                });
+            });
+        };
+        
+        // Duplicate selected (redirect to first selected item's page)
+        window.duplicateSelected = function() {
+            if (selectedIds.length === 0) return;
+            window.location.href = '/musteriler/' + selectedIds[0] + '/edit?duplicate=1';
+        };
+        
+        // Add new row
+        window.addNewRow = function() {
+            // Form alanını aç ve focus yap
+            const form = document.getElementById('musteri-ekle-form');
+            if (form.style.display === 'none') {
+                toggleForm();
+            }
+            // İlk input'a focus yap
+            setTimeout(() => {
+                document.querySelector('#musteri-ekle-form input[name="sirket"]').focus();
+            }, 100);
+        };
+        
+        // ==================== SÜTUN GÖRÜNÜRLÜKcontrôlÜ ====================
+        
+        // Column toggle button
+        $('#column-toggle-btn').on('click', function(e) {
+            e.stopPropagation();
+            $('#column-menu').toggleClass('hidden');
+            $('#column-arrow').text($('#column-menu').hasClass('hidden') ? '▼' : '▲');
+        });
+        
+        // Close column menu when clicking outside
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('#column-toggle-btn, #column-menu').length) {
+                $('#column-menu').addClass('hidden');
+                $('#column-arrow').text('▼');
+            }
+        });
+        
+        // Column visibility toggle
+        $('.column-toggle').on('change', function() {
+            const column = $(this).data('column');
+            const isVisible = $(this).is(':checked');
+            const columnIndex = getColumnIndex(column);
+            
+            if (columnIndex !== -1) {
+                // Toggle header
+                $(`#musteriler-table thead tr th:eq(${columnIndex})`).toggle(isVisible);
+                // Toggle all cells in that column
+                $(`#musteriler-table tbody tr`).each(function() {
+                    $(this).find(`td:eq(${columnIndex})`).toggle(isVisible);
+                });
+            }
+            
+            // Update scroll bar width
+            setTimeout(() => {
+                document.getElementById('scroll-content-top').style.width = document.getElementById('musteriler-table').offsetWidth + 'px';
+            }, 100);
+        });
+        
+        function getColumnIndex(columnName) {
+            const columns = ['checkbox', 'sirket', 'sehir', 'telefon', 'derece', 'turu', 'adres', 'notlar', 'en_son_ziyaret', 'ziyaret_gun', 'ziyaret_adeti', 'toplam_teklif', 'kazanildi_toplami'];
+            return columns.indexOf(columnName);
+        }
+        
+        // Initialize column visibility on page load
+        $(document).ready(function() {
+            $('.column-toggle').each(function() {
+                const column = $(this).data('column');
+                const isChecked = $(this).is(':checked');
+                const columnIndex = getColumnIndex(column);
+                
+                if (columnIndex !== -1 && !isChecked) {
+                    $(`#musteriler-table thead tr th:eq(${columnIndex})`).hide();
+                    $(`#musteriler-table tbody tr`).each(function() {
+                        $(this).find(`td:eq(${columnIndex})`).hide();
+                    });
                 }
             });
         });

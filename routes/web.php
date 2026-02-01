@@ -583,6 +583,10 @@ Route::delete('/musteriler/{id}', function ($id) {
     $musteri = \App\Models\Musteri::findOrFail($id);
     $musteri->delete();
     
+    if (request()->ajax()) {
+        return response()->json(['success' => true, 'message' => 'Müşteri silindi.']);
+    }
+    
     return redirect('/musteriler')->with('message', 'Müşteri silindi.');
 });
 
