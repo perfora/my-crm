@@ -27,7 +27,7 @@ class DashboardFilterService
                 'date_range' => $this->filterDateRange($query, $filter, $dataSource),
 
                 // Durum filtreleri
-                'status' => $this->filterByStatus($query, $filter['value'] ?? null, $dataSource),
+                'status' => $this->filterByStatus($query, $filter['field'] ?? null, $filter['value'] ?? null, $dataSource),
 
                 // Metin araması
                 'text_search' => $this->filterTextSearch($query, $filter['field'] ?? 'name', $filter['value'] ?? '', $dataSource),
@@ -97,18 +97,21 @@ class DashboardFilterService
         return $query;
     }
 
-    private function filterByStatus(Builder $query, ?string $value, string $dataSource): Builder
+    private function filterByStatus(Builder $query, ?string $field, ?string $value, string $dataSource): Builder
     {
-        if (!$value) return $query;
+        if (!$field || !$value) return $query;
 
-        $statusField = match ($dataSource) {
-            'tum_isler' => 'durum',
-            'musteriler' => 'durum',
-            'ziyaretler' => 'durum',
-            default => 'status',
-        };
+        // Müşteri için özel işlem - ismi ID'ye çevir
+        if ($field === 'musteri_id') {
+            $customer = \App\Models\Musteri::where('adi', $value)->first();
+            if ($customer) {
+                return $query->where('musteri_id', $customer->id);
+            }
+            return $query;
+        }
 
-        return $query->where($statusField, $value);
+        // Normal filtreleme
+        return $query->where($field, $value);
     }
 
     private function filterTextSearch(Builder $query, string $field, string $value, string $dataSource): Builder
@@ -157,6 +160,22 @@ class DashboardFilterService
     public function getDistinctValues(Builder $query, string $field): array
     {
         try {
+            // Müşteri ID'si için özel işlem - isim getir
+            if ($field === 'musteri_id') {
+                $customerIds = $query->whereNotNull($field)
+                    ->distinct()
+                    ->pluck($field)
+                    ->filter(fn($val) => !empty($val))
+                    ->toArray();
+                
+                $customers = \App\Models\Musteri::whereIn('id', $customerIds)
+                    ->pluck('adi', 'id')
+                    ->toArray();
+                
+                return array_values($customers);
+            }
+            
+            // Diğer alanlar için normal işlem
             $values = $query->whereNotNull($field)
                 ->distinct()
                 ->pluck($field)

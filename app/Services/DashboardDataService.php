@@ -58,18 +58,14 @@ class DashboardDataService
                 'columns' => [
                     'id' => 'ID',
                     'name' => 'İş Adı',
-                    'musteri_id' => 'Müşteri ID',
-                    'register_durum' => 'Durum',
-                    'tipi' => 'Tipi',
+                    'musteri_id' => 'Müşteri',
+                    'tipi' => 'Durum',
                     'turu' => 'Türü',
                     'oncelik' => 'Öncelik',
                     'teklif_tutari' => 'Teklif',
                     'alis_tutari' => 'Alış',
-                    'kur' => 'Kur',
                     'kapanis_tarihi' => 'Kapanış Tarihi',
-                    'is_guncellenme_tarihi' => 'İş Güncellenme Tarihi',
-                    'created_at' => 'Oluşturma Tarihi',
-                    'updated_at' => 'Güncellenme Tarihi',
+                    'is_guncellenme_tarihi' => 'Güncellenme Tarihi',
                 ]
             ],
             'musteriler' => [
