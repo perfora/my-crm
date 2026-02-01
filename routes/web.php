@@ -691,6 +691,9 @@ Route::put('/tum-isler/{id}', function ($id) {
         
         $is->update($validated);
         
+        // Reload relationships for response
+        $is->load(['musteri', 'marka']);
+        
         return response()->json([
             'success' => true,
             'message' => 'Güncellendi',

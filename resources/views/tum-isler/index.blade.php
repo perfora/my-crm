@@ -843,7 +843,7 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td class="px-3 py-3 whitespace-nowrap">
+                                <td class="px-3 py-3 whitespace-nowrap editable-select" data-field="musteri_id" data-id="{{ $is->id }}" data-value="{{ $is->musteri_id }}">
                                     @if($is->musteri)
                                         <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
                                             {{ $is->musteri->sirket }}
@@ -852,7 +852,7 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-3 py-3 whitespace-nowrap">
+                                <td class="px-3 py-3 whitespace-nowrap editable-select" data-field="marka_id" data-id="{{ $is->id }}" data-value="{{ $is->marka_id }}">
                                     @if($is->marka)
                                         <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
                                             {{ $is->marka->name }}
@@ -1639,7 +1639,7 @@
             });
         });
 
-        // Inline editing - Select fields (Tipi, Turu, Oncelik)
+        // Inline editing - Select fields (Tipi, Turu, Oncelik, Musteri, Marka)
         $(document).on('click', '.editable-select:not(.editing)', function(e) {
             e.stopPropagation();
             const cell = $(this);
@@ -1684,6 +1684,22 @@
                     <option value="3" ${currentValue === '3' ? 'selected' : ''}>3</option>
                     <option value="4" ${currentValue === '4' ? 'selected' : ''}>4 (Düşük)</option>
                 `;
+            } else if (field === 'musteri_id') {
+                options = '<option value="">Seçiniz</option>';
+                @php
+                    $musteriler = \App\Models\Musteri::orderBy('sirket')->get();
+                @endphp
+                @foreach($musteriler as $musteri)
+                    options += `<option value="{{ $musteri->id }}" ${currentValue == '{{ $musteri->id }}' ? 'selected' : ''}>{{ $musteri->sirket }}</option>`;
+                @endforeach
+            } else if (field === 'marka_id') {
+                options = '<option value="">Seçiniz</option>';
+                @php
+                    $markalar = \App\Models\Marka::orderBy('name')->get();
+                @endphp
+                @foreach($markalar as $marka)
+                    options += `<option value="{{ $marka->id }}" ${currentValue == '{{ $marka->id }}' ? 'selected' : ''}>{{ $marka->name }}</option>`;
+                @endforeach
             }
             
             cell.html(`<select class="w-full px-2 py-1 border rounded text-sm">${options}</select>`);
@@ -1714,6 +1730,18 @@
                                 else if (newValue === '2') badgeClass = 'bg-yellow-100 text-yellow-800';
                                 else if (newValue === '3') badgeClass = 'bg-green-100 text-green-800';
                                 cell.html(`<span class="px-2 py-1 text-xs rounded-full ${badgeClass}">${newValue}</span>`);
+                            } else {
+                                cell.html('-');
+                            }
+                        } else if (field === 'musteri_id') {
+                            if (response.data.musteri) {
+                                cell.html(`<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${response.data.musteri.sirket}</span>`);
+                            } else {
+                                cell.html('-');
+                            }
+                        } else if (field === 'marka_id') {
+                            if (response.data.marka) {
+                                cell.html(`<span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">${response.data.marka.name}</span>`);
                             } else {
                                 cell.html('-');
                             }
