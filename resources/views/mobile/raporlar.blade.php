@@ -29,9 +29,13 @@
                     ->count();
                 
                 // Bu Yıl
-                $buYilKazanilan = \App\Models\TumIsler::where('tipi', 'Kazanıldı')
-                    ->whereYear('kapanis_tarihi', date('Y'))
-                    ->sum('teklif_tutari');
+                $isler2026 = \App\Models\TumIsler::where('tipi', 'Kazanıldı')
+                    ->whereYear('kapanis_tarihi', 2026)
+                    ->get();
+                $buYilKazanilan = $isler2026->sum('teklif_tutari');
+                $buYilAlis = $isler2026->sum('alis_tutari');
+                $buYilKar = $buYilKazanilan - $buYilAlis;
+                $buYilKarOran = $buYilKazanilan > 0 ? ($buYilKar / $buYilKazanilan) * 100 : 0;
                 
                 // 2026 Kazanılan İşler
                 $kazanilan2026 = \App\Models\TumIsler::where('tipi', 'Kazanıldı')
@@ -99,11 +103,23 @@
                 </div>
             </div>
 
-            <!-- Bu Yıl Kazanılan -->
-            <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
-                <h2 class="text-lg font-semibold mb-2">💰 {{ date('Y') }} Kazanılan Tutar</h2>
-                <div class="text-4xl font-bold">
-                    {{ number_format($buYilKazanilan, 0, ',', '.') }} ₺
+            <!-- Bu Yıl Kazanılan & Kar -->
+            <div class="grid grid-cols-1 gap-4">
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+                    <h2 class="text-lg font-semibold mb-2">💰 2026 Kazanılan</h2>
+                    <div class="text-4xl font-bold">
+                        ${{ number_format($buYilKazanilan, 0, ',', '.') }}
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
+                    <h2 class="text-lg font-semibold mb-2">📈 2026 Kar</h2>
+                    <div class="text-4xl font-bold">
+                        ${{ number_format($buYilKar, 0, ',', '.') }}
+                    </div>
+                    <div class="text-sm mt-2 opacity-90">
+                        %{{ number_format($buYilKarOran, 1) }} kar oranı
+                    </div>
                 </div>
             </div>
 
@@ -111,7 +127,7 @@
             <div class="bg-white rounded-lg shadow-lg p-6">
                 <h2 class="text-xl font-bold text-gray-800 mb-4">📅 2026 Kazanılan İşler</h2>
                 <div class="space-y-3">
-                    @forelse($kazanilan2026 as $is)
+                    @forelse($kazanilan2${{ number_format($is->teklif_tutari, 0, ',', '.') }}
                         <div class="border-l-4 border-blue-500 pl-3 py-2">
                             <div class="font-semibold text-gray-800">{{ $is->name }}</div>
                             <div class="text-sm text-gray-600">
@@ -150,7 +166,7 @@
                                 </span>
                                 @if($is->teklif_tutari)
                                     <span class="text-sm font-bold text-gray-700">
-                                        {{ number_format($is->teklif_tutari, 0, ',', '.') }} ₺
+                                        ${{ number_format($is->teklif_tutari, 0, ',', '.') }}
                                     </span>
                                 @endif
                             </div>
@@ -175,7 +191,7 @@
                                 </span>
                                 @if($musteri->toplam_teklif > 0)
                                     <span class="text-sm font-bold text-orange-600">
-                                        {{ number_format($musteri->toplam_teklif, 0, ',', '.') }} ₺
+                                        ${{ number_format($musteri->toplam_teklif, 0, ',', '.') }}
                                     </span>
                                 @endif
                             </div>
