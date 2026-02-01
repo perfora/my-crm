@@ -68,11 +68,28 @@
             ->limit(10)
             ->get();
             
-        $yuksekOncelikIsler = \App\Models\TumIsler::where('oncelik', 'Yüksek')
-            ->whereNotIn('tipi', ['Kazanıldı', 'Kaybedildi'])
-            ->orderBy('id', 'desc')
-            ->limit(10)
-            ->get();
+        // Yüksek Teklif/Kazanılan Müşteriler - Derece 1 veya 2, 60+ gün ziyaret/arama yok
+        $yuksekOncelikIsler = \App\Models\Musteri::whereIn('derece', ['1 -Sık', '2 - Orta'])
+            ->with(['tumIsler', 'ziyaretler'])
+            ->get()
+            ->filter(function($musteri) {
+                // Son ziyaret/arama tarihini bul
+                $sonZiyaret = $musteri->ziyaretler->max('ziyaret_tarihi');
+                $sonArama = $musteri->ziyaretler->max('arama_tarihi');
+                $sonTarih = max($sonZiyaret, $sonArama);
+                
+                if (!$sonTarih) return true; // Hiç ziyaret/arama yoksa göster
+                
+                $gunFarki = \Carbon\Carbon::parse($sonTarih)->diffInDays(now());
+                return $gunFarki > 60;
+            })
+            ->map(function($musteri) {
+                $musteri->toplam_teklif = $musteri->tumIsler->sum('teklif_tutari');
+                $musteri->kazanilan_tutar = $musteri->tumIsler->where('tipi', 'Kazanıldı')->sum('teklif_tutari');
+                return $musteri;
+            })
+            ->sortByDesc('toplam_teklif')
+            ->take(10);
             
         $yaklasanZiyaretler = \App\Models\Ziyaret::whereIn('durumu', ['Beklemede', 'Planlandı'])
             ->orderBy('ziyaret_tarihi', 'asc')
@@ -277,34 +294,42 @@
             </div>
             @endif
 
-            <!-- Yüksek Öncelikli İşler -->
+            <!-- Yüksek Teklif Müşterileri (60+ Gün Ziyaretsiz) -->
             @if($showYuksekOncelik)
             <div class="bg-white rounded-lg shadow-lg border-t-4 border-red-500">
                 <div class="p-4 border-b bg-red-50">
-                    <h3 class="text-xl font-bold text-red-800">🔥 Yüksek Öncelikli İşler</h3>
-                    <p class="text-sm text-gray-600">Acil takip gerektiren</p>
+                    <h3 class="text-xl font-bold text-red-800">🎯 Yüksek Potansiyel Müşteriler</h3>
+                    <p class="text-sm text-gray-600">Derece 1-2, 60+ gün ziyaret/arama yok</p>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead class="bg-gray-50 border-b">
                             <tr>
-                                <th class="px-4 py-3 text-left font-semibold text-gray-700">İş Adı</th>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-700">Müşteri</th>
-                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Durum</th>
-                                <th class="px-4 py-3 text-right font-semibold text-gray-700">Teklif</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Derece</th>
+                                <th class="px-4 py-3 text-right font-semibold text-gray-700">Toplam Teklif</th>
+                                <th class="px-4 py-3 text-right font-semibold text-gray-700">Kazanıldı</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($yuksekOncelikIsler as $is)
+                            @forelse($yuksekOncelikIsler as $musteri)
                             <tr class="border-b hover:bg-gray-50">
-                                <td class="px-4 py-3">{{ $is->name }}</td>
-                                <td class="px-4 py-3">{{ $is->musteri->sirket ?? '-' }}</td>
-                                <td class="px-4 py-3">{{ $is->tipi }}</td>
-                                <td class="px-4 py-3 text-right font-mono">${{ number_format($is->teklif_tutari, 0, ',', '.') }}</td>
+                                <td class="px-4 py-3">
+                                    <a href="/musteriler/{{ $musteri->id }}" class="text-blue-600 hover:underline font-semibold">
+                                        {{ $musteri->sirket }}
+                                    </a>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <span class="px-2 py-1 rounded text-xs font-semibold {{ $musteri->derece == '1 -Sık' ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800' }}">
+                                        {{ $musteri->derece }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-right font-mono text-blue-600 font-semibold">${{ number_format($musteri->toplam_teklif, 0, ',', '.') }}</td>
+                                <td class="px-4 py-3 text-right font-mono text-green-600 font-semibold">${{ number_format($musteri->kazanilan_tutar, 0, ',', '.') }}</td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="4" class="px-4 py-8 text-center text-gray-500">Yüksek öncelikli iş yok</td>
+                                <td colspan="4" class="px-4 py-8 text-center text-gray-500">Kriterlere uygun müşteri yok</td>
                             </tr>
                             @endforelse
                         </tbody>
