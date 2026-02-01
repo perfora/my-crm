@@ -20,8 +20,8 @@
         // Özet Veriler
         $toplamMusteri = \App\Models\Musteri::count();
         $toplamKisiler = \App\Models\Kisi::count();
-        $toplamZiyaretler = \App\Models\Ziyaret::count();
-        $toplamIsler = \App\Models\TumIsler::count();
+        $toplamZiyaretler = \App\Models\Ziyaret::whereYear('tarih', 2026)->count();
+        $toplamIsler = \App\Models\TumIsler::whereYear('created_at', 2026)->count();
         
         // 2025 Kazanılan İşler
         $isler2025 = \App\Models\TumIsler::where('tipi', 'Kazanıldı')
@@ -51,7 +51,8 @@
         
         // Widget Verileri
         $bekleyenIsler = \App\Models\TumIsler::whereIn('tipi', ['Teklif Aşamasında', 'Devam Edecek'])
-            ->orderBy('id', 'desc')
+            ->orderByRaw("CASE WHEN oncelik = 'Yüksek' THEN 1 WHEN oncelik = 'Orta' THEN 2 ELSE 3 END")
+            ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
             
@@ -119,7 +120,7 @@
             <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium opacity-90">Toplam Ziyaret</p>
+                        <p class="text-sm font-medium opacity-90">2026 Ziyaret</p>
                         <p class="text-4xl font-bold mt-2">{{ $toplamZiyaretler }}</p>
                     </div>
                     <div class="text-5xl opacity-20">🚗</div>
@@ -130,7 +131,7 @@
             <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-lg p-6 text-white">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium opacity-90">Toplam İş</p>
+                        <p class="text-sm font-medium opacity-90">2026 İş</p>
                         <p class="text-4xl font-bold mt-2">{{ $toplamIsler }}</p>
                     </div>
                     <div class="text-5xl opacity-20">📊</div>
