@@ -78,14 +78,20 @@
                 // Son ziyaret/arama tarihini bul
                 $sonZiyaret = $musteri->ziyaretler->max('ziyaret_tarihi');
                 $sonArama = $musteri->ziyaretler->max('arama_tarihi');
-                $sonTarih = max($sonZiyaret, $sonArama);
                 
-                if (!$sonTarih) {
-                    $musteri->gecen_gun = 9999; // Hiç ziyaret/arama yoksa çok yüksek değer (sıralama için)
-                    return false; // Hiç ziyaret olmayanları gösterme
+                // İki tarih varsa en büyüğünü al
+                if ($sonZiyaret && $sonArama) {
+                    $sonTarih = max($sonZiyaret, $sonArama);
+                } elseif ($sonZiyaret) {
+                    $sonTarih = $sonZiyaret;
+                } elseif ($sonArama) {
+                    $sonTarih = $sonArama;
+                } else {
+                    // Hiç ziyaret/arama yoksa gösterme
+                    return false;
                 }
                 
-                $gunFarki = \Carbon\Carbon::parse($sonTarih)->diffInDays(now());
+                $gunFarki = (int) \Carbon\Carbon::parse($sonTarih)->diffInDays(now());
                 $musteri->gecen_gun = $gunFarki;
                 return $gunFarki > 60;
             })
