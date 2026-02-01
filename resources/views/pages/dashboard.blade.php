@@ -20,8 +20,12 @@
         // Özet Veriler
         $toplamMusteri = \App\Models\Musteri::count();
         $toplamKisiler = \App\Models\Kisi::count();
-        $toplamZiyaretler = \App\Models\Ziyaret::whereYear('ziyaret_tarihi', 2026)->count();
-        $toplamIsler = \App\Models\TumIsler::whereYear('created_at', 2026)->count();
+        $toplamZiyaretler = \App\Models\Ziyaret::where('durumu', 'Tamamlandı')
+            ->whereYear('ziyaret_tarihi', 2026)
+            ->count();
+        $toplamIsler = \App\Models\TumIsler::where('tipi', 'Kazanıldı')
+            ->whereYear('kapanis_tarihi', 2026)
+            ->count();
         
         // 2025 Kazanılan İşler
         $isler2025 = \App\Models\TumIsler::where('tipi', 'Kazanıldı')
@@ -120,7 +124,7 @@
             <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium opacity-90">2026 Ziyaret</p>
+                        <p class="text-sm font-medium opacity-90">2026 Tamamlanan Ziyaret</p>
                         <p class="text-4xl font-bold mt-2">{{ $toplamZiyaretler }}</p>
                     </div>
                     <div class="text-5xl opacity-20">🚗</div>
@@ -131,7 +135,7 @@
             <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-lg p-6 text-white">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium opacity-90">2026 İş</p>
+                        <p class="text-sm font-medium opacity-90">2026 Kazanılan İş</p>
                         <p class="text-4xl font-bold mt-2">{{ $toplamIsler }}</p>
                     </div>
                     <div class="text-5xl opacity-20">📊</div>
