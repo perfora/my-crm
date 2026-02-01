@@ -54,6 +54,13 @@
     <div class="container mx-auto px-4 py-8">
         @php
             $toplamMusteri = \App\Models\Musteri::count();
+            // Türü değerleri - veritabanından mevcut tüm türleri çek
+            $existingTuruValues = \App\Models\Musteri::whereNotNull('turu')
+                ->distinct()
+                ->pluck('turu')
+                ->filter()
+                ->sort()
+                ->values();
         @endphp
         
         <div class="flex justify-between items-center mb-6">
@@ -632,17 +639,13 @@
                     <option value="4 - Hiç" ${currentValue === '4 - Hiç' ? 'selected' : ''}>4 - Hiç</option>
                 `;
             } else if (field === 'turu') {
-                options = `
-                    <option value="">Seçiniz</option>
-                    <option value="Netcom" ${currentValue === 'Netcom' ? 'selected' : ''}>Netcom</option>
-                    <option value="Bayi" ${currentValue === 'Bayi' ? 'selected' : ''}>Bayi</option>
-                    <option value="Resmi Kurum" ${currentValue === 'Resmi Kurum' ? 'selected' : ''}>Resmi Kurum</option>
-                    <option value="Üniversite" ${currentValue === 'Üniversite' ? 'selected' : ''}>Üniversite</option>
-                    <option value="Belediye" ${currentValue === 'Belediye' ? 'selected' : ''}>Belediye</option>
-                    <option value="Hastane" ${currentValue === 'Hastane' ? 'selected' : ''}>Hastane</option>
-                    <option value="Özel Sektör" ${currentValue === 'Özel Sektör' ? 'selected' : ''}>Özel Sektör</option>
-                    <option value="Diğer" ${currentValue === 'Diğer' ? 'selected' : ''}>Diğer</option>
-                `;
+                // Veritabanından mevcut türleri çek
+                const existingTuruValues = @json($existingTuruValues);
+                options = '<option value="">Seçiniz</option>';
+                existingTuruValues.forEach(function(value) {
+                    const selected = currentValue === value ? 'selected' : '';
+                    options += `<option value="${value}" ${selected}>${value}</option>`;
+                });
             }
             
             cell.html(`<select class="inline-edit-select w-full px-2 py-1 border rounded">${options}</select>`);
@@ -710,6 +713,15 @@
                     },
                     success: function(response) {
                         cell.data('value', newValue);
+                        
+                        // Eğer turu alanı için yeni bir değer eklendiyse, listeye ekle
+                        if (field === 'turu' && newValue) {
+                            const existingTuruValues = @json($existingTuruValues);
+                            if (!existingTuruValues.includes(newValue)) {
+                                existingTuruValues.push(newValue);
+                                existingTuruValues.sort();
+                            }
+                        }
                         
                         // Rebuild the badge/display
                         if (newValue) {
