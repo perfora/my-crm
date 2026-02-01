@@ -31,6 +31,16 @@
         .sortable:hover {
             background-color: #f3f4f6;
         }
+        .editable-cell, .editable-select {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .editable-cell:hover, .editable-select:hover {
+            background-color: #fef3c7 !important;
+        }
+        .editing {
+            padding: 0 !important;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -239,9 +249,9 @@
                                         {{ $musteri->sirket }}
                                     </a>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $musteri->sehir ?? '-' }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $musteri->telefon ?? '-' }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="sehir" data-id="{{ $musteri->id }}" data-value="{{ $musteri->sehir }}">{{ $musteri->sehir ?? '-' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="telefon" data-id="{{ $musteri->id }}" data-value="{{ $musteri->telefon }}">{{ $musteri->telefon ?? '-' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="derece" data-id="{{ $musteri->id }}" data-value="{{ $musteri->derece }}">
                                     @if($musteri->derece)
                                         <span class="px-2 py-1 text-xs rounded-full 
                                             @if($musteri->derece == '1 -Sık') bg-red-100 text-red-800
@@ -255,7 +265,7 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="turu" data-id="{{ $musteri->id }}" data-value="{{ $musteri->turu }}">
                                     @if($musteri->turu)
                                         <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
                                             {{ $musteri->turu }}
@@ -476,6 +486,151 @@
             const totalCount = rows.length - 1; // Empty row hariç
             document.querySelector('.text-3xl.font-bold').nextElementSibling.textContent = 'Toplam: ' + totalCount;
         }
+
+        // Inline editing - Text fields (Sehir, Telefon)
+        $(document).on('click', '.editable-cell:not(.editing)', function() {
+            const cell = $(this);
+            const field = cell.data('field');
+            const id = cell.data('id');
+            const currentValue = cell.data('value') || '';
+            
+            cell.addClass('editing');
+            const originalContent = cell.html();
+            
+            cell.html(`<input type="text" class="w-full px-2 py-1 border rounded" value="${currentValue}" />`);
+            const input = cell.find('input');
+            input.focus();
+            
+            function saveEdit() {
+                const newValue = input.val();
+                
+                $.ajax({
+                    url: '/musteriler/' + id,
+                    method: 'PUT',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        [field]: newValue
+                    },
+                    success: function(response) {
+                        cell.data('value', newValue);
+                        cell.html(newValue || '-');
+                        cell.removeClass('editing');
+                        
+                        // Update data attribute for filtering
+                        cell.closest('tr').attr('data-' + field, newValue);
+                    },
+                    error: function() {
+                        alert('Kaydedilemedi!');
+                        cell.html(originalContent);
+                        cell.removeClass('editing');
+                    }
+                });
+            }
+            
+            input.on('blur', saveEdit);
+            input.on('keypress', function(e) {
+                if (e.which === 13) { // Enter
+                    saveEdit();
+                }
+            });
+            input.on('keydown', function(e) {
+                if (e.which === 27) { // Escape
+                    cell.html(originalContent);
+                    cell.removeClass('editing');
+                }
+            });
+        });
+
+        // Inline editing - Select fields (Derece, Turu)
+        $(document).on('click', '.editable-select:not(.editing)', function() {
+            const cell = $(this);
+            const field = cell.data('field');
+            const id = cell.data('id');
+            const currentValue = cell.data('value') || '';
+            
+            cell.addClass('editing');
+            const originalContent = cell.html();
+            
+            let options = '';
+            if (field === 'derece') {
+                options = `
+                    <option value="">Seçiniz</option>
+                    <option value="1 -Sık" ${currentValue === '1 -Sık' ? 'selected' : ''}>1 - Sık</option>
+                    <option value="2 - Orta" ${currentValue === '2 - Orta' ? 'selected' : ''}>2 - Orta</option>
+                    <option value="3- Düşük" ${currentValue === '3- Düşük' ? 'selected' : ''}>3 - Düşük</option>
+                    <option value="4 - Hiç" ${currentValue === '4 - Hiç' ? 'selected' : ''}>4 - Hiç</option>
+                `;
+            } else if (field === 'turu') {
+                options = `
+                    <option value="">Seçiniz</option>
+                    <option value="Netcom" ${currentValue === 'Netcom' ? 'selected' : ''}>Netcom</option>
+                    <option value="Bayi" ${currentValue === 'Bayi' ? 'selected' : ''}>Bayi</option>
+                    <option value="Resmi Kurum" ${currentValue === 'Resmi Kurum' ? 'selected' : ''}>Resmi Kurum</option>
+                    <option value="Üniversite" ${currentValue === 'Üniversite' ? 'selected' : ''}>Üniversite</option>
+                    <option value="Belediye" ${currentValue === 'Belediye' ? 'selected' : ''}>Belediye</option>
+                    <option value="Hastane" ${currentValue === 'Hastane' ? 'selected' : ''}>Hastane</option>
+                    <option value="Özel Sektör" ${currentValue === 'Özel Sektör' ? 'selected' : ''}>Özel Sektör</option>
+                    <option value="Diğer" ${currentValue === 'Diğer' ? 'selected' : ''}>Diğer</option>
+                `;
+            }
+            
+            cell.html(`<select class="w-full px-2 py-1 border rounded">${options}</select>`);
+            const select = cell.find('select');
+            select.focus();
+            
+            function saveSelect() {
+                const newValue = select.val();
+                
+                $.ajax({
+                    url: '/musteriler/' + id,
+                    method: 'PUT',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        [field]: newValue
+                    },
+                    success: function(response) {
+                        cell.data('value', newValue);
+                        
+                        // Rebuild the badge/display
+                        if (newValue) {
+                            let badgeClass = 'bg-gray-100 text-gray-800';
+                            if (field === 'derece') {
+                                if (newValue === '1 -Sık') badgeClass = 'bg-red-100 text-red-800';
+                                else if (newValue === '2 - Orta') badgeClass = 'bg-yellow-100 text-yellow-800';
+                                else if (newValue === '3- Düşük') badgeClass = 'bg-green-100 text-green-800';
+                            } else if (field === 'turu') {
+                                badgeClass = 'bg-blue-100 text-blue-800';
+                            }
+                            cell.html(`<span class="px-2 py-1 text-xs rounded-full ${badgeClass}">${newValue}</span>`);
+                        } else {
+                            cell.html('-');
+                        }
+                        
+                        cell.removeClass('editing');
+                        
+                        // Update data attribute for filtering
+                        cell.closest('tr').attr('data-' + field, newValue);
+                    },
+                    error: function() {
+                        alert('Kaydedilemedi!');
+                        cell.html(originalContent);
+                        cell.removeClass('editing');
+                    }
+                });
+            }
+            
+            select.on('change', saveSelect);
+            select.on('blur', function() {
+                cell.html(originalContent);
+                cell.removeClass('editing');
+            });
+            select.on('keydown', function(e) {
+                if (e.which === 27) { // Escape
+                    cell.html(originalContent);
+                    cell.removeClass('editing');
+                }
+            });
+        });
     </script>
 </body>
 </html>
