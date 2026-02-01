@@ -1,57 +1,58 @@
 <x-layouts::app.sidebar>
 @php
-    // Üst özetler - 2025 ve 2026 verileri
-    $isler2025 = \App\Models\TumIsler::where('tipi', 'Kazanıldı')
-        ->whereYear('kapanis_tarihi', 2025)
-        ->get();
-    $adet2025 = $isler2025->count();
-    $toplamTeklif2025 = $isler2025->sum('teklif_tutari');
-    $toplamAlış2025 = $isler2025->sum('alis_tutari');
-    $kar2025 = $toplamTeklif2025 - $toplamAlış2025;
-    
-    $isler2026 = \App\Models\TumIsler::where('tipi', 'Kazanıldı')
-        ->whereYear('kapanis_tarihi', 2026)
-        ->get();
-    $adet2026 = $isler2026->count();
-    $toplamTeklif2026 = $isler2026->sum('teklif_tutari');
-    $toplamAlış2026 = $isler2026->sum('alis_tutari');
-    $kar2026 = $toplamTeklif2026 - $toplamAlış2026;
-    
-    // Toplam müşteri ve işler
+    // Üst özetler
     $toplamMusteri = \App\Models\Musteri::count();
     $toplamIsler = \App\Models\TumIsler::count();
+    $toplamKazanilanIsler = \App\Models\TumIsler::where('tipi', 'Kazanıldı')->count();
+    $toplamTeklifAsamasinda = \App\Models\TumIsler::where('tipi', 'Teklif Aşamasında')->count();
 @endphp
 
 <flux:main>
 <div class="container mx-auto px-4 py-8">
     <!-- Üst Özet Kartları -->
-    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <!-- Toplam Müşteri -->
-        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
-            <p class="text-gray-600 text-sm font-semibold uppercase">Toplam Müşteri</p>
-            <p class="text-3xl font-bold text-blue-600">{{ $toplamMusteri }}</p>
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium opacity-90">Toplam Müşteri</p>
+                    <p class="text-4xl font-bold mt-2">{{ $toplamMusteri }}</p>
+                </div>
+                <div class="text-5xl opacity-20">👥</div>
+            </div>
         </div>
 
         <!-- Toplam İş -->
-        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
-            <p class="text-gray-600 text-sm font-semibold uppercase">Toplam İş</p>
-            <p class="text-3xl font-bold text-green-600">{{ $toplamIsler }}</p>
+        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium opacity-90">Toplam İş</p>
+                    <p class="text-4xl font-bold mt-2">{{ $toplamIsler }}</p>
+                </div>
+                <div class="text-5xl opacity-20">📊</div>
+            </div>
         </div>
 
-        <!-- 2025 Karlılık -->
-        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
-            <p class="text-gray-600 text-sm font-semibold uppercase">2025 Kazanılan</p>
-            <p class="text-3xl font-bold text-purple-600">{{ $adet2025 }}</p>
-            <p class="text-sm text-gray-700 mt-2">Teklif: ${{ number_format($toplamTeklif2025, 2, ',', '.') }}</p>
-            <p class="text-sm text-gray-700">Kar: ${{ number_format($kar2025, 2, ',', '.') }}</p>
+        <!-- Kazanılan İşler -->
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium opacity-90">Kazanılan İş</p>
+                    <p class="text-4xl font-bold mt-2">{{ $toplamKazanilanIsler }}</p>
+                </div>
+                <div class="text-5xl opacity-20">✅</div>
+            </div>
         </div>
 
-        <!-- 2026 Karlılık -->
-        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
-            <p class="text-gray-600 text-sm font-semibold uppercase">2026 Kazanılan</p>
-            <p class="text-3xl font-bold text-orange-600">{{ $adet2026 }}</p>
-            <p class="text-sm text-gray-700 mt-2">Teklif: ${{ number_format($toplamTeklif2026, 2, ',', '.') }}</p>
-            <p class="text-sm text-gray-700">Kar: ${{ number_format($kar2026, 2, ',', '.') }}</p>
+        <!-- Teklif Aşamasında -->
+        <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium opacity-90">Teklif Aşamasında</p>
+                    <p class="text-4xl font-bold mt-2">{{ $toplamTeklifAsamasinda }}</p>
+                </div>
+                <div class="text-5xl opacity-20">📋</div>
+            </div>
         </div>
     </div>
 
