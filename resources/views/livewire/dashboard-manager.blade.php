@@ -291,13 +291,11 @@
                                                         }
                                                     }
                                                     
-                                                    // Sayıları formatla ve döviz bilgisi ekle
+                                                    // Sayıları formatla
                                                     if($col === 'teklif_tutari' && is_numeric($value)) {
-                                                        $doviz = $row['teklif_doviz'] ?? 'TL';
-                                                        $value = number_format($value, 2, ',', '.') . ' ' . $doviz;
+                                                        $value = number_format($value, 2, ',', '.');
                                                     } elseif($col === 'alis_tutari' && is_numeric($value)) {
-                                                        $doviz = $row['alis_doviz'] ?? 'TL';
-                                                        $value = number_format($value, 2, ',', '.') . ' ' . $doviz;
+                                                        $value = number_format($value, 2, ',', '.');
                                                     } elseif(in_array($col, ['kur']) && is_numeric($value)) {
                                                         $value = number_format($value, 4, ',', '.');
                                                     }
