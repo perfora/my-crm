@@ -54,8 +54,9 @@
         $showYaklasanZiyaretler = $widgetSettings['yaklasan_ziyaretler'] ?? true;
         
         // Widget Verileri
-        $bekleyenIsler = \App\Models\TumIsler::whereIn('tipi', ['Teklif Aşamasında', 'Devam Edecek'])
-            ->orderByRaw("CASE WHEN oncelik = 'Yüksek' THEN 1 WHEN oncelik = 'Orta' THEN 2 ELSE 3 END")
+        $bekleyenIsler = \App\Models\TumIsler::where('oncelik', '1')
+            ->where('turu', 'Yenileme')
+            ->whereNotIn('tipi', ['Kazanıldı', 'Kaybedildi'])
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
