@@ -68,8 +68,10 @@
             ->limit(10)
             ->get();
             
-        // Yüksek Teklif/Kazanılan Müşteriler - Derece 1 veya 2, 60+ gün ziyaret/arama yok
-        $yuksekOncelikIsler = \App\Models\Musteri::whereIn('derece', ['1 -Sık', '2 - Orta'])
+        // Yüksek Teklif/Kazanılan Müşteriler - Konya, Derece 1-2, Belirli Türler, 60+ gün ziyaret/arama yok
+        $yuksekOncelikIsler = \App\Models\Musteri::where('sehir', 'Konya')
+            ->whereIn('derece', ['1 -Sık', '2 - Orta'])
+            ->whereIn('turu', ['Resmi Kurum', 'Üniversite', 'Belediye', 'Hastane', 'Özel Sektör'])
             ->with(['tumIsler', 'ziyaretler'])
             ->get()
             ->filter(function($musteri) {
@@ -79,8 +81,8 @@
                 $sonTarih = max($sonZiyaret, $sonArama);
                 
                 if (!$sonTarih) {
-                    $musteri->gecen_gun = 999; // Hiç ziyaret/arama yoksa çok yüksek değer
-                    return true;
+                    $musteri->gecen_gun = 9999; // Hiç ziyaret/arama yoksa çok yüksek değer (sıralama için)
+                    return false; // Hiç ziyaret olmayanları gösterme
                 }
                 
                 $gunFarki = \Carbon\Carbon::parse($sonTarih)->diffInDays(now());
@@ -309,7 +311,7 @@
             <div class="bg-white rounded-lg shadow-lg border-t-4 border-red-500">
                 <div class="p-4 border-b bg-red-50">
                     <h3 class="text-xl font-bold text-red-800">🎯 Yüksek Potansiyel Müşteriler</h3>
-                    <p class="text-sm text-gray-600">Derece 1-2, 60+ gün ziyaret/arama yok</p>
+                    <p class="text-sm text-gray-600">Konya - Derece 1-2 - Resmi Kurum/Üniv./Belediye/Hastane/Özel - 60+ gün</p>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
@@ -337,15 +339,15 @@
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     <span class="px-2 py-1 rounded text-xs font-bold {{ $musteri->gecen_gun > 120 ? 'bg-red-100 text-red-800' : ($musteri->gecen_gun > 90 ? 'bg-orange-100 text-orange-800' : 'bg-yellow-100 text-yellow-800') }}">
-                                        {{ $musteri->gecen_gun > 365 ? '1+ yıl' : $musteri->gecen_gun . ' gün' }}
+                                        {{ $musteri->gecen_gun }} gün
                                     </span>
-                                </td>5
+                                </td>
                                 <td class="px-4 py-3 text-right font-mono text-blue-600 font-semibold">${{ number_format($musteri->toplam_teklif, 0, ',', '.') }}</td>
                                 <td class="px-4 py-3 text-right font-mono {{ $musteri->kazanilan_tutar > 0 ? 'text-green-600 font-bold' : 'text-gray-400' }}">${{ number_format($musteri->kazanilan_tutar, 0, ',', '.') }}</td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="4" class="px-4 py-8 text-center text-gray-500">Kriterlere uygun müşteri yok</td>
+                                <td colspan="5" class="px-4 py-8 text-center text-gray-500">Kriterlere uygun müşteri yok</td>
                             </tr>
                             @endforelse
                         </tbody>
