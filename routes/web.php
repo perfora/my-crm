@@ -779,6 +779,11 @@ Route::delete('/tum-isler/{id}', function ($id) {
     $is = \App\Models\TumIsler::findOrFail($id);
     $is->delete();
     
+    // AJAX bulk delete için
+    if (request()->ajax() || request()->wantsJson()) {
+        return response()->json(['success' => true, 'message' => 'İş silindi.']);
+    }
+    
     return redirect('/tum-isler')->with('message', 'İş silindi.');
 });
 
