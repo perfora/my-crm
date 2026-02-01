@@ -1820,6 +1820,7 @@
                 @foreach($musteriler as $musteri)
                     options += `<option value="{{ $musteri->id }}" ${currentValue == '{{ $musteri->id }}' ? 'selected' : ''}>{{ $musteri->sirket }}</option>`;
                 @endforeach
+                options += '<option value="__new__" style="color: green; font-weight: bold;">➕ Yeni Müşteri Ekle</option>';
             } else if (field === 'marka_id') {
                 options = '<option value="">Seçiniz</option>';
                 @php
@@ -1828,14 +1829,86 @@
                 @foreach($markalar as $marka)
                     options += `<option value="{{ $marka->id }}" ${currentValue == '{{ $marka->id }}' ? 'selected' : ''}>{{ $marka->name }}</option>`;
                 @endforeach
+                options += '<option value="__new__" style="color: green; font-weight: bold;">➕ Yeni Marka Ekle</option>';
             }
             
             cell.html(`<select class="w-full px-2 py-1 border rounded text-sm">${options}</select>`);
             const select = cell.find('select');
             select.focus();
             
+            // Yeni kayıt ekleme kontrolü
+            select.on('change', function() {
+                const selectedValue = $(this).val();
+                
+                if (selectedValue === '__new__') {
+                    // Yeni kayıt ekle
+                    if (field === 'marka_id') {
+                        const markaAdi = prompt('Yeni marka adını giriniz:');
+                        if (!markaAdi || markaAdi.trim() === '') {
+                            select.val('');
+                            return;
+                        }
+                        
+                        // Marka oluştur
+                        $.ajax({
+                            url: '/markalar',
+                            method: 'POST',
+                            data: { name: markaAdi.trim() },
+                            success: function(response) {
+                                // Yeni markayı seç ve kaydet
+                                select.find('option[value="__new__"]').before(
+                                    `<option value="${response.data.id}" selected>${response.data.name}</option>`
+                                );
+                                select.val(response.data.id);
+                                saveSelect();
+                            },
+                            error: function() {
+                                alert('Marka eklenemedi!');
+                                select.val('');
+                                cell.html(originalContent);
+                                cell.removeClass('editing');
+                            }
+                        });
+                    } else if (field === 'musteri_id') {
+                        const musteriAdi = prompt('Yeni müşteri/firma adını giriniz:');
+                        if (!musteriAdi || musteriAdi.trim() === '') {
+                            select.val('');
+                            return;
+                        }
+                        
+                        // Müşteri oluştur
+                        $.ajax({
+                            url: '/musteriler',
+                            method: 'POST',
+                            data: { sirket: musteriAdi.trim() },
+                            success: function(response) {
+                                // Yeni müşteriyi seç ve kaydet
+                                select.find('option[value="__new__"]').before(
+                                    `<option value="${response.data.id}" selected>${response.data.sirket}</option>`
+                                );
+                                select.val(response.data.id);
+                                saveSelect();
+                            },
+                            error: function() {
+                                alert('Müşteri eklenemedi!');
+                                select.val('');
+                                cell.html(originalContent);
+                                cell.removeClass('editing');
+                            }
+                        });
+                    }
+                } else {
+                    saveSelect();
+                }
+            });
+            
             function saveSelect() {
                 const newValue = select.val();
+                
+                // "__new__" seçeneğiyse kaydetme (zaten yeni kayıt akışı başladı)
+                if (newValue === '__new__' || !newValue) {
+                    return;
+                }
                 
                 // Yeni satır mı kontrol et
                 if (id === 'new') {

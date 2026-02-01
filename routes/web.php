@@ -399,7 +399,12 @@ Route::post('/markalar', function () {
         'name' => 'required|max:255',
     ]);
     
-    \App\Models\Marka::create($validated);
+    $marka = \App\Models\Marka::create($validated);
+    
+    // AJAX inline creation için
+    if (request()->ajax() || request()->wantsJson()) {
+        return response()->json(['success' => true, 'data' => $marka]);
+    }
     
     return redirect('/markalar')->with('message', 'Marka başarıyla eklendi.');
 });
@@ -464,7 +469,12 @@ Route::post('/musteriler', function () {
         'turu' => 'nullable|string',
     ]);
     
-    \App\Models\Musteri::create($validated);
+    $musteri = \App\Models\Musteri::create($validated);
+    
+    // AJAX inline creation için
+    if (request()->ajax() || request()->wantsJson()) {
+        return response()->json(['success' => true, 'data' => $musteri]);
+    }
     
     return redirect('/musteriler')->with('message', 'Müşteri başarıyla eklendi.');
 });
