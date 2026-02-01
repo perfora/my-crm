@@ -151,17 +151,10 @@ class DashboardDataService
                     'value' => ['type' => 'select', 'label' => 'Değer', 'options' => []]
                 ]
             ],
-            'text_search' => [
-                'label' => 'Metin araması',
-                'params' => [
-                    'field' => ['type' => 'text', 'label' => 'Alan adı'],
-                    'value' => ['type' => 'text', 'label' => 'Değer']
-                ]
-            ],
             'numeric_range' => [
                 'label' => 'Sayısal aralık',
                 'params' => [
-                    'field' => ['type' => 'text', 'label' => 'Alan adı'],
+                    'field' => ['type' => 'select', 'label' => 'Sütun'],
                     'min' => ['type' => 'number', 'label' => 'Minimum'],
                     'max' => ['type' => 'number', 'label' => 'Maksimum']
                 ]

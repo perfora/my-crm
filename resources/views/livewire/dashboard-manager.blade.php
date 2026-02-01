@@ -136,7 +136,7 @@
                                                 >
                                             @elseif($param['type'] === 'select')
                                                 @if($paramKey === 'field')
-                                                    <!-- Alan seçimi - sadece seçili sütunları göster -->
+                                                    <!-- Sütun seçimi - sadece seçili sütunları göster -->
                                                     @php
                                                         $selectedCols = $this->getSelectedColumnsWithLabels();
                                                     @endphp
@@ -147,24 +147,40 @@
                                                         @forelse($selectedCols as $colKey => $colLabel)
                                                             <option value="{{ $colKey }}">{{ $colLabel }}</option>
                                                         @empty
-                                                            <option value="" disabled>Sütun seçiniz</option>
+                                                            <option value="" disabled>Önce sütun seçiniz</option>
                                                         @endforelse
                                                     </select>
-                                                @else
-                                                    <!-- Değer seçimi - dinamik olarak alandan getir -->
+                                                @elseif($paramKey === 'value')
+                                                    <!-- Değer seçimi - seçilen sütundan dinamik getir -->
                                                     @php
                                                         $selectedField = $selectedFilters[$index]['field'] ?? null;
-                                                        $fieldValues = $selectedField ? $this->getFieldValues($selectedDataSource, $selectedField) : [];
+                                                        $fieldValues = $selectedField && $selectedDataSource ? $this->getFieldValues($selectedDataSource, $selectedField) : [];
                                                     @endphp
+                                                    @if($selectedField)
+                                                        <select 
+                                                            wire:model="selectedFilters.{{ $index }}.{{ $paramKey }}"
+                                                            class="w-full p-2 border border-orange-300 rounded text-sm bg-white">
+                                                            <option value="">-- Seçin --</option>
+                                                            @forelse($fieldValues as $val)
+                                                                <option value="{{ $val }}">{{ $val }}</option>
+                                                            @empty
+                                                                <option value="" disabled>Bu sütunda değer yok</option>
+                                                            @endforelse
+                                                        </select>
+                                                    @else
+                                                        <div class="p-2 bg-gray-100 rounded text-sm text-gray-600 italic">
+                                                            Önce sütun seçiniz
+                                                        </div>
+                                                    @endif
+                                                @else
+                                                    <!-- Diğer select parametreleri -->
                                                     <select 
                                                         wire:model="selectedFilters.{{ $index }}.{{ $paramKey }}"
                                                         class="w-full p-2 border border-orange-300 rounded text-sm bg-white">
                                                         <option value="">-- Seçin --</option>
-                                                        @forelse($fieldValues as $val)
-                                                            <option value="{{ $val }}">{{ $val }}</option>
-                                                        @empty
-                                                            <option value="" disabled>Değer yok</option>
-                                                        @endforelse
+                                                        @foreach($param['options'] ?? [] as $optKey => $optLabel)
+                                                            <option value="{{ $optKey }}">{{ $optLabel }}</option>
+                                                        @endforeach
                                                     </select>
                                                 @endif
                                             @endif
