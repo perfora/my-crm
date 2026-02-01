@@ -49,7 +49,7 @@
         
         // Widget Görünürlüğü
         $showBekleyenIsler = $widgetSettings['bekleyen_isler'] ?? true;
-        $showBuAyKazanilan = $widgetSettings['bu_ay_kazanilan'] ?? true;
+        $showBuAyKazanilan = $widgetSettings['bu_ay_kazanilan'] ?? false;
         $showYuksekOncelik = $widgetSettings['yuksek_oncelik'] ?? true;
         $showYaklasanZiyaretler = $widgetSettings['yaklasan_ziyaretler'] ?? true;
         
