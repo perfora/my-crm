@@ -1,4 +1,5 @@
-<x-layouts::app.sidebar>
+@include('layouts.nav')
+
 @php
     // Üst özetler
     $toplamMusteri = \App\Models\Musteri::count();
@@ -7,7 +8,6 @@
     $toplamTeklifAsamasinda = \App\Models\TumIsler::where('tipi', 'Teklif Aşamasında')->count();
 @endphp
 
-<flux:main>
 <div class="container mx-auto px-4 py-8">
     <!-- Üst Özet Kartları -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -60,5 +60,4 @@
     <div class="mt-12">
         <livewire:dashboard-manager />
     </div>
-</flux:main>
-</x-layouts::app.sidebar>
+</div>
