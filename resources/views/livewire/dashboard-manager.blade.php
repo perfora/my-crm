@@ -275,13 +275,25 @@
                                             <td class="px-4 py-3 text-gray-800">
                                                 @php
                                                     $value = $row[$col] ?? '-';
-                                                    // Tarihleri formatla
-                                                    if(in_array($col, ['is_tarihi', 'created_at', 'updated_at', 'ziyaret_tarihi', 'lisans_bitis_tarihi']) && $value && $value !== '-') {
-                                                        $value = \Carbon\Carbon::parse($value)->format('d.m.Y');
+                                                    
+                                                    // Müşteri ID'yi isimle değiştir
+                                                    if($col === 'musteri_id' && is_numeric($value) && $value !== '-') {
+                                                        $musteri = \App\Models\Musteri::find($value);
+                                                        $value = $musteri ? $musteri->sirket : $value;
                                                     }
-                                                    // Sayıları formatla (kar, teklif, alış, vb.)
-                                                    if(in_array($col, ['kar', 'teklif', 'aliş']) && is_numeric($value)) {
-                                                        $value = number_format($value, 0, ',', '.');
+                                                    
+                                                    // Tarihleri formatla
+                                                    if(in_array($col, ['kapanis_tarihi', 'is_guncellenme_tarihi', 'created_at', 'updated_at', 'ziyaret_tarihi', 'lisans_bitis_tarihi']) && $value && $value !== '-') {
+                                                        try {
+                                                            $value = \Carbon\Carbon::parse($value)->format('d.m.Y');
+                                                        } catch (\Exception $e) {
+                                                            // Tarih parse edilemezse olduğu gibi bırak
+                                                        }
+                                                    }
+                                                    
+                                                    // Sayıları formatla (teklif_tutari, alis_tutari vb.)
+                                                    if(in_array($col, ['teklif_tutari', 'alis_tutari', 'kur']) && is_numeric($value)) {
+                                                        $value = number_format($value, 2, ',', '.');
                                                     }
                                                 @endphp
                                                 {{ $value }}
