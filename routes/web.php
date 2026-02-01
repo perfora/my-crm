@@ -485,6 +485,28 @@ Route::get('/musteriler/{id}/edit', function ($id) {
 Route::put('/musteriler/{id}', function ($id) {
     $musteri = \App\Models\Musteri::findOrFail($id);
     
+    // AJAX inline editing için
+    if (request()->ajax() || request()->wantsJson()) {
+        $validated = request()->validate([
+            'sirket' => 'sometimes|required|max:255',
+            'sehir' => 'nullable|string',
+            'adres' => 'nullable|string',
+            'telefon' => 'nullable|string',
+            'notlar' => 'nullable|string',
+            'derece' => 'nullable|string',
+            'turu' => 'nullable|string',
+        ]);
+        
+        $musteri->update($validated);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Güncellendi',
+            'data' => $musteri
+        ]);
+    }
+    
+    // Normal form submit için
     $validated = request()->validate([
         'sirket' => 'required|max:255',
         'sehir' => 'nullable|string',
