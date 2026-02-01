@@ -78,9 +78,13 @@
                 $sonArama = $musteri->ziyaretler->max('arama_tarihi');
                 $sonTarih = max($sonZiyaret, $sonArama);
                 
-                if (!$sonTarih) return true; // Hiç ziyaret/arama yoksa göster
+                if (!$sonTarih) {
+                    $musteri->gecen_gun = 999; // Hiç ziyaret/arama yoksa çok yüksek değer
+                    return true;
+                }
                 
                 $gunFarki = \Carbon\Carbon::parse($sonTarih)->diffInDays(now());
+                $musteri->gecen_gun = $gunFarki;
                 return $gunFarki > 60;
             })
             ->map(function($musteri) {
@@ -88,7 +92,13 @@
                 $musteri->kazanilan_tutar = $musteri->tumIsler->where('tipi', 'Kazanıldı')->sum('teklif_tutari');
                 return $musteri;
             })
-            ->sortByDesc('toplam_teklif')
+            ->filter(function($musteri) {
+                return $musteri->toplam_teklif > 0; // Teklifi olan müşteriler
+            })
+            ->sortByDesc(function($musteri) {
+                // Önce kazanılanları, sonra kazanamayanları - her ikisi de teklif tutarına göre
+                return [$musteri->kazanilan_tutar > 0 ? 1 : 0, $musteri->toplam_teklif];
+            })
             ->take(10);
             
         $yaklasanZiyaretler = \App\Models\Ziyaret::whereIn('durumu', ['Beklemede', 'Planlandı'])
@@ -306,7 +316,8 @@
                         <thead class="bg-gray-50 border-b">
                             <tr>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-700">Müşteri</th>
-                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Derece</th>
+                                <th class="px-4 py-3 text-center font-semibold text-gray-700">Derece</th>
+                                <th class="px-4 py-3 text-center font-semibold text-gray-700">Geçen Gün</th>
                                 <th class="px-4 py-3 text-right font-semibold text-gray-700">Toplam Teklif</th>
                                 <th class="px-4 py-3 text-right font-semibold text-gray-700">Kazanıldı</th>
                             </tr>
@@ -319,13 +330,18 @@
                                         {{ $musteri->sirket }}
                                     </a>
                                 </td>
-                                <td class="px-4 py-3">
+                                <td class="px-4 py-3 text-center">
                                     <span class="px-2 py-1 rounded text-xs font-semibold {{ $musteri->derece == '1 -Sık' ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800' }}">
-                                        {{ $musteri->derece }}
+                                        {{ str_replace(['-', ' '], '', $musteri->derece) }}
                                     </span>
                                 </td>
+                                <td class="px-4 py-3 text-center">
+                                    <span class="px-2 py-1 rounded text-xs font-bold {{ $musteri->gecen_gun > 120 ? 'bg-red-100 text-red-800' : ($musteri->gecen_gun > 90 ? 'bg-orange-100 text-orange-800' : 'bg-yellow-100 text-yellow-800') }}">
+                                        {{ $musteri->gecen_gun > 365 ? '1+ yıl' : $musteri->gecen_gun . ' gün' }}
+                                    </span>
+                                </td>5
                                 <td class="px-4 py-3 text-right font-mono text-blue-600 font-semibold">${{ number_format($musteri->toplam_teklif, 0, ',', '.') }}</td>
-                                <td class="px-4 py-3 text-right font-mono text-green-600 font-semibold">${{ number_format($musteri->kazanilan_tutar, 0, ',', '.') }}</td>
+                                <td class="px-4 py-3 text-right font-mono {{ $musteri->kazanilan_tutar > 0 ? 'text-green-600 font-bold' : 'text-gray-400' }}">${{ number_format($musteri->kazanilan_tutar, 0, ',', '.') }}</td>
                             </tr>
                             @empty
                             <tr>
