@@ -32,11 +32,11 @@
         .sortable:hover {
             background-color: #f3f4f6;
         }
-        .editable-cell, .editable-select {
+        .editable-cell, .editable-select, .editable-number, .editable-date {
             cursor: pointer;
             transition: background-color 0.2s;
         }
-        .editable-cell:hover, .editable-select:hover {
+        .editable-cell:hover, .editable-select:hover, .editable-number:hover, .editable-date:hover {
             background-color: #fef3c7 !important;
         }
         .editing {
@@ -888,58 +888,29 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-3 py-3 whitespace-nowrap text-sm">
+                                <td class="px-3 py-3 whitespace-nowrap text-sm editable-date" data-field="kapanis_tarihi" data-id="{{ $is->id }}" data-value="{{ $is->kapanis_tarihi }}">
                                     {{ $is->kapanis_tarihi ? \Carbon\Carbon::parse($is->kapanis_tarihi)->format('d.m.Y') : '-' }}
                                 </td>
-                                <td class="px-3 py-3 whitespace-nowrap text-sm">
+                                <td class="px-3 py-3 whitespace-nowrap text-sm editable-date" data-field="lisans_bitis" data-id="{{ $is->id }}" data-value="{{ $is->lisans_bitis }}">
                                     {{ $is->lisans_bitis ? \Carbon\Carbon::parse($is->lisans_bitis)->format('d.m.Y') : '-' }}
                                 </td>
-                                <td class="px-3 py-3 whitespace-nowrap">
+                                <td class="px-3 py-3 whitespace-nowrap editable-number" data-field="teklif_tutari" data-id="{{ $is->id }}" data-value="{{ $is->teklif_tutari }}">
                                     @if($is->teklif_tutari !== null)
                                         @if($is->teklif_doviz === 'USD')
                                             ${{ number_format($is->teklif_tutari, 2) }}
                                         @else
                                             {{ number_format($is->teklif_tutari, 2) }}
                                         @endif
-                                        @php
-                                            $orig = null;
-                                            $origKur = null;
-                                            if (!empty($is->aciklama) && preg_match('/\[ORJ:\s*teklif\s*([0-9.,\-]+)\s*USD(?:,\s*kur\s*([0-9.,]+))?/i', $is->aciklama, $m)) {
-                                                $orig = $m[1];
-                                                $origKur = $m[2] ?? null;
-                                            }
-                                            $formatOrig = function($s) {
-                                                $s = trim((string)$s);
-                                                if ($s === '') return null;
-                                                if (strpos($s, ',') !== false) {
-                                                    $s = str_replace('.', '', $s);
-                                                    $s = str_replace(',', '.', $s);
-                                                }
-                                                return (float)$s;
-                                            };
-                                        @endphp
-                                        @if($orig)
-                                            <div class="text-xs text-gray-500">ORJ: {{ number_format($formatOrig($orig), 2) }} USD @if($origKur) (kur {{ $origKur }}) @endif</div>
-                                        @endif
                                     @else
                                         -
                                     @endif
                                 </td>
-                                <td class="px-3 py-3 whitespace-nowrap">
+                                <td class="px-3 py-3 whitespace-nowrap editable-number" data-field="alis_tutari" data-id="{{ $is->id }}" data-value="{{ $is->alis_tutari }}">
                                     @if($is->alis_tutari !== null)
                                         @if($is->alis_doviz === 'USD')
                                             ${{ number_format($is->alis_tutari, 2) }}
                                         @else
                                             {{ number_format($is->alis_tutari, 2) }}
-                                        @endif
-                                        @php
-                                            $origAlis = null;
-                                            if (!empty($is->aciklama) && preg_match('/\[ORJ:.*alis\s*([0-9.,\-]+)\s*USD/i', $is->aciklama, $m2)) {
-                                                $origAlis = $m2[1];
-                                            }
-                                        @endphp
-                                        @if($origAlis)
-                                            <div class="text-xs text-gray-500">ORJ Alış: {{ number_format($formatOrig($origAlis), 2) }} USD</div>
                                         @endif
                                     @else
                                         -
@@ -962,7 +933,7 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500 editable-date" data-field="is_guncellenme_tarihi" data-id="{{ $is->id }}" data-value="{{ $is->is_guncellenme_tarihi }}">
                                     {{ $is->is_guncellenme_tarihi ? \Carbon\Carbon::parse($is->is_guncellenme_tarihi)->format('d.m.Y') : '-' }}
                                 </td>
                                 <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
@@ -1764,6 +1735,121 @@
             });
             select.on('keydown', function(e) {
                 if (e.which === 27) { // Escape
+                    cell.html(originalContent);
+                    cell.removeClass('editing');
+                }
+            });
+        });
+
+        // Inline editing - Number fields (Teklif, Alis)
+        $(document).on('click', '.editable-number:not(.editing)', function(e) {
+            e.stopPropagation();
+            const cell = $(this);
+            const field = cell.data('field');
+            const id = cell.data('id');
+            const currentValue = cell.data('value') || '';
+            
+            cell.addClass('editing');
+            const originalContent = cell.html();
+            
+            cell.html(`<input type="number" step="0.01" class="w-full px-2 py-1 border rounded text-sm" value="${currentValue}" />`);
+            const input = cell.find('input');
+            input.focus();
+            
+            function saveNumber() {
+                const newValue = input.val();
+                
+                $.ajax({
+                    url: '/tum-isler/' + id,
+                    method: 'PUT',
+                    data: {
+                        [field]: newValue
+                    },
+                    success: function(response) {
+                        cell.data('value', newValue);
+                        if (newValue) {
+                            const formatted = parseFloat(newValue).toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                            cell.html(formatted);
+                        } else {
+                            cell.html('-');
+                        }
+                        cell.removeClass('editing');
+                        location.reload(); // Kar hesabını güncellemek için
+                    },
+                    error: function() {
+                        alert('Kaydedilemedi!');
+                        cell.html(originalContent);
+                        cell.removeClass('editing');
+                    }
+                });
+            }
+            
+            input.on('blur', saveNumber);
+            input.on('keypress', function(e) {
+                if (e.which === 13) saveNumber();
+            });
+            input.on('keydown', function(e) {
+                if (e.which === 27) {
+                    cell.html(originalContent);
+                    cell.removeClass('editing');
+                }
+            });
+        });
+
+        // Inline editing - Date fields (Kapanis, Lisans, Acilis)
+        $(document).on('click', '.editable-date:not(.editing)', function(e) {
+            e.stopPropagation();
+            const cell = $(this);
+            const field = cell.data('field');
+            const id = cell.data('id');
+            const currentValue = cell.data('value') || '';
+            
+            cell.addClass('editing');
+            const originalContent = cell.html();
+            
+            cell.html(`<input type="date" class="w-full px-2 py-1 border rounded text-sm" value="${currentValue}" />`);
+            const input = cell.find('input');
+            input.focus();
+            
+            function saveDate() {
+                const newValue = input.val();
+                
+                $.ajax({
+                    url: '/tum-isler/' + id,
+                    method: 'PUT',
+                    data: {
+                        [field]: newValue
+                    },
+                    success: function(response) {
+                        cell.data('value', newValue);
+                        if (newValue) {
+                            const date = new Date(newValue);
+                            const formatted = date.toLocaleDateString('tr-TR');
+                            cell.html(formatted);
+                        } else {
+                            cell.html('-');
+                        }
+                        cell.removeClass('editing');
+                    },
+                    error: function() {
+                        alert('Kaydedilemedi!');
+                        cell.html(originalContent);
+                        cell.removeClass('editing');
+                    }
+                });
+            }
+            
+            input.on('change', saveDate);
+            input.on('blur', function() {
+                setTimeout(function() {
+                    if (!input.is(':focus')) {
+                        cell.html(originalContent);
+                        cell.removeClass('editing');
+                    }
+                }, 200);
+            });
+            input.on('keydown', function(e) {
+                if (e.which === 27) {
                     cell.html(originalContent);
                     cell.removeClass('editing');
                 }
