@@ -56,6 +56,7 @@
         // Widget Verileri
         $bekleyenIsler = \App\Models\TumIsler::where('oncelik', '1')
             ->where('tipi', 'Verilecek')
+            ->whereYear('is_guncellenme_tarihi', 2026)
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
