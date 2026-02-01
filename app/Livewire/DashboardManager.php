@@ -81,8 +81,8 @@ class DashboardManager extends Component
 
         $this->editingWidget = $widget->id;
         $this->selectedDataSource = $widget->data_source;
-        $this->selectedColumns = $widget->columns ?? [];
-        $this->selectedFilters = $widget->filters ?? [];
+        $this->selectedColumns = is_array($widget->columns) ? array_values($widget->columns) : [];
+        $this->selectedFilters = is_array($widget->filters) ? array_values($widget->filters) : [];
         $this->widgetType = $widget->type;
         $this->showWidgetForm = true;
     }
