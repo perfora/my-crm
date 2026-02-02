@@ -103,15 +103,13 @@
                     Saygılarımızla.
                 </p>
                 
-                <!-- İmza buraya taşındı -->
-                @if($teklif->imza_path)
-                <div style="text-align: right; margin-top: 20px;">
-                    <img src="{{ $teklif->imza_path }}" alt="İmza" style="max-height: 80px;">
-                    <p style="margin: 5px 0; font-weight: bold;">MURAT PEKTAŞ</p>
+                <!-- İmza -->
+                <div style="text-align: right; margin-top: 30px; margin-bottom: 20px;">
+                    <img src="/imza.png" alt="İmza" style="max-height: 80px; margin-bottom: 10px;">
+                    <p style="margin: 5px 0; font-weight: bold; font-size: 14px;">MURAT PEKTAŞ</p>
                     <p style="margin: 5px 0; color: #666; font-size: 12px;">Proje Yöneticisi</p>
                     <p style="margin: 5px 0; color: #666; font-size: 12px;">0549 476 38 00</p>
                 </div>
-                @endif
             </div>
 
             <!-- Ürün Tablosu -->
@@ -177,7 +175,6 @@
         function copyEmailHTML() {
             const emailContent = document.getElementById('emailPreview').innerHTML;
             
-            // Tam HTML email şablonu
             const fullHTML = `<!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -198,30 +195,25 @@
             navigator.clipboard.writeText(fullHTML).then(() => {
                 alert('Email HTML kopyalandı! Outlook\'a yapıştırabilirsiniz.');
             }).catch(() => {
-                // Fallback
                 const textarea = document.createElement('textarea');
                 textarea.value = fullHTML;
                 document.body.appendChild(textarea);
                 textarea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textarea);
-                alert('Email HTML kopyalandı! Outlook\'a yapıştırabilirsiniz.');
+                alert('Email HTML kopyalandı!');
             });
         }
 
         function openOutlook() {
-            // Önce HTML'i kopyala
             copyEmailHTML();
-            
-            // Sonra Outlook'u aç
             const subject = encodeURIComponent('Fiyat Teklifi - {{ $teklif->teklif_no }}');
             const to = '{{ $teklif->yetkili_email ?? "" }}';
-            
             const mailtoLink = `mailto:${to}?subject=${subject}`;
             window.open(mailtoLink, '_blank');
             
             setTimeout(() => {
-                alert('✅ Teklif HTML\' kopyalandı!\n\n📧 Outlook açıldı.\n\nYapmanız gerekenler:\n1. Outlook\'ta yeni mail oluştu\n2. İçerik alanına tıkla\n3. CTRL+V (veya CMD+V) ile yapıştır\n4. Gönder!');
+                alert('✅ Teklif HTML kopyalandı!\n\n📧 Outlook açıldı.\n\nYapmanız gerekenler:\n1. Outlook\'ta yeni mail oluştu\n2. İçerik alanına tıkla\n3. CTRL+V ile yapıştır\n4. Gönder!');
             }, 1000);
         }
     </script>
