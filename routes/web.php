@@ -648,6 +648,20 @@ Route::delete('/kisiler/{id}', function ($id) {
     
     return redirect('/kisiler')->with('message', 'Kişi silindi.');
 });
+
+// Tedarikçi Fiyatları
+Route::get('/tedarikci-fiyatlari', [App\Http\Controllers\TedarikiciFiyatController::class, 'index']);
+Route::post('/tedarikci-fiyatlari/bulk', [App\Http\Controllers\TedarikiciFiyatController::class, 'bulkStore']);
+Route::delete('/tedarikci-fiyatlari/{id}', [App\Http\Controllers\TedarikiciFiyatController::class, 'destroy']);
+
+// Fiyat Teklifleri
+Route::get('/fiyat-teklifleri', [App\Http\Controllers\FiyatTeklifController::class, 'index']);
+Route::get('/fiyat-teklifleri/yeni', [App\Http\Controllers\FiyatTeklifController::class, 'create']);
+Route::post('/fiyat-teklifleri', [App\Http\Controllers\FiyatTeklifController::class, 'store']);
+Route::get('/fiyat-teklifleri/{id}', [App\Http\Controllers\FiyatTeklifController::class, 'show']);
+Route::delete('/fiyat-teklifleri/{id}', [App\Http\Controllers\FiyatTeklifController::class, 'destroy']);
+Route::get('/api/musteriler/{id}/yetkililer', [App\Http\Controllers\FiyatTeklifController::class, 'getYetkililer']);
+
 Route::post('/kisiler', function () {
     $validated = request()->validate([
         'ad_soyad' => 'required|max:255',

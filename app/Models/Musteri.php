@@ -76,4 +76,16 @@ class Musteri extends Model
             ->where('tipi', 'Kazanıldı')
             ->sum('teklif_tutari') ?? 0;
     }
+
+    // Tedarikçi olarak fiyat kayıtları
+    public function fiyatlar()
+    {
+        return $this->hasMany(TedarikiciFiyat::class, 'musteri_id');
+    }
+
+    // Tedarikçi olarak teklif kalemleri
+    public function teklifKalemleri()
+    {
+        return $this->hasMany(TeklifKalem::class, 'musteri_id');
+    }
 }
