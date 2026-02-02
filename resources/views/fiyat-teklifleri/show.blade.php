@@ -167,8 +167,8 @@
                 <p style="margin: 0; white-space: pre-wrap; line-height: 1.8;">{{ $teklif->teklif_kosullari }}</p>
             </div>
             @endif
-        </div>
-    </div>
+        </div> <!-- emailPreview kapandı -->
+    </div> <!-- container kapandı -->
 
     <script>
         function copyEmailHTML() {
