@@ -59,12 +59,22 @@
         <!-- Email Preview -->
         <div id="emailPreview" class="bg-white rounded-lg shadow p-8">
             <!-- Header -->
-            <div style="margin-bottom: 30px;">
+            <div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #e5e7eb;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <h2 style="font-size: 24px; font-weight: bold; color: #1e40af; margin: 0;">FİYAT TEKLİFİ</h2>
                     </div>
-                    <div>
+                    <div style="display: flex; align-items: flex-start; gap: 30px;">
+                        <div style="text-align: right;">
+                            @if($teklif->imza_path)
+                            <div style="margin-bottom: 10px;">
+                                <img src="{{ $teklif->imza_path }}" alt="İmza" style="max-height: 60px;">
+                            </div>
+                            @endif
+                            <p style="margin: 5px 0; font-weight: bold;">MURAT PEKTAŞ</p>
+                            <p style="margin: 5px 0; color: #666; font-size: 12px;">Proje Yöneticisi</p>
+                            <p style="margin: 5px 0; color: #666; font-size: 12px;">0549 476 38 00</p>
+                        </div>
                         <img src="/Netcom_logo.png" alt="Logo" style="max-height: 80px;">
                     </div>
                 </div>
@@ -157,22 +167,9 @@
             <!-- Teklif Koşulları -->
             @if($teklif->teklif_kosullari)
             <div style="margin-bottom: 30px;">
-                <strong style="font-size: 14px; color: #1e40af;">Teklif Koşulları:</strong>
-                <p style="margin: 10px 0; white-space: pre-wrap;">{{ $teklif->teklif_kosullari }}</p>
+                <p style="margin: 0; white-space: pre-wrap; line-height: 1.8;">{{ $teklif->teklif_kosullari }}</p>
             </div>
             @endif
-
-            <!-- İmza -->
-            <div style="margin-top: 50px; text-align: right;">
-                @if($teklif->imza_path)
-                <div style="margin-bottom: 10px;">
-                    <img src="{{ $teklif->imza_path }}" alt="İmza" style="max-height: 60px;">
-                </div>
-                @endif
-                <p style="margin: 5px 0; font-weight: bold;">MURAT PEKTAŞ</p>
-                <p style="margin: 5px 0; color: #666;">Proje Yöneticisi</p>
-                <p style="margin: 5px 0; color: #666;">0549 476 38 00</p>
-            </div>
 
             <!-- Alt Bilgi -->
             <div style="margin-top: 50px; padding-top: 20px; border-top: 2px solid #e5e7eb; text-align: center;">
