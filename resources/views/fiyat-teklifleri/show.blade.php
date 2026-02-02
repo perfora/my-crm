@@ -180,18 +180,30 @@
             
             var html = content.innerHTML;
             
+            // Tam HTML document oluştur
+            var fullHTML = '<!DOCTYPE html>' +
+                '<html>' +
+                '<head>' +
+                '<meta charset="UTF-8">' +
+                '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+                '</head>' +
+                '<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; background-color: #fff;">' +
+                html +
+                '</body>' +
+                '</html>';
+            
             // Modern API ile HTML formatında kopyala
             if (navigator.clipboard && window.ClipboardItem) {
-                var blob = new Blob([html], { type: 'text/html' });
+                var blob = new Blob([fullHTML], { type: 'text/html' });
                 var clipboardItem = new ClipboardItem({ 'text/html': blob });
                 
                 navigator.clipboard.write([clipboardItem]).then(function() {
-                    alert('Teklif HTML formatında kopyalandı! Outlook\'a yapıştırabilirsiniz.');
+                    alert('Teklif HTML formatında kopyalandı! Outlook-a yapıştırabilirsiniz.');
                 }).catch(function() {
-                    fallbackCopyAsText(html);
+                    fallbackCopyAsText(fullHTML);
                 });
             } else {
-                fallbackCopyAsText(html);
+                fallbackCopyAsText(fullHTML);
             }
         }
         
@@ -204,7 +216,7 @@
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
-            alert('HTML kopyalandı! Outlook\'ta CTRL+V ile yapıştırın ve "Keep Source Formatting" seçin.');
+            alert('HTML kopyalandı! Outlook-ta CTRL+V ile yapıştırın.');
         }
 
         function openOutlook() {
