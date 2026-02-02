@@ -60,16 +60,13 @@
         <div id="emailPreview" class="bg-white rounded-lg shadow p-8">
             <!-- Header -->
             <div style="margin-bottom: 30px;">
-                <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <h2 style="font-size: 24px; font-weight: bold; color: #1e40af; margin: 0;">FİYAT TEKLİFİ</h2>
-                        <p style="margin: 5px 0; color: #666;">{{ $teklif->teklif_no }}</p>
                     </div>
-                    @if($teklif->logo_path)
                     <div>
-                        <img src="{{ $teklif->logo_path }}" alt="Logo" style="max-height: 80px;">
+                        <img src="https://via.placeholder.com/200x80/1e40af/ffffff?text=LOGO" alt="Logo" style="max-height: 80px;">
                     </div>
-                    @endif
                 </div>
             </div>
 
@@ -78,14 +75,7 @@
                 <table style="width: 100%; border: none;">
                     <tr style="border: none;">
                         <td style="border: none; vertical-align: top; width: 50%;">
-                            <strong>Müşteri:</strong><br>
-                            {{ $teklif->musteri->sirket }}<br>
-                            @if($teklif->yetkili_adi)
-                                <strong>Yetkili:</strong> {{ $teklif->yetkili_adi }}<br>
-                            @endif
-                            @if($teklif->yetkili_email)
-                                <strong>E-mail:</strong> {{ $teklif->yetkili_email }}<br>
-                            @endif
+                            <strong>Müşteri:</strong> {{ $teklif->musteri->sirket }}
                         </td>
                         <td style="border: none; vertical-align: top; width: 50%; text-align: right;">
                             <strong>Tarih:</strong> {{ \Carbon\Carbon::parse($teklif->tarih)->format('d.m.Y') }}<br>
@@ -98,11 +88,21 @@
             </div>
 
             <!-- Giriş Metni -->
-            @if($teklif->giris_metni)
             <div style="margin-bottom: 30px;">
-                <p style="margin: 0;">{{ $teklif->giris_metni }}</p>
+                <p style="margin: 0; line-height: 1.8;">
+                    <strong>Sayın @php
+                        $isim = $teklif->yetkili_adi;
+                        if ($isim) {
+                            $parcalar = explode(' ', trim($isim));
+                            echo $parcalar[0];
+                        } else {
+                            echo 'Yetkili';
+                        }
+                    @endphp,</strong><br><br>
+                    Yapılacak olan alımınızla ilgili hazırlamış olduğumuz fiyat teklifimizi aşağıda bulabilirsiniz. Teklifimizi uygun bulacağınızı ümit eder, teklif ile ilgili her türlü tamamlayıcı bilgi ve görüş için bizi arayabileceğinizi belirtmek isteriz.<br><br>
+                    Saygılarımızla.
+                </p>
             </div>
-            @endif
 
             <!-- Ürün Tablosu -->
             <div style="margin-bottom: 30px;">
@@ -135,7 +135,12 @@
                             <td style="text-align: right; font-weight: bold; font-size: 16px; background-color: #f1f5f9; color: #1e40af;">
                                 {{ number_format($teklif->toplam_satis, 2) }}
                             </td>
-                            <td style="text-align: center; background-color: #f1f5f9;">TL</td>
+                            <td style="text-align: center; background-color: #f1f5f9;">
+                                @php
+                                    $paraBirimleri = $teklif->kalemler->pluck('para_birimi')->unique();
+                                    echo $paraBirimleri->count() === 1 ? $paraBirimleri->first() : 'Karışık';
+                                @endphp
+                            </td>
                         </tr>
                     </tfoot>
                 </table>
@@ -158,16 +163,20 @@
             @endif
 
             <!-- İmza -->
-            <div style="margin-top: 50px;">
+            <div style="margin-top: 50px; text-align: right;">
                 @if($teklif->imza_path)
-                <div style="text-align: right;">
-                    <img src="{{ $teklif->imza_path }}" alt="İmza" style="max-height: 60px; margin-bottom: 10px;">
+                <div style="margin-bottom: 10px;">
+                    <img src="{{ $teklif->imza_path }}" alt="İmza" style="max-height: 60px;">
                 </div>
                 @endif
-                <div style="text-align: right;">
-                    <p style="margin: 5px 0;"><strong>Saygılarımızla,</strong></p>
-                    <p style="margin: 5px 0; color: #666;">{{ config('app.name', 'Şirket Adı') }}</p>
-                </div>
+                <p style="margin: 5px 0; font-weight: bold;">MURAT PEKTAŞ</p>
+                <p style="margin: 5px 0; color: #666;">Proje Yöneticisi</p>
+                <p style="margin: 5px 0; color: #666;">0549 476 38 00</p>
+            </div>
+
+            <!-- Alt Bilgi -->
+            <div style="margin-top: 50px; padding-top: 20px; border-top: 2px solid #e5e7eb; text-align: center;">
+                <p style="margin: 0; color: #666; font-size: 12px;">Kızılırmak Mah. Ufuk Üniv. Cad. No:8 İç Kapı No:27 Çankaya / ANKARA</p>
             </div>
         </div>
 

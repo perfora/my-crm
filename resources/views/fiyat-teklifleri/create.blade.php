@@ -151,9 +151,13 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Teklif Koşulları</label>
-                    <textarea name="teklif_kosullari" rows="4"
+                    <select id="kosulSablonSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Hazır şablon seç (opsiyonel)...</option>
+                        <option value="standart">Standart Koşullar</option>
+                    </select>
+                    <textarea id="kosulTextarea" name="teklif_kosullari" rows="8"
                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="- Fiyatlar KDV hariçtir.&#10;- Ödeme: Faturadan 30 gün vadeli.&#10;- Teslimat: Sipariş sonrası 15 iş günü."></textarea>
+                        placeholder="Teklif koşullarınızı buraya yazın..."></textarea>
                 </div>
             </div>
 
@@ -395,6 +399,26 @@
                 alert('Bir hata oluştu!');
             });
         }
+
+        // Teklif koşulları şablon seçimi
+        $('#kosulSablonSelect').on('change', function() {
+            const selected = $(this).val();
+            if (selected === 'standart') {
+                const standartKosullar = `TEKLİF KOŞULLARI !!!
+ 
+- Fiyatlarımıza %20 K.D.V Hariç olup, Ödeme Peşin olarak yapılacaktır. Kredi kartı ile ödemelerde vade farkı uygulanır.
+- Teklifimizi kabul etmeniz halinde sipariş için lütfen gönderilen teklifi onaylayıp imzalayarak tarafımıza e-mail veya faks ile gönderiniz
+- Dövizli Tekliflerde Serbest Piyasa Satış Kuru Dikkate alınmaktadır
+- TL Tekliflerde Ödeme Vadesine göre Serbest Piyasa USD/EUR satış kuru dikkate alınarak TL tekliflendirme yapılacaktır.
+- Cari Mutabakat döviz tutarı üzerinden yapılacaktır.
+- Teslim Süresi …5 iş günü….
+- TL ödemelerde ödemenin yapıldığı gün ki Serbest Piyasa USD/EUR Satış Kuru dikkate alınacaktır
+- Teklifimiz ……15 gün….  geçerlidir.
+- Fortilogger 1 yıl süre ile ücretsiz gelmektedir. Üreticinin sonraki yıllarda da bu hizmeti devam ettirecek şekilde bir taahhütü yoktur.
+- DİKKAT'!! Lisansı zamanında yenilenmeyen cihazlarda. Eksik yapılan yenileme süresi kadar lisansda kesinti olacaktır. Bu kesinti 6 aydan fazla olamaz`;
+                $('#kosulTextarea').val(standartKosullar);
+            }
+        });
     </script>
 </body>
 </html>
