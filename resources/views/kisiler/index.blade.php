@@ -629,14 +629,42 @@
                 
                 // Yeni satır mı kontrol et
                 if (id === 'new') {
+                    // Ad Soyad alanı için minimum kontrol
+                    if (field === 'ad_soyad' && !newValue.trim()) {
+                        alert('Ad Soyad boş olamaz!');
+                        cell.html(originalContent);
+                        cell.removeClass('editing');
+                        return;
+                    }
+                    
                     // Yeni kayıt oluştur
+                    const postData = {
+                        _token: '{{ csrf_token() }}',
+                        [field]: newValue
+                    };
+                    
+                    // Eğer ad_soyad değilse, satırdaki ad_soyad'ı da gönder
+                    if (field !== 'ad_soyad') {
+                        const row = cell.closest('tr');
+                        const adSoyadCell = row.find('[data-field="ad_soyad"]');
+                        const adSoyad = adSoyadCell.data('value') || '';
+                        
+                        if (!adSoyad) {
+                            alert('Önce Ad Soyad alanını doldurun!');
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
+                            setTimeout(() => {
+                                adSoyadCell.click();
+                            }, 100);
+                            return;
+                        }
+                        postData.ad_soyad = adSoyad;
+                    }
+                    
                     $.ajax({
                         url: '/kisiler',
                         method: 'POST',
-                        data: {
-                            _token: '{{ csrf_token() }}',
-                            [field]: newValue
-                        },
+                        data: postData,
                         success: function(response) {
                             // Sayfayı yenile
                             location.reload();
@@ -732,12 +760,29 @@
                 
                 // Yeni satır mı kontrol et
                 if (id === 'new') {
-                    // Yeni kayıt oluştur
+                    // Yeni kayıt için önce ad soyad kontrolü yap
+                    const row = cell.closest('tr');
+                    const adSoyadCell = row.find('[data-field="ad_soyad"]');
+                    const adSoyad = adSoyadCell.data('value') || '';
+                    
+                    if (!adSoyad) {
+                        alert('Önce Ad Soyad alanını doldurun!');
+                        cell.html(originalContent);
+                        cell.removeClass('editing');
+                        // Ad Soyad alanına focus yap
+                        setTimeout(() => {
+                            adSoyadCell.click();
+                        }, 100);
+                        return;
+                    }
+                    
+                    // Yeni kayıt oluştur - ad soyad ile birlikte
                     $.ajax({
                         url: '/kisiler',
                         method: 'POST',
                         data: {
                             _token: '{{ csrf_token() }}',
+                            ad_soyad: adSoyad,
                             [field]: newValue
                         },
                         success: function(response) {
