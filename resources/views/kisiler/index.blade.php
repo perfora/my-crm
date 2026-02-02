@@ -530,17 +530,44 @@
         
         // Add new row
         window.addNewRow = function() {
-            const form = document.getElementById('kisi-ekle-form');
-            const icon = document.getElementById('form-toggle-icon');
-            
-            if (form && form.style.display === 'none') {
-                form.style.display = 'block';
-                if (icon) icon.style.transform = 'rotate(180deg)';
+            // Seçili satır var mı kontrol et
+            let insertPosition;
+            if (selectedIds.length > 0) {
+                // İlk seçili satırın üstüne ekle
+                insertPosition = $('.row-checkbox[data-id="' + selectedIds[0] + '"]').closest('tr');
+            } else {
+                // En üste ekle
+                insertPosition = $('#kisiler-table tbody tr:first');
             }
             
+            const newRow = `
+                <tr class="new-row bg-yellow-50">
+                    <td class="px-3 py-4 whitespace-nowrap text-center">
+                        <input type="checkbox" disabled class="opacity-50">
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap font-medium text-sm editable-cell" data-field="ad_soyad" data-id="new" data-value="">
+                        <span class="text-gray-400">Ad Soyad giriniz...</span>
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm editable-select" data-field="musteri_id" data-id="new" data-value="">
+                        <span class="text-gray-400">Firma seçiniz...</span>
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm editable-cell" data-field="telefon_numarasi" data-id="new" data-value="">-</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm editable-cell" data-field="email_adresi" data-id="new" data-value="">-</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm editable-cell" data-field="bolum" data-id="new" data-value="">-</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm editable-cell" data-field="gorev" data-id="new" data-value="">-</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm editable-cell" data-field="url" data-id="new" data-value="">-</td>
+                </tr>
+            `;
+            
+            if (insertPosition.length > 0) {
+                insertPosition.before(newRow);
+            } else {
+                $('#kisiler-table tbody').prepend(newRow);
+            }
+            
+            // İlk hücreye odaklan
             setTimeout(() => {
-                const input = document.querySelector('#kisi-ekle-form input[name="ad_soyad"]');
-                if (input) input.focus();
+                $('.new-row .editable-cell').first().click();
             }, 100);
         };
         
@@ -600,32 +627,55 @@
             function saveEdit() {
                 const newValue = input.val();
                 
-                $.ajax({
-                    url: '/kisiler/' + id,
-                    method: 'PUT',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        [field]: newValue
-                    },
-                    success: function(response) {
-                        cell.data('value', newValue);
-                        
-                        // For URL field, rebuild the link
-                        if (field === 'url' && newValue) {
-                            cell.html(`<a href="${newValue}" target="_blank" class="text-blue-600 hover:underline">🔗 Link</a>`);
-                        } else {
-                            cell.html(newValue || '-');
+                // Yeni satır mı kontrol et
+                if (id === 'new') {
+                    // Yeni kayıt oluştur
+                    $.ajax({
+                        url: '/kisiler',
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            [field]: newValue
+                        },
+                        success: function(response) {
+                            // Sayfayı yenile
+                            location.reload();
+                        },
+                        error: function() {
+                            alert('Kayıt oluşturulamadı!');
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
                         }
-                        
-                        cell.removeClass('editing');
-                        cell.closest('tr').attr('data-' + field, newValue);
-                    },
-                    error: function() {
-                        alert('Kaydedilemedi!');
-                        cell.html(originalContent);
-                        cell.removeClass('editing');
-                    }
-                });
+                    });
+                } else {
+                    // Mevcut kayıt güncelle
+                    $.ajax({
+                        url: '/kisiler/' + id,
+                        method: 'PUT',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            [field]: newValue
+                        },
+                        success: function(response) {
+                            cell.data('value', newValue);
+                            
+                            // For URL field, rebuild the link
+                            if (field === 'url' && newValue) {
+                                cell.html(`<a href="${newValue}" target="_blank" class="text-blue-600 hover:underline">🔗 Link</a>`);
+                            } else {
+                                cell.html(newValue || '-');
+                            }
+                            
+                            cell.removeClass('editing');
+                            cell.closest('tr').attr('data-' + field, newValue);
+                        },
+                        error: function() {
+                            alert('Kaydedilemedi!');
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
+                        }
+                    });
+                }
             }
             
             input.on('blur', saveEdit);
@@ -675,31 +725,54 @@
                 // Destroy Select2
                 select.select2('destroy');
                 
-                $.ajax({
-                    url: '/kisiler/' + id,
-                    method: 'PUT',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        [field]: newValue
-                    },
-                    success: function(response) {
-                        cell.data('value', newValue);
-                        
-                        if (newValue) {
-                            cell.html(`<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${newText}</span>`);
-                        } else {
-                            cell.html('-');
+                // Yeni satır mı kontrol et
+                if (id === 'new') {
+                    // Yeni kayıt oluştur
+                    $.ajax({
+                        url: '/kisiler',
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            [field]: newValue
+                        },
+                        success: function(response) {
+                            // Sayfayı yenile
+                            location.reload();
+                        },
+                        error: function() {
+                            alert('Kayıt oluşturulamadı!');
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
                         }
-                        
-                        cell.removeClass('editing');
-                        cell.closest('tr').attr('data-' + field, newValue);
-                    },
-                    error: function() {
-                        alert('Kaydedilemedi!');
-                        cell.html(originalContent);
-                        cell.removeClass('editing');
-                    }
-                });
+                    });
+                } else {
+                    // Mevcut kayıt güncelle
+                    $.ajax({
+                        url: '/kisiler/' + id,
+                        method: 'PUT',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            [field]: newValue
+                        },
+                        success: function(response) {
+                            cell.data('value', newValue);
+                            
+                            if (newValue) {
+                                cell.html(`<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${newText}</span>`);
+                            } else {
+                                cell.html('-');
+                            }
+                            
+                            cell.removeClass('editing');
+                            cell.closest('tr').attr('data-' + field, newValue);
+                        },
+                        error: function() {
+                            alert('Kaydedilemedi!');
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
+                        }
+                    });
+                }
             }
             
             select.on('select2:select', saveSelect);
