@@ -244,7 +244,7 @@
                     <td class="px-2 py-2 satis-fiyat font-semibold text-sm">0.00</td>
                     <td class="px-2 py-2 satis-toplam font-semibold text-green-600 text-sm">0.00</td>
                     <td class="px-2 py-2">
-                        <select name="kalemler[${kalemSayisi}][para_birimi]" class="border border-gray-300 rounded px-2 py-1 w-full text-sm" required>
+                        <select name="kalemler[${kalemSayisi}][para_birimi]" class="border border-gray-300 rounded px-2 py-1 w-full text-sm" required onchange="hesaplaToplamlar()">
                             <option value="TL">TL</option>
                             <option value="USD">USD</option>
                             <option value="EUR">EUR</option>
@@ -307,21 +307,32 @@
         function hesaplaToplamlar() {
             let toplamAlis = 0;
             let toplamSatis = 0;
+            let paraBirimleri = new Set();
 
             $('#kalemlerBody tr').each(function() {
                 const row = $(this);
                 const alisToplam = parseFloat(row.find('.alis-toplam').text()) || 0;
                 const satisToplam = parseFloat(row.find('.satis-toplam').text()) || 0;
+                const paraBirimi = row.find('select[name*="para_birimi"]').val();
                 
                 toplamAlis += alisToplam;
                 toplamSatis += satisToplam;
+                if (paraBirimi) paraBirimleri.add(paraBirimi);
             });
 
             const toplamKar = toplamSatis - toplamAlis;
+            
+            // Para birimi belirle
+            let birimText = 'TL';
+            if (paraBirimleri.size === 1) {
+                birimText = Array.from(paraBirimleri)[0];
+            } else if (paraBirimleri.size > 1) {
+                birimText = 'Karışık';
+            }
 
-            $('#toplamAlis').text(toplamAlis.toFixed(2) + ' TL');
-            $('#toplamSatis').text(toplamSatis.toFixed(2) + ' TL');
-            $('#toplamKar').text(toplamKar.toFixed(2) + ' TL');
+            $('#toplamAlis').text(toplamAlis.toFixed(2) + ' ' + birimText);
+            $('#toplamSatis').text(toplamSatis.toFixed(2) + ' ' + birimText);
+            $('#toplamKar').text(toplamKar.toFixed(2) + ' ' + birimText);
         }
 
         function handleSubmit(e) {
