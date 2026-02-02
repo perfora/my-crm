@@ -6,11 +6,42 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Yeni İş - Mobil</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <style>
         body { -webkit-tap-highlight-color: transparent; }
         input, select, textarea { font-size: 16px !important; }
         .form-input { min-height: 50px; }
+        
+        /* Select2 mobil optimizasyonu */
+        .select2-container--default .select2-selection--single {
+            height: 50px !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 0.5rem !important;
+            padding: 0 1rem !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 50px !important;
+            padding-left: 0 !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 48px !important;
+            right: 8px !important;
+        }
+        .select2-dropdown {
+            border-radius: 0.5rem !important;
+            border: 1px solid #d1d5db !important;
+        }
+        .select2-results {
+            max-height: 300px !important;
+        }
+        .select2-search--dropdown .select2-search__field {
+            min-height: 50px !important;
+            font-size: 16px !important;
+            padding: 0.75rem 1rem !important;
+            border-radius: 0.5rem !important;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -36,8 +67,8 @@
             <!-- Müşteri -->
             <div>
                 <label class="block text-gray-700 font-semibold mb-2">Müşteri/Firma *</label>
-                <select name="musteri_id" required 
-                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                <select name="musteri_id" id="musteri-select" required 
+                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg">
                     <option value="">Seçiniz</option>
                     @foreach(\App\Models\Musteri::orderBy('sirket')->get() as $musteri)
                         <option value="{{ $musteri->id }}">{{ $musteri->sirket }}</option>
@@ -48,8 +79,8 @@
             <!-- Marka -->
             <div>
                 <label class="block text-gray-700 font-semibold mb-2">Marka</label>
-                <select name="marka_id" 
-                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                <select name="marka_id" id="marka-select"
+                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg">
                     <option value="">Seçiniz</option>
                     @foreach(\App\Models\Marka::orderBy('name')->get() as $marka)
                         <option value="{{ $marka->id }}">{{ $marka->name }}</option>
@@ -60,8 +91,8 @@
             <!-- Tipi -->
             <div>
                 <label class="block text-gray-700 font-semibold mb-2">İş Tipi</label>
-                <select name="tipi" 
-                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                <select name="tipi" id="tipi-select"
+                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg">
                     <option value="">Seçiniz</option>
                     @foreach(\App\Models\IsTipi::orderBy('name')->get() as $tip)
                         <option value="{{ $tip->name }}">{{ $tip->name }}</option>
@@ -118,5 +149,27 @@
             {{ session('message') }}
         </div>
     @endif
+    
+    <script>
+        $(document).ready(function() {
+            // Select2 başlat - müşteri, marka ve iş tipi için
+            $('#musteri-select, #marka-select, #tipi-select').select2({
+                placeholder: 'Seçiniz veya arayın...',
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return 'Sonuç bulunamadı';
+                    },
+                    searching: function() {
+                        return 'Aranıyor...';
+                    },
+                    inputTooShort: function() {
+                        return 'Aramak için yazın...';
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
