@@ -424,8 +424,13 @@
             let sortDirection = {};
             
             document.querySelectorAll('.sortable').forEach(header => {
-                header.addEventListener('click', function() {
+                header.addEventListener('click', function(e) {
+                    // Eğer checkbox'a tıkladıysak sıralama yapma
+                    if (e.target.type === 'checkbox') return;
+                    
                     const column = this.getAttribute('data-column');
+                    if (!column) return;
+                    
                     const tbody = document.querySelector('#kisiler-table tbody');
                     const rows = Array.from(tbody.querySelectorAll('tr:not(:last-child)'));
                     
@@ -440,7 +445,8 @@
                     
                     // İkonları güncelle
                     document.querySelectorAll('.sort-icon').forEach(icon => icon.textContent = '');
-                    this.querySelector('.sort-icon').textContent = isAsc ? ' ▲' : ' ▼';
+                    const sortIcon = this.querySelector('.sort-icon');
+                    if (sortIcon) sortIcon.textContent = isAsc ? ' ▲' : ' ▼';
                     
                     // Satırları sırala
                     rows.sort((a, b) => {
@@ -525,11 +531,16 @@
         // Add new row
         window.addNewRow = function() {
             const form = document.getElementById('kisi-ekle-form');
-            if (form.style.display === 'none') {
-                toggleForm();
+            const icon = document.getElementById('form-toggle-icon');
+            
+            if (form && form.style.display === 'none') {
+                form.style.display = 'block';
+                if (icon) icon.style.transform = 'rotate(180deg)';
             }
+            
             setTimeout(() => {
-                document.querySelector('#kisi-ekle-form input[name="ad_soyad"]').focus();
+                const input = document.querySelector('#kisi-ekle-form input[name="ad_soyad"]');
+                if (input) input.focus();
             }, 100);
         };
         
