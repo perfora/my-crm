@@ -182,22 +182,6 @@
     </div>
 
     <script>
-                                <td class="px-3 py-2">{{ $kalem->tedarikci->sirket ?? '-' }}</td>
-                                <td class="px-3 py-2">{{ number_format($kalem->alis_toplam, 2) }}</td>
-                                <td class="px-3 py-2">{{ $kalem->adet }}</td>
-                                <td class="px-3 py-2">{{ $kalem->kar_orani }}%</td>
-                                <td class="px-3 py-2 font-semibold">{{ number_format($kalem->satis_toplam, 2) }}</td>
-                                <td class="px-3 py-2 font-semibold text-blue-600">{{ number_format($kalem->satis_toplam - $kalem->alis_toplam, 2) }}</td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
         function copyEmailHTML() {
             const emailContent = document.getElementById('emailPreview').innerHTML;
             
