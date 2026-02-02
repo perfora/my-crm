@@ -174,26 +174,11 @@
         function copyEmailHTML() {
             const emailContent = document.getElementById('emailPreview').innerHTML;
             
-            const fullHTML = `<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #f8f9fa; font-weight: bold; }
-    </style>
-</head>
-<body>
-    ${emailContent}
-</body>
-</html>`;
+            const fullHTML = '<!DOCTYPE html>\n<html lang="tr">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <style>\n        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n        table { border-collapse: collapse; width: 100%; }\n        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }\n        th { background-color: #f8f9fa; font-weight: bold; }\n    </style>\n</head>\n<body>\n' + emailContent + '\n</body>\n</html>';
 
-            navigator.clipboard.writeText(fullHTML).then(() => {
+            navigator.clipboard.writeText(fullHTML).then(function() {
                 alert('Email HTML kopyalandı! Outlook\'a yapıştırabilirsiniz.');
-            }).catch(() => {
+            }).catch(function() {
                 const textarea = document.createElement('textarea');
                 textarea.value = fullHTML;
                 document.body.appendChild(textarea);
@@ -208,11 +193,11 @@
             copyEmailHTML();
             const subject = encodeURIComponent('Fiyat Teklifi - {{ $teklif->teklif_no }}');
             const to = '{{ $teklif->yetkili_email ?? "" }}';
-            const mailtoLink = `mailto:${to}?subject=${subject}`;
+            const mailtoLink = 'mailto:' + to + '?subject=' + subject;
             window.open(mailtoLink, '_blank');
             
-            setTimeout(() => {
-                alert('✅ Teklif HTML kopyalandı!\n\n📧 Outlook açıldı.\n\nYapmanız gerekenler:\n1. Outlook\'ta yeni mail oluştu\n2. İçerik alanına tıkla\n3. CTRL+V ile yapıştır\n4. Gönder!');
+            setTimeout(function() {
+                alert('Teklif HTML kopyalandı! Outlook açıldı. İçeriği yapıştırıp gönderebilirsiniz.');
             }, 1000);
         }
     </script>
