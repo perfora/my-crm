@@ -179,30 +179,32 @@
             }
             
             var html = content.innerHTML;
-            var wrapper = document.createElement('div');
-            wrapper.innerHTML = html;
             
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(html).then(function() {
-                    alert('Teklif kopyalandı! Outlook-a yapıştırabilirsiniz.');
+            // Modern API ile HTML formatında kopyala
+            if (navigator.clipboard && window.ClipboardItem) {
+                var blob = new Blob([html], { type: 'text/html' });
+                var clipboardItem = new ClipboardItem({ 'text/html': blob });
+                
+                navigator.clipboard.write([clipboardItem]).then(function() {
+                    alert('Teklif HTML formatında kopyalandı! Outlook\'a yapıştırabilirsiniz.');
                 }).catch(function() {
-                    fallbackCopy(html);
+                    fallbackCopyAsText(html);
                 });
             } else {
-                fallbackCopy(html);
+                fallbackCopyAsText(html);
             }
         }
         
-        function fallbackCopy(text) {
+        function fallbackCopyAsText(html) {
             var textarea = document.createElement('textarea');
-            textarea.value = text;
+            textarea.value = html;
             textarea.style.position = 'fixed';
             textarea.style.opacity = '0';
             document.body.appendChild(textarea);
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
-            alert('Teklif kopyalandı!');
+            alert('HTML kopyalandı! Outlook\'ta CTRL+V ile yapıştırın ve "Keep Source Formatting" seçin.');
         }
 
         function openOutlook() {
@@ -212,7 +214,7 @@
             var link = 'mailto:' + to + '?subject=' + encodeURIComponent(subject);
             window.open(link, '_blank');
             setTimeout(function() {
-                alert('Outlook açıldı! HTML-i yapıştırabilirsiniz.');
+                alert('Outlook açıldı! Mail içeriğine sağ tıklayın ve yapıştırın.');
             }, 1000);
         }
     </script>
