@@ -172,14 +172,14 @@
 
     <script>
         function copyEmailHTML() {
-            const emailContent = document.getElementById('emailPreview').innerHTML;
+            var emailContent = document.getElementById('emailPreview').innerHTML;
             
-            const fullHTML = '<!DOCTYPE html>\n<html lang="tr">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <style>\n        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n        table { border-collapse: collapse; width: 100%; }\n        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }\n        th { background-color: #f8f9fa; font-weight: bold; }\n    </style>\n</head>\n<body>\n' + emailContent + '\n</body>\n</html>';
+            var fullHTML = '<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }table { border-collapse: collapse; width: 100%; }th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }th { background-color: #f8f9fa; font-weight: bold; }</style></head><body>' + emailContent + '</body></html>';
 
             navigator.clipboard.writeText(fullHTML).then(function() {
-                alert('Email HTML kopyalandı! Outlook\'a yapıştırabilirsiniz.');
-            }).catch(function() {
-                const textarea = document.createElement('textarea');
+                alert('Email HTML kopyalandı! Outlook-a yapıştırabilirsiniz.');
+            }).catch(function(err) {
+                var textarea = document.createElement('textarea');
                 textarea.value = fullHTML;
                 document.body.appendChild(textarea);
                 textarea.select();
@@ -191,9 +191,9 @@
 
         function openOutlook() {
             copyEmailHTML();
-            const subject = encodeURIComponent('Fiyat Teklifi - {{ $teklif->teklif_no }}');
-            const to = '{{ $teklif->yetkili_email ?? "" }}';
-            const mailtoLink = 'mailto:' + to + '?subject=' + subject;
+            var subject = encodeURIComponent('Fiyat Teklifi - {{ $teklif->teklif_no }}');
+            var to = '{{ $teklif->yetkili_email ?? "" }}';
+            var mailtoLink = 'mailto:' + to + '?subject=' + subject;
             window.open(mailtoLink, '_blank');
             
             setTimeout(function() {
