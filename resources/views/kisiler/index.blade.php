@@ -468,22 +468,21 @@
             window.addEventListener('load', function() {
                 document.getElementById('scroll-content-top').style.width = table.offsetWidth + 'px';
             });
-        });
 
-        // ==================== TOOLBAR İŞLEVLERİ ====================
-        
-        // Checkbox selection management
-        let selectedIds = [];
-        
-        $('#select-all').on('change', function() {
-            const isChecked = $(this).is(':checked');
-            $('.row-checkbox').prop('checked', isChecked);
-            updateSelection();
-        });
-        
-        $(document).on('change', '.row-checkbox', function() {
-            updateSelection();
-        });
+            // ==================== TOOLBAR İŞLEVLERİ ====================
+            
+            // Checkbox selection management
+            let selectedIds = [];
+            
+            $('#select-all').on('change', function() {
+                const isChecked = $(this).is(':checked');
+                $('.row-checkbox').prop('checked', isChecked);
+                updateSelection();
+            });
+            
+            $(document).on('change', '.row-checkbox', function() {
+                updateSelection();
+            });
         
         function updateSelection() {
             selectedIds = $('.row-checkbox:checked').map(function() {
@@ -783,8 +782,8 @@
                     cell.removeClass('editing');
                 }
             });
-            });
         });
+    });
     </script>
 </body>
 </html>
