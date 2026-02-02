@@ -104,17 +104,17 @@
                     <table class="min-w-full divide-y divide-gray-200 border" id="kalemlerTable">
                         <thead class="bg-gray-100">
                             <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">#</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Ürün *</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Tedarikçi</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Alış Fiyat *</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Adet *</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Alış Toplam</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Kar % *</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Satış Fiyat</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Satış Toplam</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Para Birimi</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">İşlem</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-700 uppercase" style="width: 3%;">#</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-700 uppercase" style="width: 25%;">Ürün *</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-700 uppercase" style="width: 15%;">Tedarikçi</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-700 uppercase" style="width: 10%;">Alış Fiyat *</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-700 uppercase" style="width: 7%;">Adet *</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-700 uppercase" style="width: 10%;">Alış Toplam</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-700 uppercase" style="width: 7%;">Kar % *</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-700 uppercase" style="width: 10%;">Satış Fiyat</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-700 uppercase" style="width: 10%;">Satış Toplam</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-700 uppercase" style="width: 8%;">Para Birimi</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-700 uppercase" style="width: 5%;">İşlem</th>
                             </tr>
                         </thead>
                         <tbody id="kalemlerBody" class="bg-white divide-y divide-gray-200">
@@ -213,38 +213,38 @@
 
             const row = `
                 <tr data-kalem="${kalemSayisi}">
-                    <td class="px-4 py-2">${kalemSayisi}</td>
-                    <td class="px-4 py-2">
-                        <select class="urun-select border border-gray-300 rounded px-2 py-1 w-full" data-kalem="${kalemSayisi}" required>
+                    <td class="px-2 py-2 text-center">${kalemSayisi}</td>
+                    <td class="px-2 py-2">
+                        <select class="urun-select border border-gray-300 rounded px-2 py-1 w-full" style="min-width: 200px;" data-kalem="${kalemSayisi}" required>
                             <option value="">Ürün seçin veya yazın...</option>
                             ${urunler.map(u => `<option value="${u.id}" data-fiyat="${u.son_alis_fiyat || 0}">${u.urun_adi}${u.marka ? ' - ' + u.marka.marka_adi : ''}</option>`).join('')}
                         </select>
                         <input type="hidden" name="kalemler[${kalemSayisi}][urun_id]" class="urun-id">
                         <input type="hidden" name="kalemler[${kalemSayisi}][urun_adi]" class="urun-adi" required>
                     </td>
-                    <td class="px-4 py-2">
-                        <select class="tedarikci-select border border-gray-300 rounded px-2 py-1 w-full" name="kalemler[${kalemSayisi}][musteri_id]">
+                    <td class="px-2 py-2">
+                        <select class="tedarikci-select border border-gray-300 rounded px-2 py-1 w-full text-sm" name="kalemler[${kalemSayisi}][musteri_id]">
                             <option value="">Seç...</option>
                             ${tedarikciler.map(t => `<option value="${t.id}">${t.sirket}</option>`).join('')}
                         </select>
                     </td>
-                    <td class="px-4 py-2">
+                    <td class="px-2 py-2">
                         <input type="number" step="0.01" min="0" name="kalemler[${kalemSayisi}][alis_fiyat]" 
-                            class="alis-fiyat border border-gray-300 rounded px-2 py-1 w-24" required onchange="hesaplaKalem(${kalemSayisi})">
+                            class="alis-fiyat border border-gray-300 rounded px-2 py-1 w-full" required onchange="hesaplaKalem(${kalemSayisi})">
                     </td>
-                    <td class="px-4 py-2">
+                    <td class="px-2 py-2">
                         <input type="number" min="1" name="kalemler[${kalemSayisi}][adet]" value="1"
-                            class="adet border border-gray-300 rounded px-2 py-1 w-20" required onchange="hesaplaKalem(${kalemSayisi})">
+                            class="adet border border-gray-300 rounded px-2 py-1 w-full" required onchange="hesaplaKalem(${kalemSayisi})">
                     </td>
-                    <td class="px-4 py-2 alis-toplam font-semibold">0.00</td>
-                    <td class="px-4 py-2">
+                    <td class="px-2 py-2 alis-toplam font-semibold text-sm">0.00</td>
+                    <td class="px-2 py-2">
                         <input type="number" min="0" name="kalemler[${kalemSayisi}][kar_orani]" value="${karOrani}"
-                            class="kar-orani border border-gray-300 rounded px-2 py-1 w-20" required onchange="hesaplaKalem(${kalemSayisi})">
+                            class="kar-orani border border-gray-300 rounded px-2 py-1 w-full" required onchange="hesaplaKalem(${kalemSayisi})">
                     </td>
-                    <td class="px-4 py-2 satis-fiyat font-semibold">0.00</td>
-                    <td class="px-4 py-2 satis-toplam font-semibold text-green-600">0.00</td>
-                    <td class="px-4 py-2">
-                        <select name="kalemler[${kalemSayisi}][para_birimi]" class="border border-gray-300 rounded px-2 py-1" required>
+                    <td class="px-2 py-2 satis-fiyat font-semibold text-sm">0.00</td>
+                    <td class="px-2 py-2 satis-toplam font-semibold text-green-600 text-sm">0.00</td>
+                    <td class="px-2 py-2">
+                        <select name="kalemler[${kalemSayisi}][para_birimi]" class="border border-gray-300 rounded px-2 py-1 w-full text-sm" required>
                             <option value="TL">TL</option>
                             <option value="USD">USD</option>
                             <option value="EUR">EUR</option>

@@ -79,10 +79,37 @@ class FiyatTeklifController extends Controller
 
         // Kalemleri ekle ve hesapla
         foreach ($validated['kalemler'] as $index => $kalemData) {
+            // Ürün yoksa oluştur
+            $urun = null;
+            if (!empty($kalemData['urun_id'])) {
+                $urun = Urun::find($kalemData['urun_id']);
+            } else {
+                // Yeni ürün oluştur
+                $urun = Urun::create([
+                    'urun_adi' => $kalemData['urun_adi'],
+                    'son_alis_fiyat' => $kalemData['alis_fiyat'],
+                    'ortalama_kar_orani' => $kalemData['kar_orani'],
+                ]);
+                
+                // Eğer tedarikçi seçildiyse fiyat kaydı da oluştur
+                if (!empty($kalemData['musteri_id'])) {
+                    \App\Models\TedarikiciFiyat::create([
+                        'musteri_id' => $kalemData['musteri_id'],
+                        'urun_id' => $urun->id,
+                        'urun_adi' => $urun->urun_adi,
+                        'tarih' => $validated['tarih'],
+                        'birim_fiyat' => $kalemData['alis_fiyat'],
+                        'para_birimi' => $kalemData['para_birimi'],
+                        'minimum_siparis' => $kalemData['adet'],
+                        'aktif' => true,
+                    ]);
+                }
+            }
+            
             $kalem = new TeklifKalem([
                 'teklif_id' => $teklif->id,
                 'musteri_id' => $kalemData['musteri_id'],
-                'urun_id' => $kalemData['urun_id'],
+                'urun_id' => $urun?->id,
                 'sira' => $index + 1,
                 'urun_adi' => $kalemData['urun_adi'],
                 'alis_fiyat' => $kalemData['alis_fiyat'],

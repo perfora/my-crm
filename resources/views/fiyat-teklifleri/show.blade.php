@@ -281,16 +281,19 @@
         }
 
         function openOutlook() {
+            // Önce HTML'i kopyala
+            copyEmailHTML();
+            
+            // Sonra Outlook'u aç
             const subject = encodeURIComponent('Fiyat Teklifi - {{ $teklif->teklif_no }}');
-            const body = encodeURIComponent('Sayın {{ $teklif->yetkili_adi ?? "Yetkili" }},\n\nTalebiniz doğrultusunda hazırladığımız fiyat teklifimiz ektedir.\n\nSaygılarımızla.');
             const to = '{{ $teklif->yetkili_email ?? "" }}';
             
-            const mailtoLink = `mailto:${to}?subject=${subject}&body=${body}`;
-            window.location.href = mailtoLink;
+            const mailtoLink = `mailto:${to}?subject=${subject}`;
+            window.open(mailtoLink, '_blank');
             
             setTimeout(() => {
-                alert('Outlook açıldı. Lütfen:\n1. Email içeriğini HTML formatında yapıştırın\n2. "Email HTML Kopyala" butonuna tıklayın\n3. Outlook\'ta Ctrl+V ile yapıştırın');
-            }, 500);
+                alert('✅ Teklif HTML\' kopyalandı!\n\n📧 Outlook açıldı.\n\nYapmanız gerekenler:\n1. Outlook\'ta yeni mail oluştu\n2. İçerik alanına tıkla\n3. CTRL+V (veya CMD+V) ile yapıştır\n4. Gönder!');
+            }, 1000);
         }
     </script>
 </body>
