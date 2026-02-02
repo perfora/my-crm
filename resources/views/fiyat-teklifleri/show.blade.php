@@ -178,36 +178,26 @@
                 return;
             }
             
-            var html = content.innerHTML;
-            
-            // Tam HTML document oluştur
-            var fullHTML = '<!DOCTYPE html>' +
-                '<html>' +
-                '<head>' +
-                '<meta charset="UTF-8">' +
-                '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
-                '</head>' +
-                '<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; background-color: #fff;">' +
-                html +
-                '</body>' +
-                '</html>';
+            var clonedContent = content.cloneNode(true);
             
             // Modern API ile HTML formatında kopyala
             if (navigator.clipboard && window.ClipboardItem) {
-                var blob = new Blob([fullHTML], { type: 'text/html' });
+                var htmlString = clonedContent.outerHTML;
+                var blob = new Blob([htmlString], { type: 'text/html' });
                 var clipboardItem = new ClipboardItem({ 'text/html': blob });
                 
                 navigator.clipboard.write([clipboardItem]).then(function() {
-                    alert('Teklif HTML formatında kopyalandı! Outlook-a yapıştırabilirsiniz.');
-                }).catch(function() {
-                    fallbackCopyAsText(fullHTML);
+                    alert('Teklif kopyalandı! Outlook-a yapıştırabilirsiniz.');
+                }).catch(function(err) {
+                    console.error('Kopyalama hatası:', err);
+                    fallbackCopy(clonedContent.innerHTML);
                 });
             } else {
-                fallbackCopyAsText(fullHTML);
+                fallbackCopy(clonedContent.innerHTML);
             }
         }
         
-        function fallbackCopyAsText(html) {
+        function fallbackCopy(html) {
             var textarea = document.createElement('textarea');
             textarea.value = html;
             textarea.style.position = 'fixed';
@@ -216,7 +206,7 @@
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
-            alert('HTML kopyalandı! Outlook-ta CTRL+V ile yapıştırın.');
+            alert('HTML kopyalandı! Outlook-ta yapıştırın.');
         }
 
         function openOutlook() {
@@ -226,7 +216,7 @@
             var link = 'mailto:' + to + '?subject=' + encodeURIComponent(subject);
             window.open(link, '_blank');
             setTimeout(function() {
-                alert('Outlook açıldı! Mail içeriğine sağ tıklayın ve yapıştırın.');
+                alert('Outlook açıldı! Yapıştırın.');
             }, 1000);
         }
     </script>
