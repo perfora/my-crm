@@ -163,15 +163,24 @@
             @endif
 
             <!-- İmza -->
-            <div style="margin-top: 50px; text-align: right;">
-                @if($teklif->imza_path)
-                <div style="margin-bottom: 10px;">
-                    <img src="{{ $teklif->imza_path }}" alt="İmza" style="max-height: 60px;">
-                </div>
-                @endif
-                <p style="margin: 5px 0; font-weight: bold;">MURAT PEKTAŞ</p>
-                <p style="margin: 5px 0; color: #666;">Proje Yöneticisi</p>
-                <p style="margin: 5px 0; color: #666;">0549 476 38 00</p>
+            <div style="margin-top: 50px;">
+                <table style="width: 100%; border: none;">
+                    <tr style="border: none;">
+                        <td style="border: none; vertical-align: top; width: 50%;">
+                            <p style="margin: 0; line-height: 1.8;">Saygılarımızla.</p>
+                        </td>
+                        <td style="border: none; vertical-align: top; width: 50%; text-align: right;">
+                            @if($teklif->imza_path)
+                            <div style="margin-bottom: 10px;">
+                                <img src="{{ $teklif->imza_path }}" alt="İmza" style="max-height: 60px;">
+                            </div>
+                            @endif
+                            <p style="margin: 5px 0; font-weight: bold;">MURAT PEKTAŞ</p>
+                            <p style="margin: 5px 0; color: #666;">Proje Yöneticisi</p>
+                            <p style="margin: 5px 0; color: #666;">0549 476 38 00</p>
+                        </td>
+                    </tr>
+                </table>
             </div>
 
             <!-- Alt Bilgi -->
@@ -179,29 +188,15 @@
                 <p style="margin: 0; color: #666; font-size: 12px;">Kızılırmak Mah. Ufuk Üniv. Cad. No:8 İç Kapı No:27 Çankaya / ANKARA</p>
             </div>
         </div>
-
-        <!-- Detaylı Bilgiler (Sadece CRM'de göster) -->
-        <div class="bg-white rounded-lg shadow p-6 mt-6 no-print">
-            <h3 class="text-lg font-semibold mb-4">Detaylı Bilgiler (Dahili)</h3>
-            
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <p class="text-sm text-gray-600">Durum</p>
-                    <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                        {{ $teklif->durum === 'Taslak' ? 'bg-gray-200 text-gray-800' : '' }}
-                        {{ $teklif->durum === 'Gönderildi' ? 'bg-blue-200 text-blue-800' : '' }}
-                        {{ $teklif->durum === 'Onaylandı' ? 'bg-green-200 text-green-800' : '' }}
-                        {{ $teklif->durum === 'Reddedildi' ? 'bg-red-200 text-red-800' : '' }}">
-                        {{ $teklif->durum }}
-                    </span>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-600">Kar Oranı (Ortalama)</p>
-                    <p class="font-semibold">{{ $teklif->kar_orani_varsayilan }}%</p>
+    </div>
                 </div>
                 <div>
                     <p class="text-sm text-gray-600">Toplam Alış</p>
                     <p class="font-semibold">{{ number_format($teklif->toplam_alis, 2) }} TL</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Toplam Satış</p>
+                    <p class="font-semibold text-green-600">{{ number_format($teklif->toplam_satis, 2) }} TL</p>
                 </div>
                 <div>
                     <p class="text-sm text-gray-600">Toplam Satış</p>
