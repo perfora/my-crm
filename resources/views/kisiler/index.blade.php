@@ -277,6 +277,7 @@
                         @forelse($kisiler as $kisi)
                             <tr data-ad_soyad="{{ $kisi->ad_soyad }}" 
                                 data-firma_id="{{ $kisi->musteri_id ?? '' }}"
+                                data-firma="{{ $kisi->musteri->sirket ?? '' }}"
                                 data-telefon_numarasi="{{ $kisi->telefon_numarasi ?? '' }}"
                                 data-email_adresi="{{ $kisi->email_adresi ?? '' }}"
                                 data-bolum="{{ $kisi->bolum ?? '' }}" 
@@ -540,7 +541,7 @@
             }
             
             const newRow = `
-                <tr class="new-row bg-yellow-50">
+                <tr class="new-row bg-yellow-50" data-ad_soyad="" data-firma_id="" data-firma="" data-telefon_numarasi="" data-email_adresi="" data-bolum="" data-gorev="">
                     <td class="px-3 py-4 whitespace-nowrap text-center">
                         <input type="checkbox" disabled class="opacity-50">
                     </td>
