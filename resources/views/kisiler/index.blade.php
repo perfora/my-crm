@@ -755,6 +755,8 @@
                 const newValue = select.val();
                 const newText = select.find('option:selected').text();
                 
+                console.log('saveSelect called - Value:', newValue, 'Text:', newText);
+                
                 // Destroy Select2
                 select.select2('destroy');
                 
@@ -830,12 +832,27 @@
                 }
             }
             
-            select.on('select2:select', saveSelect);
+            let valueChanged = false;
+            
+            select.on('change', function() {
+                valueChanged = true;
+            });
+            
+            select.on('select2:select', function() {
+                console.log('select2:select triggered');
+                saveSelect();
+            });
+            
             select.on('select2:close', function() {
+                console.log('select2:close triggered, valueChanged:', valueChanged);
                 if (cell.hasClass('editing')) {
-                    select.select2('destroy');
-                    cell.html(originalContent);
-                    cell.removeClass('editing');
+                    if (valueChanged) {
+                        saveSelect();
+                    } else {
+                        select.select2('destroy');
+                        cell.html(originalContent);
+                        cell.removeClass('editing');
+                    }
                 }
             });
         });
