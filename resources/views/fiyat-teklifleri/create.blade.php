@@ -217,7 +217,13 @@
                     <td class="px-2 py-2">
                         <select class="urun-select border border-gray-300 rounded px-2 py-1 w-full" style="min-width: 200px;" data-kalem="${kalemSayisi}" required>
                             <option value="">Ürün seçin veya yazın...</option>
-                            ${urunler.map(u => `<option value="${u.id}" data-fiyat="${u.son_alis_fiyat || 0}">${u.urun_adi}${u.marka ? ' - ' + u.marka.marka_adi : ''}</option>`).join('')}
+                            ${urunler.map(u => {
+                                let displayText = u.urun_adi;
+                                if (u.marka) displayText += ' - ' + u.marka.marka_adi;
+                                if (u.kategori) displayText += ' [' + u.kategori + ']';
+                                if (u.stok_kodu) displayText += ' (' + u.stok_kodu + ')';
+                                return `<option value="${u.id}" data-fiyat="${u.son_alis_fiyat || 0}" data-kar="${u.ortalama_kar_orani || 25}">${displayText}</option>`;
+                            }).join('')}
                         </select>
                         <input type="hidden" name="kalemler[${kalemSayisi}][urun_id]" class="urun-id">
                         <input type="hidden" name="kalemler[${kalemSayisi}][urun_adi]" class="urun-adi" required>
@@ -277,6 +283,9 @@
                     row.find('.urun-id').val($(this).val());
                     row.find('.urun-adi').val(selectedOption.text());
                     row.find('.alis-fiyat').val(selectedOption.data('fiyat') || 0);
+                    // Kar oranını da güncelle
+                    const karOrani = selectedOption.data('kar') || 25;
+                    row.find('.kar-orani').val(karOrani);
                 }
                 hesaplaKalem(kalemNo);
             });

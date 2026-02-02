@@ -21,11 +21,11 @@
         .select2-container--default .select2-selection--single .select2-selection__arrow {
             height: 40px;
         }
-        .editable-cell {
+        .editable-cell, .editable-select {
             cursor: pointer;
             transition: background-color 0.2s;
         }
-        .editable-cell:hover {
+        .editable-cell:hover, .editable-select:hover {
             background-color: #fef3c7 !important;
         }
     </style>
@@ -357,7 +357,7 @@
             
             select.on('change blur', function() {
                 const newValue = $(this).val();
-                const selectedMarka = markalar.find(m => m.id == newValue);
+                const selectedMarka = newValue ? markalar.find(m => m.id == newValue) : null;
                 
                 $.ajax({
                     url: `/urunler/${id}`,
@@ -367,7 +367,7 @@
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     success: function(response) {
-                        const displayValue = selectedMarka ? selectedMarka.marka_adi : '-';
+                        const displayValue = selectedMarka?.marka_adi || '-';
                         cell.removeClass('editing').html(displayValue);
                     },
                     error: function() {
