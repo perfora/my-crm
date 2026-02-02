@@ -52,10 +52,10 @@
                                 {{ \Carbon\Carbon::parse($teklif->tarih)->format('d.m.Y') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap font-semibold">
-                                {{ number_format($teklif->toplam_satis, 2) }} TL
+                                {{ number_format($teklif->toplam_satis, 2) }} {{ $teklif->para_birimi ?? 'TL' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap font-semibold text-green-600">
-                                {{ number_format($teklif->toplam_kar, 2) }} TL
+                                {{ number_format($teklif->toplam_kar, 2) }} {{ $teklif->para_birimi ?? 'TL' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2 py-1 text-xs font-semibold rounded-full 

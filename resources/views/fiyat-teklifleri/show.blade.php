@@ -65,7 +65,7 @@
                         <h2 style="font-size: 24px; font-weight: bold; color: #1e40af; margin: 0;">FİYAT TEKLİFİ</h2>
                     </div>
                     <div>
-                        <img src="https://via.placeholder.com/200x80/1e40af/ffffff?text=LOGO" alt="Logo" style="max-height: 80px;">
+                        <img src="https://www.netcom.com.tr/wp-content/uploads/2023/10/netcom-logo.png" alt="Logo" style="max-height: 80px;">
                     </div>
                 </div>
             </div>
@@ -98,7 +98,7 @@
                         } else {
                             echo 'Yetkili';
                         }
-                    @endphp,</strong><br><br>
+                    @endphp Bey,</strong><br><br>
                     Yapılacak olan alımınızla ilgili hazırlamış olduğumuz fiyat teklifimizi aşağıda bulabilirsiniz. Teklifimizi uygun bulacağınızı ümit eder, teklif ile ilgili her türlü tamamlayıcı bilgi ve görüş için bizi arayabileceğinizi belirtmek isteriz.<br><br>
                     Saygılarımızla.
                 </p>
@@ -163,24 +163,15 @@
             @endif
 
             <!-- İmza -->
-            <div style="margin-top: 50px;">
-                <table style="width: 100%; border: none;">
-                    <tr style="border: none;">
-                        <td style="border: none; vertical-align: top; width: 50%;">
-                            <p style="margin: 0; line-height: 1.8;">Saygılarımızla.</p>
-                        </td>
-                        <td style="border: none; vertical-align: top; width: 50%; text-align: right;">
-                            @if($teklif->imza_path)
-                            <div style="margin-bottom: 10px;">
-                                <img src="{{ $teklif->imza_path }}" alt="İmza" style="max-height: 60px;">
-                            </div>
-                            @endif
-                            <p style="margin: 5px 0; font-weight: bold;">MURAT PEKTAŞ</p>
-                            <p style="margin: 5px 0; color: #666;">Proje Yöneticisi</p>
-                            <p style="margin: 5px 0; color: #666;">0549 476 38 00</p>
-                        </td>
-                    </tr>
-                </table>
+            <div style="margin-top: 50px; text-align: right;">
+                @if($teklif->imza_path)
+                <div style="margin-bottom: 10px;">
+                    <img src="{{ $teklif->imza_path }}" alt="İmza" style="max-height: 60px;">
+                </div>
+                @endif
+                <p style="margin: 5px 0; font-weight: bold;">MURAT PEKTAŞ</p>
+                <p style="margin: 5px 0; color: #666;">Proje Yöneticisi</p>
+                <p style="margin: 5px 0; color: #666;">0549 476 38 00</p>
             </div>
 
             <!-- Alt Bilgi -->
@@ -189,50 +180,8 @@
             </div>
         </div>
     </div>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-600">Toplam Alış</p>
-                    <p class="font-semibold">{{ number_format($teklif->toplam_alis, 2) }} TL</p>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-600">Toplam Satış</p>
-                    <p class="font-semibold text-green-600">{{ number_format($teklif->toplam_satis, 2) }} TL</p>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-600">Toplam Satış</p>
-                    <p class="font-semibold text-green-600">{{ number_format($teklif->toplam_satis, 2) }} TL</p>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-600">Toplam Kar</p>
-                    <p class="font-semibold text-blue-600">{{ number_format($teklif->toplam_kar, 2) }} TL</p>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-600">Kar Marjı</p>
-                    <p class="font-semibold">{{ $teklif->toplam_alis > 0 ? number_format(($teklif->toplam_kar / $teklif->toplam_alis) * 100, 2) : 0 }}%</p>
-                </div>
-            </div>
 
-            <div class="mt-6">
-                <h4 class="font-semibold mb-2">Kalem Detayları</h4>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 border text-sm">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">#</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ürün</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tedarikçi</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Alış</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Adet</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Kar %</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Satış</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Kar</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($teklif->kalemler->sortBy('sira') as $index => $kalem)
-                            <tr>
-                                <td class="px-3 py-2">{{ $index + 1 }}</td>
-                                <td class="px-3 py-2">{{ $kalem->urun_adi }}</td>
+    <script>
                                 <td class="px-3 py-2">{{ $kalem->tedarikci->sirket ?? '-' }}</td>
                                 <td class="px-3 py-2">{{ number_format($kalem->alis_toplam, 2) }}</td>
                                 <td class="px-3 py-2">{{ $kalem->adet }}</td>
