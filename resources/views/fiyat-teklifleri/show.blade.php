@@ -64,17 +64,7 @@
                     <div>
                         <h2 style="font-size: 24px; font-weight: bold; color: #1e40af; margin: 0;">FİYAT TEKLİFİ</h2>
                     </div>
-                    <div style="display: flex; align-items: flex-start; gap: 30px;">
-                        <div style="text-align: right;">
-                            @if($teklif->imza_path)
-                            <div style="margin-bottom: 10px;">
-                                <img src="{{ $teklif->imza_path }}" alt="İmza" style="max-height: 60px;">
-                            </div>
-                            @endif
-                            <p style="margin: 5px 0; font-weight: bold;">MURAT PEKTAŞ</p>
-                            <p style="margin: 5px 0; color: #666; font-size: 12px;">Proje Yöneticisi</p>
-                            <p style="margin: 5px 0; color: #666; font-size: 12px;">0549 476 38 00</p>
-                        </div>
+                    <div>
                         <img src="/Netcom_logo.png" alt="Logo" style="max-height: 80px;">
                     </div>
                 </div>
@@ -112,6 +102,16 @@
                     Yapılacak olan alımınızla ilgili hazırlamış olduğumuz fiyat teklifimizi aşağıda bulabilirsiniz. Teklifimizi uygun bulacağınızı ümit eder, teklif ile ilgili her türlü tamamlayıcı bilgi ve görüş için bizi arayabileceğinizi belirtmek isteriz.<br><br>
                     Saygılarımızla.
                 </p>
+                
+                <!-- İmza buraya taşındı -->
+                @if($teklif->imza_path)
+                <div style="text-align: right; margin-top: 20px;">
+                    <img src="{{ $teklif->imza_path }}" alt="İmza" style="max-height: 80px;">
+                    <p style="margin: 5px 0; font-weight: bold;">MURAT PEKTAŞ</p>
+                    <p style="margin: 5px 0; color: #666; font-size: 12px;">Proje Yöneticisi</p>
+                    <p style="margin: 5px 0; color: #666; font-size: 12px;">0549 476 38 00</p>
+                </div>
+                @endif
             </div>
 
             <!-- Ürün Tablosu -->
@@ -170,11 +170,6 @@
                 <p style="margin: 0; white-space: pre-wrap; line-height: 1.8;">{{ $teklif->teklif_kosullari }}</p>
             </div>
             @endif
-
-            <!-- Alt Bilgi -->
-            <div style="margin-top: 50px; padding-top: 20px; border-top: 2px solid #e5e7eb; text-align: center;">
-                <p style="margin: 0; color: #666; font-size: 12px;">Kızılırmak Mah. Ufuk Üniv. Cad. No:8 İç Kapı No:27 Çankaya / ANKARA</p>
-            </div>
         </div>
     </div>
 
