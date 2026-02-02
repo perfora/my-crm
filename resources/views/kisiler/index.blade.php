@@ -718,6 +718,11 @@
             
             select.select2('open');
             
+            // Search kutusuna focus yap
+            setTimeout(() => {
+                $('.select2-search__field').focus();
+            }, 100);
+            
             function saveSelect() {
                 const newValue = select.val();
                 const newText = select.find('option:selected').text();
@@ -765,6 +770,8 @@
                             
                             cell.removeClass('editing');
                             cell.closest('tr').attr('data-' + field, newValue);
+                            // Firma adını da güncelle
+                            cell.closest('tr').attr('data-firma', newText);
                         },
                         error: function() {
                             alert('Kaydedilemedi!');
