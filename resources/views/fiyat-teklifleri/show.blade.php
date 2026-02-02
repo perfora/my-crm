@@ -172,32 +172,47 @@
 
     <script>
         function copyEmailHTML() {
-            var emailContent = document.getElementById('emailPreview').innerHTML;
+            var content = document.getElementById('emailPreview');
+            if (!content) {
+                alert('İçerik bulunamadı!');
+                return;
+            }
             
-            var fullHTML = '<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }table { border-collapse: collapse; width: 100%; }th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }th { background-color: #f8f9fa; font-weight: bold; }</style></head><body>' + emailContent + '</body></html>';
-
-            navigator.clipboard.writeText(fullHTML).then(function() {
-                alert('Email HTML kopyalandı! Outlook-a yapıştırabilirsiniz.');
-            }).catch(function(err) {
-                var textarea = document.createElement('textarea');
-                textarea.value = fullHTML;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                alert('Email HTML kopyalandı!');
-            });
+            var html = content.innerHTML;
+            var wrapper = document.createElement('div');
+            wrapper.innerHTML = html;
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(html).then(function() {
+                    alert('Teklif kopyalandı! Outlook-a yapıştırabilirsiniz.');
+                }).catch(function() {
+                    fallbackCopy(html);
+                });
+            } else {
+                fallbackCopy(html);
+            }
+        }
+        
+        function fallbackCopy(text) {
+            var textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('Teklif kopyalandı!');
         }
 
         function openOutlook() {
             copyEmailHTML();
-            var subject = encodeURIComponent('Fiyat Teklifi - {{ $teklif->teklif_no }}');
+            var subject = 'Fiyat Teklifi - {{ $teklif->teklif_no }}';
             var to = '{{ $teklif->yetkili_email ?? "" }}';
-            var mailtoLink = 'mailto:' + to + '?subject=' + subject;
-            window.open(mailtoLink, '_blank');
-            
+            var link = 'mailto:' + to + '?subject=' + encodeURIComponent(subject);
+            window.open(link, '_blank');
             setTimeout(function() {
-                alert('Teklif HTML kopyalandı! Outlook açıldı. İçeriği yapıştırıp gönderebilirsiniz.');
+                alert('Outlook açıldı! HTML-i yapıştırabilirsiniz.');
             }, 1000);
         }
     </script>
