@@ -20,6 +20,9 @@
                     <a href="/kisiler" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('kisiler*') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
                         Kişiler
                     </a>
+                    <a href="/urunler" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('urunler*') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
+                        📦 Ürünler
+                    </a>
                     <a href="/tedarikci-fiyatlari" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('tedarikci-fiyatlari*') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
                         💰 Fiyatlar
                     </a>

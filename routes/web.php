@@ -654,6 +654,12 @@ Route::get('/tedarikci-fiyatlari', [App\Http\Controllers\TedarikiciFiyatControll
 Route::post('/tedarikci-fiyatlari/bulk', [App\Http\Controllers\TedarikiciFiyatController::class, 'bulkStore']);
 Route::delete('/tedarikci-fiyatlari/{id}', [App\Http\Controllers\TedarikiciFiyatController::class, 'destroy']);
 
+// Ürünler
+Route::get('/urunler', [App\Http\Controllers\UrunController::class, 'index']);
+Route::post('/urunler', [App\Http\Controllers\UrunController::class, 'store']);
+Route::put('/urunler/{id}', [App\Http\Controllers\UrunController::class, 'update']);
+Route::delete('/urunler/{id}', [App\Http\Controllers\UrunController::class, 'destroy']);
+
 // Fiyat Teklifleri
 Route::get('/fiyat-teklifleri', [App\Http\Controllers\FiyatTeklifController::class, 'index']);
 Route::get('/fiyat-teklifleri/yeni', [App\Http\Controllers\FiyatTeklifController::class, 'create']);
