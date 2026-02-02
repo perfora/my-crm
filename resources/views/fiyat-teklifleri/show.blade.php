@@ -105,7 +105,6 @@
                 
                 <!-- İmza -->
                 <div style="text-align: right; margin-top: 30px; margin-bottom: 20px;">
-                    <img src="/imza.png" alt="İmza" style="max-height: 80px; margin-bottom: 10px;">
                     <p style="margin: 5px 0; font-weight: bold; font-size: 14px;">MURAT PEKTAŞ</p>
                     <p style="margin: 5px 0; color: #666; font-size: 12px;">Proje Yöneticisi</p>
                     <p style="margin: 5px 0; color: #666; font-size: 12px;">0549 476 38 00</p>
