@@ -65,7 +65,7 @@
                         <h2 style="font-size: 24px; font-weight: bold; color: #1e40af; margin: 0;">FİYAT TEKLİFİ</h2>
                     </div>
                     <div>
-                        <img src="https://www.netcom.com.tr/wp-content/uploads/2023/10/netcom-logo.png" alt="Logo" style="max-height: 80px;">
+                        <img src="/Netcom_logo.png" alt="Logo" style="max-height: 80px;">
                     </div>
                 </div>
             </div>
