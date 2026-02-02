@@ -797,6 +797,7 @@
                     });
                 } else {
                     // Mevcut kayıt güncelle
+                    console.log('Updating kisi:', id, 'Field:', field, 'Value:', newValue);
                     $.ajax({
                         url: '/kisiler/' + id,
                         method: 'PUT',
@@ -805,6 +806,7 @@
                             [field]: newValue
                         },
                         success: function(response) {
+                            console.log('Update success:', response);
                             cell.data('value', newValue);
                             
                             if (newValue) {
@@ -818,7 +820,8 @@
                             // Firma adını da güncelle
                             cell.closest('tr').attr('data-firma', newText);
                         },
-                        error: function() {
+                        error: function(xhr, status, error) {
+                            console.error('Update failed:', xhr.responseText, status, error);
                             alert('Kaydedilemedi!');
                             cell.html(originalContent);
                             cell.removeClass('editing');
