@@ -401,6 +401,9 @@
                 </div>
             </div>
             @endif
+
+            <!-- Lisans Yenilenecek İşler -->
+            @include('widgets.lisans-yenilenecek')
         </div>
     </div>
 </body>
