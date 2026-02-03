@@ -105,9 +105,9 @@
                 
                 <!-- İmza -->
                 <div style="text-align: right; margin-top: 30px; margin-bottom: 20px;">
-                    <p style="margin: 5px 0; font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; color: #1e40af;">MURAT PEKTAŞ</p>
-                    <p style="margin: 5px 0; font-family: Arial, sans-serif; font-size: 12px; font-style: italic; color: #6b7280;">Proje Yöneticisi</p>
-                    <p style="margin: 5px 0; font-family: Arial, sans-serif; font-size: 12px; font-style: italic; color: #6b7280;">M: +90 549 476 38 00</p>
+                    <p style="margin: 5px 0; font-family: Arial, sans-serif; font-weight: bold; color: #1e40af;">MURAT PEKTAŞ</p>
+                    <p style="margin: 5px 0; font-family: Arial, sans-serif; font-style: italic; color: #6b7280;">Proje Yöneticisi</p>
+                    <p style="margin: 5px 0; font-family: Arial, sans-serif; font-style: italic; color: #6b7280;">M: +90 549 476 38 00</p>
                 </div>
             </div>
 
