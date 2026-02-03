@@ -115,7 +115,7 @@
             ->get();
     @endphp
 
-    <div class="container mx-auto px-4 py-8">
+    <div class="container mx-auto px-6 py-8 max-w-screen-2xl">
         <!-- Başlık ve Butonlar -->
         <div class="flex justify-between items-center mb-8">
             <h1 class="text-4xl font-bold text-gray-800">🏠 CRM Dashboard</h1>
@@ -365,7 +365,7 @@
     </div>
 
     <!-- Yan Yana Widget'lar: Ziyaretler & Lisans -->
-    <div class="container mx-auto px-4 py-8 max-w-7xl">
+    <div class="container mx-auto px-6 py-8 max-w-screen-2xl">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Sol: Yaklaşan Ziyaretler -->
             @if($showYaklasanZiyaretler)
