@@ -8,7 +8,8 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
     <style>
         .select2-container--default .select2-selection--single {
             height: 42px;
@@ -403,20 +404,17 @@
             });
         }
 
-        // TinyMCE başlat
-        let kosulEditor;
-        tinymce.init({
-            selector: '#kosulTextarea',
+        // Summernote başlat
+        $('#kosulTextarea').summernote({
             height: 300,
-            menubar: false,
-            plugins: 'lists link paste',
-            toolbar: 'undo redo | bold italic underline | bullist numlist | link | removeformat',
-            paste_as_text: false,
-            paste_word_valid_elements: 'b,strong,i,em,u,p,br,ul,ol,li',
-            setup: function(ed) {
-                kosulEditor = ed;
-            },
-            content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; }'
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['para', ['ul', 'ol']],
+                ['insert', ['link']],
+                ['view', ['undo', 'redo']]
+            ],
+            placeholder: 'Word\'den kopyalayıp yapıştırabilirsiniz...',
+            lang: 'tr-TR'
         });
 
         // API'den teklif koşullarını yükle
@@ -429,9 +427,9 @@
                 select.append(`<option value="${kosul.id}">${kosul.baslik}</option>`);
                 
                 // Varsayılan olanı seç ve yükle
-                if (kosul.varsayilan && kosulEditor) {
+                if (kosul.varsayilan) {
                     setTimeout(function() {
-                        kosulEditor.setContent(kosul.icerik);
+                        $('#kosulTextarea').summernote('code', kosul.icerik);
                     }, 500);
                 }
             });
@@ -444,8 +442,8 @@
             
             $.get('/api/teklif-kosullari', function(data) {
                 const secili = data.find(k => k.id == kosulId);
-                if (secili && kosulEditor) {
-                    kosulEditor.setContent(secili.icerik);
+                if (secili) {
+                    $('#kosulTextarea').summernote('code', secili.icerik);
                 }
             });
         });

@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teklif Koşulları Yönetimi - CRM</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 </head>
 <body class="bg-gray-50">
     @include('layouts.nav')
@@ -121,28 +122,26 @@
     </div>
 
     <script>
-        let editor;
-
-        // TinyMCE başlat
-        tinymce.init({
-            selector: '#icerik',
-            height: 400,
-            menubar: false,
-            plugins: 'lists link paste',
-            toolbar: 'undo redo | bold italic underline | bullist numlist | link | removeformat',
-            paste_as_text: false,
-            paste_word_valid_elements: 'b,strong,i,em,u,p,br,ul,ol,li',
-            setup: function(ed) {
-                editor = ed;
-            },
-            content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; }'
+        // Summernote başlat
+        $(document).ready(function() {
+            $('#icerik').summernote({
+                height: 400,
+                toolbar: [
+                    ['style', ['bold', 'italic', 'underline', 'clear']],
+                    ['para', ['ul', 'ol']],
+                    ['insert', ['link']],
+                    ['view', ['undo', 'redo']]
+                ],
+                placeholder: 'Word\'den kopyalayıp yapıştırabilirsiniz...',
+                lang: 'tr-TR'
+            });
         });
 
         function yeniKosulModal() {
             document.getElementById('modalBaslik').textContent = 'Yeni Koşul Ekle';
             document.getElementById('kosulForm').reset();
             document.getElementById('kosul_id').value = '';
-            if (editor) editor.setContent('');
+            $('#icerik').summernote('code', '');
             document.getElementById('kosulModal').classList.remove('hidden');
         }
 
@@ -159,7 +158,7 @@
                     document.getElementById('baslik').value = data.baslik;
                     document.getElementById('sira').value = data.sira;
                     document.getElementById('varsayilan').checked = data.varsayilan;
-                    if (editor) editor.setContent(data.icerik);
+                    $('#icerik').summernote('code', data.icerik);
                     document.getElementById('kosulModal').classList.remove('hidden');
                 });
         }
@@ -200,7 +199,7 @@
                 baslik: document.getElementById('baslik').value,
                 sira: document.getElementById('sira').value,
                 varsayilan: document.getElementById('varsayilan').checked,
-                icerik: editor.getContent()
+                icerik: $('#icerik').summernote('code')
             };
             
             fetch(url, {
