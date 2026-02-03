@@ -39,6 +39,7 @@
                             'ozet_kartlar' => ['name' => 'Özet Kartlar', 'desc' => 'Toplam Müşteri, Kişi, Ziyaret, İş sayıları'],
                             'yillik_karsilastirma' => ['name' => 'Yıllık Karşılaştırma', 'desc' => '2025 vs 2026 kazanılan işler'],
                             'bekleyen_isler' => ['name' => 'Bekleyen İşler', 'desc' => 'Verilecek/Takip edilecek işler listesi'],
+                            'lisans_yenilenecek' => ['name' => 'Lisans Yenilenecek', 'desc' => 'Gelecek 3 ayda lisansı bitecek işler'],
                             'bu_ay_kazanilan' => ['name' => 'Bu Ay Kazanılan', 'desc' => 'Bu ayki kazanılan işler ve toplam'],
                             'yuksek_oncelikli' => ['name' => 'Yüksek Öncelikli', 'desc' => 'Öncelik 1 olan işler'],
                             'yaklasan_ziyaretler' => ['name' => 'Yaklaşan Ziyaretler', 'desc' => 'Planlanmış ziyaretler'],

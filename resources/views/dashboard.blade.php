@@ -89,6 +89,7 @@
                     'ozet_kartlar' => true,
                     'yillik_karsilastirma' => true,
                     'bekleyen_isler' => true,
+                    'lisans_yenilenecek' => true,
                     'bu_ay_kazanilan' => true,
                     'yuksek_oncelikli' => true,
                     'yaklasan_ziyaretler' => true,
@@ -230,7 +231,9 @@
             @endif
             
             <!-- Lisans Yenilenecek İşler -->
-            @include('widgets.lisans-yenilenecek')
+            @if($widgets['lisans_yenilenecek'])
+                @include('widgets.lisans-yenilenecek')
+            @endif
             
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 @if($widgets['yuksek_oncelikli'])
