@@ -10,6 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/lang/summernote-tr-TR.min.js"></script>
     <style>
         .select2-container--default .select2-selection--single {
             height: 42px;
@@ -407,14 +408,18 @@
         // Summernote başlat
         $('#kosulTextarea').summernote({
             height: 300,
+            lang: 'tr-TR',
             toolbar: [
-                ['style', ['bold', 'italic', 'underline', 'clear']],
-                ['para', ['ul', 'ol']],
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['fontname', ['fontname']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
                 ['insert', ['link']],
-                ['view', ['undo', 'redo']]
+                ['view', ['fullscreen', 'codeview', 'help']]
             ],
-            placeholder: 'Word\'den kopyalayıp yapıştırabilirsiniz...',
-            lang: 'tr-TR'
+            placeholder: 'Word\'den kopyalayıp yapıştırabilirsiniz...'
         });
 
         // API'den teklif koşullarını yükle

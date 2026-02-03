@@ -8,6 +8,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/lang/summernote-tr-TR.min.js"></script>
 </head>
 <body class="bg-gray-50">
     @include('layouts.nav')
@@ -126,14 +127,18 @@
         $(document).ready(function() {
             $('#icerik').summernote({
                 height: 400,
+                lang: 'tr-TR',
                 toolbar: [
-                    ['style', ['bold', 'italic', 'underline', 'clear']],
-                    ['para', ['ul', 'ol']],
+                    ['style', ['style']],
+                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                    ['fontname', ['fontname']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
                     ['insert', ['link']],
-                    ['view', ['undo', 'redo']]
+                    ['view', ['fullscreen', 'codeview', 'help']]
                 ],
-                placeholder: 'Word\'den kopyalayıp yapıştırabilirsiniz...',
-                lang: 'tr-TR'
+                placeholder: 'Word\'den kopyalayıp yapıştırabilirsiniz...'
             });
         });
 
