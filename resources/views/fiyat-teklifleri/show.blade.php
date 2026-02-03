@@ -164,7 +164,7 @@
             <!-- Teklif Koşulları -->
             @if($teklif->teklif_kosullari)
             <div style="margin-bottom: 30px;">
-                <p style="margin: 0; white-space: pre-wrap; line-height: 1.8;">{{ $teklif->teklif_kosullari }}</p>
+                <div style="margin: 0; line-height: 1.8;">{!! nl2br($teklif->teklif_kosullari) !!}</div>
             </div>
             @endif
         </div> <!-- emailPreview kapandı -->

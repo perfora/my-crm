@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     <style>
         .select2-container--default .select2-selection--single {
             height: 42px;
@@ -151,13 +152,15 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Teklif Koşulları</label>
-                    <select id="kosulSablonSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">Hazır şablon seç (opsiyonel)...</option>
-                        <option value="standart">Standart Koşullar</option>
-                    </select>
-                    <textarea id="kosulTextarea" name="teklif_kosullari" rows="8"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Teklif koşullarınızı buraya yazın..."></textarea>
+                    <div class="flex gap-2 mb-2">
+                        <select id="kosulSablonSelect" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Hazır şablon seç...</option>
+                        </select>
+                        <a href="/teklif-kosullari" target="_blank" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 whitespace-nowrap">
+                            ⚙️ Yönet
+                        </a>
+                    </div>
+                    <textarea id="kosulTextarea" name="teklif_kosullari" rows="8"></textarea>
                 </div>
             </div>
 
@@ -400,24 +403,51 @@
             });
         }
 
+        // TinyMCE başlat
+        let kosulEditor;
+        tinymce.init({
+            selector: '#kosulTextarea',
+            height: 300,
+            menubar: false,
+            plugins: 'lists link paste',
+            toolbar: 'undo redo | bold italic underline | bullist numlist | link | removeformat',
+            paste_as_text: false,
+            paste_word_valid_elements: 'b,strong,i,em,u,p,br,ul,ol,li',
+            setup: function(ed) {
+                kosulEditor = ed;
+            },
+            content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; }'
+        });
+
+        // API'den teklif koşullarını yükle
+        $.get('/api/teklif-kosullari', function(data) {
+            const select = $('#kosulSablonSelect');
+            select.empty();
+            select.append('<option value="">Hazır şablon seç...</option>');
+            
+            data.forEach(function(kosul) {
+                select.append(`<option value="${kosul.id}">${kosul.baslik}</option>`);
+                
+                // Varsayılan olanı seç ve yükle
+                if (kosul.varsayilan && kosulEditor) {
+                    setTimeout(function() {
+                        kosulEditor.setContent(kosul.icerik);
+                    }, 500);
+                }
+            });
+        });
+
         // Teklif koşulları şablon seçimi
         $('#kosulSablonSelect').on('change', function() {
-            const selected = $(this).val();
-            if (selected === 'standart') {
-                const standartKosullar = `TEKLİF KOŞULLARI !!!
- 
-- Fiyatlarımıza %20 K.D.V Hariç olup, Ödeme Peşin olarak yapılacaktır. Kredi kartı ile ödemelerde vade farkı uygulanır.
-- Teklifimizi kabul etmeniz halinde sipariş için lütfen gönderilen teklifi onaylayıp imzalayarak tarafımıza e-mail veya faks ile gönderiniz
-- Dövizli Tekliflerde Serbest Piyasa Satış Kuru Dikkate alınmaktadır
-- TL Tekliflerde Ödeme Vadesine göre Serbest Piyasa USD/EUR satış kuru dikkate alınarak TL tekliflendirme yapılacaktır.
-- Cari Mutabakat döviz tutarı üzerinden yapılacaktır.
-- Teslim Süresi …5 iş günü….
-- TL ödemelerde ödemenin yapıldığı gün ki Serbest Piyasa USD/EUR Satış Kuru dikkate alınacaktır
-- Teklifimiz ……15 gün….  geçerlidir.
-- Fortilogger 1 yıl süre ile ücretsiz gelmektedir. Üreticinin sonraki yıllarda da bu hizmeti devam ettirecek şekilde bir taahhütü yoktur.
-- DİKKAT'!! Lisansı zamanında yenilenmeyen cihazlarda. Eksik yapılan yenileme süresi kadar lisansda kesinti olacaktır. Bu kesinti 6 aydan fazla olamaz`;
-                $('#kosulTextarea').val(standartKosullar);
-            }
+            const kosulId = $(this).val();
+            if (!kosulId) return;
+            
+            $.get('/api/teklif-kosullari', function(data) {
+                const secili = data.find(k => k.id == kosulId);
+                if (secili && kosulEditor) {
+                    kosulEditor.setContent(secili.icerik);
+                }
+            });
         });
     </script>
 </body>

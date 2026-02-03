@@ -668,6 +668,15 @@ Route::get('/fiyat-teklifleri/{id}', [App\Http\Controllers\FiyatTeklifController
 Route::delete('/fiyat-teklifleri/{id}', [App\Http\Controllers\FiyatTeklifController::class, 'destroy']);
 Route::get('/api/musteriler/{id}/yetkililer', [App\Http\Controllers\FiyatTeklifController::class, 'getYetkililer']);
 
+// Teklif Koşulları Yönetimi
+Route::get('/teklif-kosullari', [App\Http\Controllers\TeklifKosuluController::class, 'index']);
+Route::post('/teklif-kosullari', [App\Http\Controllers\TeklifKosuluController::class, 'store']);
+Route::get('/teklif-kosullari/{id}/edit', [App\Http\Controllers\TeklifKosuluController::class, 'edit']);
+Route::put('/teklif-kosullari/{id}', [App\Http\Controllers\TeklifKosuluController::class, 'update']);
+Route::delete('/teklif-kosullari/{id}', [App\Http\Controllers\TeklifKosuluController::class, 'destroy']);
+Route::post('/teklif-kosullari/{id}/varsayilan', [App\Http\Controllers\TeklifKosuluController::class, 'varsayilanYap']);
+Route::get('/api/teklif-kosullari', [App\Http\Controllers\TeklifKosuluController::class, 'apiList']);
+
 Route::post('/kisiler', function () {
     $validated = request()->validate([
         'ad_soyad' => 'required|max:255',

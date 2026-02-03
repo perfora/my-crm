@@ -29,6 +29,9 @@
                     <a href="/fiyat-teklifleri" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('fiyat-teklifleri*') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
                         📄 Teklifler
                     </a>
+                    <a href="/teklif-kosullari" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('teklif-kosullari*') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
+                        📋 Teklif Koşulları
+                    </a>
                     <a href="/ziyaretler" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('ziyaretler*') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
                         Ziyaretler
                     </a>
