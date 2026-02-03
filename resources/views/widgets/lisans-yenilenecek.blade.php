@@ -1,7 +1,9 @@
 <!-- Lisans Yenilenecek İşler Widget -->
+<!-- DEBUG: Widget yükleniyor -->
 @php
-    $bugun = \Carbon\Carbon::now();
-    $ucAySonra = $bugun->copy()->addMonths(3);
+    try {
+        $bugun = \Carbon\Carbon::now();
+        $ucAySonra = $bugun->copy()->addMonths(3);
     
     // Geçmiş yıllarda kazanılan, önümüzdeki 3 ayda lisansı bitecek TÜM işler (açılmış olsa da)
     $yenilenecekler = \App\Models\TumIsler::where('tipi', 'Kazanıldı')
@@ -38,7 +40,20 @@
             $toplamPotansiyel += $is->teklif_tutari;
         }
     }
+    } catch (\Exception $e) {
+        $widgetHata = $e->getMessage();
+        $yenilenecekler = collect([]);
+        $acilmamis = 0;
+        $buAyBitenler = 0;
+        $toplamPotansiyel = 0;
+    }
 @endphp
+
+@if(isset($widgetHata))
+<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    <strong>Widget Hatası:</strong> {{ $widgetHata }}
+</div>
+@endif
 
 <div class="bg-white rounded-lg shadow">
     <div class="p-6 border-b">
