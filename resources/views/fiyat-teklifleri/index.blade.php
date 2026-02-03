@@ -51,11 +51,15 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ \Carbon\Carbon::parse($teklif->tarih)->format('d.m.Y') }}
                             </td>
+                            @php
+                                $paraBirimleri = $teklif->kalemler->pluck('para_birimi')->unique();
+                                $paraBirimi = $paraBirimleri->count() === 1 ? $paraBirimleri->first() : 'Karışık';
+                            @endphp
                             <td class="px-6 py-4 whitespace-nowrap font-semibold">
-                                {{ number_format($teklif->toplam_satis, 2) }} {{ $teklif->para_birimi ?? 'TL' }}
+                                {{ number_format($teklif->toplam_satis, 2) }} {{ $paraBirimi }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap font-semibold text-green-600">
-                                {{ number_format($teklif->toplam_kar, 2) }} {{ $teklif->para_birimi ?? 'TL' }}
+                                {{ number_format($teklif->toplam_kar, 2) }} {{ $paraBirimi }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2 py-1 text-xs font-semibold rounded-full 

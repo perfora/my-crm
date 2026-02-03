@@ -14,7 +14,7 @@ class FiyatTeklifController extends Controller
 {
     public function index()
     {
-        $teklifler = FiyatTeklif::with('musteri')
+        $teklifler = FiyatTeklif::with(['musteri', 'kalemler'])
             ->orderBy('tarih', 'desc')
             ->get();
         
