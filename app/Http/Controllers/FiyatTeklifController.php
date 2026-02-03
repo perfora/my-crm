@@ -33,10 +33,13 @@ class FiyatTeklifController extends Controller
         
         $urunler = Urun::with('marka')->orderBy('urun_adi')->get();
         
+        // Teklif koşulları
+        $teklifKosullari = \App\Models\TeklifKosulu::orderBy('sira')->orderBy('baslik')->get();
+        
         // Yeni teklif numarası oluştur
         $teklifNo = 'T-' . date('Y') . '-' . str_pad(FiyatTeklif::whereYear('created_at', date('Y'))->count() + 1, 4, '0', STR_PAD_LEFT);
         
-        return view('fiyat-teklifleri.create', compact('musteriler', 'tedarikciler', 'urunler', 'teklifNo'));
+        return view('fiyat-teklifleri.create', compact('musteriler', 'tedarikciler', 'urunler', 'teklifNo', 'teklifKosullari'));
     }
 
     public function store(Request $request)

@@ -405,56 +405,77 @@
             });
         }
 
-        // Quill editor başlat
-        var kosulQuill = new Quill('#kosulEditor', {
-            theme: 'snow',
-            modules: {
-                toolbar: [
-                    [{ 'header': [1, 2, 3, false] }],
-                    ['bold', 'italic', 'underline'],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    [{ 'color': [] }, { 'background': [] }],
-                    ['link'],
-                    ['clean']
-                ]
-            },
-            placeholder: 'Word\'den kopyalayıp yapıştırabilirsiniz...'
-        });
+        // DOM hazır olduğunda başlat
+        $(document).ready(function() {
+            console.log('Sayfa yüklendi, Quill başlatılıyor...');
+            
+            // Quill editor başlat
+            var kosulQuill = new Quill('#kosulEditor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'color': [] }, { 'background': [] }],
+                        ['link'],
+                        ['clean']
+                    ]
+                },
+                placeholder: 'Word\'den kopyalayıp yapıştırabilirsiniz...'
+            });
+            
+            console.log('Quill başlatıldı');
 
-        // API'den teklif koşullarını yükle
-        $.get('/api/teklif-kosullari', function(data) {
+            // PHP'den gelen teklif koşulları verisi
+            var teklifKosullari = @json($teklifKosullari);
+            console.log('Teklif koşulları yüklendi:', teklifKosullari);
+            
+            // Dropdown'ı doldur
             const select = $('#kosulSablonSelect');
             select.empty();
             select.append('<option value="">Hazır şablon seç...</option>');
             
-            data.forEach(function(kosul) {
+            let varsayilanKosul = null;
+            
+            teklifKosullari.forEach(function(kosul) {
                 select.append(`<option value="${kosul.id}">${kosul.baslik}</option>`);
                 
-                // Varsayılan olanı seç ve yükle
+                // Varsayılan olanı kaydet
                 if (kosul.varsayilan) {
-                    setTimeout(function() {
-                        kosulQuill.root.innerHTML = kosul.icerik;
-                    }, 500);
+                    varsayilanKosul = kosul;
+                    select.val(kosul.id);
+                    console.log('Varsayılan koşul bulundu:', kosul.baslik);
                 }
             });
-        });
-
-        // Teklif koşulları şablon seçimi
-        $('#kosulSablonSelect').on('change', function() {
-            const kosulId = $(this).val();
-            if (!kosulId) return;
             
-            $.get('/api/teklif-kosullari', function(data) {
-                const secili = data.find(k => k.id == kosulId);
+            // Varsayılan koşulu yükle
+            if (varsayilanKosul) {
+                kosulQuill.root.innerHTML = varsayilanKosul.icerik;
+                console.log('İçerik yüklendi');
+            }
+
+            // Teklif koşulları şablon seçimi
+            $('#kosulSablonSelect').on('change', function() {
+                const kosulId = parseInt($(this).val());
+                console.log('Dropdown değişti:', kosulId);
+                
+                if (!kosulId) {
+                    kosulQuill.root.innerHTML = '';
+                    return;
+                }
+                
+                const secili = teklifKosullari.find(k => k.id === kosulId);
                 if (secili) {
                     kosulQuill.root.innerHTML = secili.icerik;
+                    console.log('Yeni içerik yüklendi:', secili.baslik);
                 }
             });
-        });
 
-        // Form submit edilirken Quill içeriğini hidden input'a aktar
-        $('form').on('submit', function() {
-            $('#kosulTextarea').val(kosulQuill.root.innerHTML);
+            // Form submit edilirken Quill içeriğini hidden input'a aktar
+            $('form').on('submit', function() {
+                $('#kosulTextarea').val(kosulQuill.root.innerHTML);
+            });
         });
     </script>
 </body>
