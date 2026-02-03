@@ -8,8 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/classic/ckeditor.js"></script>
     <style>
         .select2-container--default .select2-selection--single {
             height: 42px;
@@ -161,8 +160,7 @@
                             ⚙️ Yönet
                         </a>
                     </div>
-                    <div id="kosulEditor" style="height: 300px; background: white;"></div>
-                    <input type="hidden" id="kosulTextarea" name="teklif_kosullari">
+                    <textarea id="kosulEditor" name="teklif_kosullari"></textarea>
                 </div>
             </div>
 
@@ -407,75 +405,68 @@
 
         // DOM hazır olduğunda başlat
         $(document).ready(function() {
-            console.log('Sayfa yüklendi, Quill başlatılıyor...');
+            console.log('Sayfa yüklendi, CKEditor başlatılıyor...');
             
-            // Quill editor başlat
-            var kosulQuill = new Quill('#kosulEditor', {
-                theme: 'snow',
-                modules: {
-                    toolbar: [
-                        [{ 'header': [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'color': [] }, { 'background': [] }],
-                        ['link'],
-                        ['clean']
-                    ]
-                },
-                placeholder: 'Word\'den kopyalayıp yapıştırabilirsiniz...'
-            });
+            let kosulEditor;
             
-            console.log('Quill başlatıldı');
+            // CKEditor başlat
+            ClassicEditor
+                .create(document.querySelector('#kosulEditor'), {
+                    toolbar: ['bold', 'italic', 'underline', '|', 'bulletedList', 'numberedList', '|', 'link', 'undo', 'redo'],
+                    placeholder: 'Word\'den kopyalayıp yapıştırabilirsiniz...'
+                })
+                .then(editor => {
+                    kosulEditor = editor;
+                    console.log('CKEditor başlatıldı');
 
-            // PHP'den gelen teklif koşulları verisi
-            var teklifKosullari = @json($teklifKosullari);
-            console.log('Teklif koşulları yüklendi:', teklifKosullari);
-            
-            // Dropdown'ı doldur
-            const select = $('#kosulSablonSelect');
-            select.empty();
-            select.append('<option value="">Hazır şablon seç...</option>');
-            
-            let varsayilanKosul = null;
-            
-            teklifKosullari.forEach(function(kosul) {
-                select.append(`<option value="${kosul.id}">${kosul.baslik}</option>`);
-                
-                // Varsayılan olanı kaydet
-                if (kosul.varsayilan) {
-                    varsayilanKosul = kosul;
-                    select.val(kosul.id);
-                    console.log('Varsayılan koşul bulundu:', kosul.baslik);
-                }
-            });
-            
-            // Varsayılan koşulu yükle
-            if (varsayilanKosul) {
-                kosulQuill.root.innerHTML = varsayilanKosul.icerik;
-                console.log('İçerik yüklendi');
-            }
+                    // PHP'den gelen teklif koşulları verisi
+                    var teklifKosullari = @json($teklifKosullari);
+                    console.log('Teklif koşulları yüklendi:', teklifKosullari);
+                    
+                    // Dropdown'ı doldur
+                    const select = $('#kosulSablonSelect');
+                    select.empty();
+                    select.append('<option value="">Hazır şablon seç...</option>');
+                    
+                    let varsayilanKosul = null;
+                    
+                    teklifKosullari.forEach(function(kosul) {
+                        select.append(`<option value="${kosul.id}">${kosul.baslik}</option>`);
+                        
+                        // Varsayılan olanı kaydet
+                        if (kosul.varsayilan) {
+                            varsayilanKosul = kosul;
+                            select.val(kosul.id);
+                            console.log('Varsayılan koşul bulundu:', kosul.baslik);
+                        }
+                    });
+                    
+                    // Varsayılan koşulu yükle
+                    if (varsayilanKosul) {
+                        kosulEditor.setData(varsayilanKosul.icerik);
+                        console.log('İçerik yüklendi');
+                    }
 
-            // Teklif koşulları şablon seçimi
-            $('#kosulSablonSelect').on('change', function() {
-                const kosulId = parseInt($(this).val());
-                console.log('Dropdown değişti:', kosulId);
-                
-                if (!kosulId) {
-                    kosulQuill.root.innerHTML = '';
-                    return;
-                }
-                
-                const secili = teklifKosullari.find(k => k.id === kosulId);
-                if (secili) {
-                    kosulQuill.root.innerHTML = secili.icerik;
-                    console.log('Yeni içerik yüklendi:', secili.baslik);
-                }
-            });
-
-            // Form submit edilirken Quill içeriğini hidden input'a aktar
-            $('form').on('submit', function() {
-                $('#kosulTextarea').val(kosulQuill.root.innerHTML);
-            });
+                    // Teklif koşulları şablon seçimi
+                    $('#kosulSablonSelect').on('change', function() {
+                        const kosulId = parseInt($(this).val());
+                        console.log('Dropdown değişti:', kosulId);
+                        
+                        if (!kosulId) {
+                            kosulEditor.setData('');
+                            return;
+                        }
+                        
+                        const secili = teklifKosullari.find(k => k.id === kosulId);
+                        if (secili) {
+                            kosulEditor.setData(secili.icerik);
+                            console.log('Yeni içerik yüklendi:', secili.baslik);
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('CKEditor hatası:', error);
+                });
         });
     </script>
 </body>

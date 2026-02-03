@@ -6,8 +6,7 @@
     <title>Teklif Koşulları Yönetimi - CRM</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/classic/ckeditor.js"></script>
 </head>
 <body class="bg-gray-50">
     @include('layouts.nav')
@@ -106,8 +105,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         İçerik (Word'den kopyalayıp yapıştırabilirsiniz)
                     </label>
-                    <div id="icerik" style="height: 400px; background: white;"></div>
-                    <input type="hidden" id="icerik_hidden" name="icerik">
+                    <textarea id="icerik" name="icerik" rows="10"></textarea>
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4">
@@ -123,27 +121,25 @@
     </div>
 
     <script>
-        // Quill editor başlat
-        var quill = new Quill('#icerik', {
-            theme: 'snow',
-            modules: {
-                toolbar: [
-                    [{ 'header': [1, 2, 3, false] }],
-                    ['bold', 'italic', 'underline'],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    [{ 'color': [] }, { 'background': [] }],
-                    ['link'],
-                    ['clean']
-                ]
-            },
-            placeholder: 'Word\'den kopyalayıp yapıştırabilirsiniz...'
-        });
+        let icerikEditor;
+        
+        // CKEditor başlat
+        ClassicEditor
+            .create(document.querySelector('#icerik'), {
+                toolbar: ['bold', 'italic', 'underline', '|', 'bulletedList', 'numberedList', '|', 'link', 'undo', 'redo']
+            })
+            .then(editor => {
+                icerikEditor = editor;
+            })
+            .catch(error => {
+                console.error(error);
+            });
 
         function yeniKosulModal() {
             document.getElementById('modalBaslik').textContent = 'Yeni Koşul Ekle';
             document.getElementById('kosulForm').reset();
             document.getElementById('kosul_id').value = '';
-            quill.setContents([]);
+            if (icerikEditor) icerikEditor.setData('');
             document.getElementById('kosulModal').classList.remove('hidden');
         }
 
@@ -160,7 +156,7 @@
                     document.getElementById('baslik').value = data.baslik;
                     document.getElementById('sira').value = data.sira;
                     document.getElementById('varsayilan').checked = data.varsayilan;
-                    quill.root.innerHTML = data.icerik;
+                    if (icerikEditor) icerikEditor.setData(data.icerik);
                     document.getElementById('kosulModal').classList.remove('hidden');
                 });
         }
@@ -201,7 +197,7 @@
                 baslik: document.getElementById('baslik').value,
                 sira: document.getElementById('sira').value,
                 varsayilan: document.getElementById('varsayilan').checked,
-                icerik: quill.root.innerHTML
+                icerik: icerikEditor.getData()
             };
             
             fetch(url, {
