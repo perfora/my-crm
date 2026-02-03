@@ -361,44 +361,6 @@
                 </div>
             </div>
             @endif
-
-            <!-- Yaklaşan Ziyaretler -->
-            @if($showYaklasanZiyaretler)
-            <div class="bg-white rounded-lg shadow-lg border-t-4 border-purple-500">
-                <div class="p-4 border-b bg-purple-50">
-                    <h3 class="text-xl font-bold text-purple-800">📅 Bekleyen & Planlanan Ziyaretler</h3>
-                    <p class="text-sm text-gray-600">Beklemede ve Planlandı durumunda</p>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-50 border-b">
-                            <tr>
-                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Müşteri</th>
-                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Tarih</th>
-                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Durum</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($yaklasanZiyaretler as $ziyaret)
-                            <tr class="border-b hover:bg-gray-50">
-                                <td class="px-4 py-3">{{ $ziyaret->musteri->sirket ?? '-' }}</td>
-                                <td class="px-4 py-3">{{ $ziyaret->ziyaret_tarihi ? \Carbon\Carbon::parse($ziyaret->ziyaret_tarihi)->format('d.m.Y') : '-' }}</td>
-                                <td class="px-4 py-3">
-                                    <span class="px-2 py-1 rounded text-xs font-semibold {{ $ziyaret->durumu == 'Beklemede' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800' }}">
-                                        {{ $ziyaret->durumu }}
-                                    </span>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="3" class="px-4 py-8 text-center text-gray-500">Bekleyen veya planlanan ziyaret yok</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            @endif
         </div>
     </div>
 
