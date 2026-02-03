@@ -401,10 +401,12 @@
                 </div>
             </div>
             @endif
-
-            <!-- Lisans Yenilenecek İşler -->
-            @include('widgets.lisans-yenilenecek')
         </div>
+    </div>
+
+    <!-- Lisans Yenilenecek İşler - Full Width -->
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        @include('widgets.lisans-yenilenecek')
     </div>
 </body>
 </html>
