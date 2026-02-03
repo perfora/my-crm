@@ -6,7 +6,6 @@
     <title>Teklif {{ $teklif->teklif_no }} - CRM</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
     <style>
         @media print {
             .no-print { display: none !important; }
@@ -106,9 +105,9 @@
                 
                 <!-- İmza -->
                 <div style="text-align: right; margin-top: 30px; margin-bottom: 20px;">
-                    <p style="margin: 5px 0; font-size: 26px; font-family: 'Great Vibes', cursive; font-weight: 400;">MURAT PEKTAŞ</p>
-                    <p style="margin: 5px 0; color: #666; font-size: 12px;">Proje Yöneticisi</p>
-                    <p style="margin: 5px 0; color: #666; font-size: 12px;">0549 476 38 00</p>
+                    <p style="margin: 5px 0; font-family: Arial, sans-serif; font-size: 11px; font-weight: bold; color: #1e40af;">MURAT PEKTAŞ</p>
+                    <p style="margin: 5px 0; font-family: Arial, sans-serif; font-size: 10px; font-style: italic; color: #6b7280;">Proje Yöneticisi</p>
+                    <p style="margin: 5px 0; font-family: Arial, sans-serif; font-size: 10px; font-style: italic; color: #6b7280;">M: +90 549 476 38 00</p>
                 </div>
             </div>
 
