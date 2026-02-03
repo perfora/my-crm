@@ -8,9 +8,8 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/lang/summernote-tr-TR.min.js"></script>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <style>
         .select2-container--default .select2-selection--single {
             height: 42px;
@@ -162,7 +161,8 @@
                             ⚙️ Yönet
                         </a>
                     </div>
-                    <textarea id="kosulTextarea" name="teklif_kosullari" rows="8"></textarea>
+                    <div id="kosulEditor" style="height: 300px; background: white;"></div>
+                    <input type="hidden" id="kosulTextarea" name="teklif_kosullari">
                 </div>
             </div>
 
@@ -405,20 +405,19 @@
             });
         }
 
-        // Summernote başlat
-        $('#kosulTextarea').summernote({
-            height: 300,
-            lang: 'tr-TR',
-            toolbar: [
-                ['style', ['style']],
-                ['font', ['bold', 'italic', 'underline', 'clear']],
-                ['fontname', ['fontname']],
-                ['color', ['color']],
-                ['para', ['ul', 'ol', 'paragraph']],
-                ['table', ['table']],
-                ['insert', ['link']],
-                ['view', ['fullscreen', 'codeview', 'help']]
-            ],
+        // Quill editor başlat
+        var kosulQuill = new Quill('#kosulEditor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'color': [] }, { 'background': [] }],
+                    ['link'],
+                    ['clean']
+                ]
+            },
             placeholder: 'Word\'den kopyalayıp yapıştırabilirsiniz...'
         });
 
@@ -434,7 +433,7 @@
                 // Varsayılan olanı seç ve yükle
                 if (kosul.varsayilan) {
                     setTimeout(function() {
-                        $('#kosulTextarea').summernote('code', kosul.icerik);
+                        kosulQuill.root.innerHTML = kosul.icerik;
                     }, 500);
                 }
             });
@@ -448,9 +447,14 @@
             $.get('/api/teklif-kosullari', function(data) {
                 const secili = data.find(k => k.id == kosulId);
                 if (secili) {
-                    $('#kosulTextarea').summernote('code', secili.icerik);
+                    kosulQuill.root.innerHTML = secili.icerik;
                 }
             });
+        });
+
+        // Form submit edilirken Quill içeriğini hidden input'a aktar
+        $('form').on('submit', function() {
+            $('#kosulTextarea').val(kosulQuill.root.innerHTML);
         });
     </script>
 </body>
