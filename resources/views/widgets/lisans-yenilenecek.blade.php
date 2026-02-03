@@ -3,27 +3,14 @@
     $bugun = \Carbon\Carbon::now();
     $ucAySonra = $bugun->copy()->addMonths(3);
     
-    // Geçmiş yıllarda kazanılan, önümüzdeki 3 ayda lisansı bitecek işler
-    $lisansBitecekler = \App\Models\TumIsler::where('tipi', 'Kazanıldı')
+    // Geçmiş yıllarda kazanılan, önümüzdeki 3 ayda lisansı bitecek TÜM işler (açılmış olsa da)
+    $yenilenecekler = \App\Models\TumIsler::where('tipi', 'Kazanıldı')
         ->whereNotNull('lisans_bitis')
         ->whereYear('kapanis_tarihi', '<', 2026)
         ->whereBetween('lisans_bitis', [$bugun, $ucAySonra])
         ->with(['musteri', 'marka'])
         ->orderBy('lisans_bitis', 'asc')
         ->get();
-    
-    // Henüz yenileme kaydı açılmamış olanları filtrele
-    $yenilenecekler = $lisansBitecekler->filter(function($is) {
-        // Aynı lisans bitiş tarihi için 2026'da yenileme kaydı var mı kontrol et
-        $yenilemeVarMi = \App\Models\TumIsler::where('musteri_id', $is->musteri_id)
-            ->where('marka_id', $is->marka_id)
-            ->where('lisans_bitis', $is->lisans_bitis) // Aynı lisans bitiş tarihi
-            ->whereYear('is_guncellenme_tarihi', 2026)
-            ->whereIn('tipi', ['Verilecek', 'Verildi', 'Takip Edilecek'])
-            ->exists();
-        
-        return !$yenilemeVarMi;
-    });
     
     // İstatistikler
     $buAyBitenler = $yenilenecekler->filter(function($is) use ($bugun) {
@@ -32,6 +19,17 @@
     
     $ucAyIcindeBitenler = $yenilenecekler->filter(function($is) use ($bugun) {
         return \Carbon\Carbon::parse($is->lisans_bitis)->diffInDays($bugun, false) >= -90;
+    })->count();
+    
+    // Henüz açılmayanları say
+    $acilmamis = $yenilenecekler->filter(function($is) {
+        $yenilemeVarMi = \App\Models\TumIsler::where('musteri_id', $is->musteri_id)
+            ->where('marka_id', $is->marka_id)
+            ->where('lisans_bitis', $is->lisans_bitis)
+            ->whereYear('is_guncellenme_tarihi', 2026)
+            ->whereIn('tipi', ['Verilecek', 'Verildi', 'Takip Edilecek'])
+            ->exists();
+        return !$yenilemeVarMi;
     })->count();
     
     $toplamPotansiyel = 0;
@@ -46,18 +44,23 @@
     <div class="p-6 border-b">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-bold">🔄 Lisans Yenilenecek İşler</h2>
-            <span class="text-sm text-gray-600">{{ $yenilenecekler->count() }} iş</span>
+            <div class="text-sm text-gray-600">
+                <span class="font-semibold">{{ $yenilenecekler->count() }}</span> toplam
+                @if($acilmamis > 0)
+                    <span class="text-orange-600 font-semibold ml-2">({{ $acilmamis }} bekliyor)</span>
+                @endif
+            </div>
         </div>
         
         <!-- İstatistikler -->
         <div class="grid grid-cols-3 gap-4 mb-4">
-            <div class="bg-red-50 rounded-lg p-3 text-center">
-                <div class="text-2xl font-bold text-red-600">{{ $buAyBitenler }}</div>
-                <div class="text-xs text-gray-600">Bu Ay Bitenler</div>
+            <div class="bg-orange-50 rounded-lg p-3 text-center">
+                <div class="text-2xl font-bold text-orange-600">{{ $acilmamis }}</div>
+                <div class="text-xs text-gray-600">Açılmamış</div>
             </div>
             <div class="bg-yellow-50 rounded-lg p-3 text-center">
-                <div class="text-2xl font-bold text-yellow-600">{{ $ucAyIcindeBitenler }}</div>
-                <div class="text-xs text-gray-600">3 Ay İçinde</div>
+                <div class="text-2xl font-bold text-yellow-600">{{ $buAyBitenler }}</div>
+                <div class="text-xs text-gray-600">Bu Ay Bitenler</div>
             </div>
             <div class="bg-green-50 rounded-lg p-3 text-center">
                 <div class="text-2xl font-bold text-green-600">${{ number_format($toplamPotansiyel, 0) }}</div>
@@ -127,11 +130,24 @@
                             @endif
                         </td>
                         <td class="px-4 py-3 text-center">
-                            <button 
-                                onclick="yenilemeAc({{ $is->id }})"
-                                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium transition">
-                                📝 Yenileme Aç
-                            </button>
+                            @php
+                                // Aynı müşteri + marka + lisans_bitis için 2026'da yenileme var mı?
+                                $yenilemeVarMi = \App\Models\TumIsler::where('musteri_id', $is->musteri_id)
+                                    ->where('marka_id', $is->marka_id)
+                                    ->where('lisans_bitis', $is->lisans_bitis)
+                                    ->whereYear('is_guncellenme_tarihi', 2026)
+                                    ->whereIn('tipi', ['Verilecek', 'Verildi', 'Takip Edilecek'])
+                                    ->exists();
+                            @endphp
+                            @if(!$yenilemeVarMi)
+                                <button 
+                                    onclick="yenilemeAc({{ $is->id }})"
+                                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium transition">
+                                    🔄 Yenile
+                                </button>
+                            @else
+                                <span class="text-green-600 text-xs font-semibold">✓ Açıldı</span>
+                            @endif
                         </td>
                     </tr>
                 @empty
@@ -165,14 +181,8 @@ function yenilemeAc(isId) {
         data: { is_id: isId },
         success: function(response) {
             alert('✓ Yenileme kaydı oluşturuldu!\n\nYeni iş: ' + response.yeni_is.name);
-            // Satırı listeden kaldır
-            $(button).closest('tr').fadeOut(300, function() {
-                $(this).remove();
-                // Eğer liste boşaldıysa mesaj göster
-                if($('tbody tr').length === 0) {
-                    $('tbody').html('<tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">🎉 Harika! Tüm lisanslar için yenileme kaydı açılmış.</td></tr>');
-                }
-            });
+            // Butonu "✓ Açıldı" yap
+            $(button).closest('td').html('<span class="text-green-600 text-xs font-semibold">✓ Açıldı</span>');
         },
         error: function(xhr) {
             const error = xhr.responseJSON?.message || 'Hata oluştu!';
