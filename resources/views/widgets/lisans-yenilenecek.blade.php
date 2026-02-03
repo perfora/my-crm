@@ -12,6 +12,7 @@
         ->whereBetween('lisans_bitis', [$bugun, $ucAySonra])
         ->with(['musteri', 'marka'])
         ->orderBy('lisans_bitis', 'asc')
+        ->take(8)
         ->get();
     
     // İstatistikler
