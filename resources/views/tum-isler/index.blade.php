@@ -569,14 +569,29 @@
                     $filtreliIsler = $query->get();
                 }
 
-                // Para birimine göre ayrı toplamlar (CSV neyse o şekilde gösterilecek)
-                $toplamTLTeklif = $filtreliIsler->filter(function($i){ return empty($i->teklif_doviz) || $i->teklif_doviz === 'TL'; })->sum('teklif_tutari');
-                $toplamTLAlis = $filtreliIsler->filter(function($i){ return empty($i->alis_doviz) || $i->alis_doviz === 'TL'; })->sum('alis_tutari');
-                $toplamKarTL = $toplamTLTeklif - $toplamTLAlis;
-
-                $toplamUSDTeklif = $filtreliIsler->filter(function($i){ return $i->teklif_doviz === 'USD'; })->sum('teklif_tutari');
-                $toplamUSDAlis = $filtreliIsler->filter(function($i){ return $i->alis_doviz === 'USD'; })->sum('alis_tutari');
+                // Para birimine göre ayrı toplamlar
+                // Eğer teklif_doviz USD ise ve alis_doviz boşsa, alis'i de USD kabul et
+                $toplamUSDTeklif = $filtreliIsler->filter(function($i){ 
+                    return $i->teklif_doviz === 'USD'; 
+                })->sum('teklif_tutari');
+                
+                $toplamUSDAlis = $filtreliIsler->filter(function($i){ 
+                    // Eğer alis_doviz USD ise veya boş ama teklif_doviz USD ise
+                    return $i->alis_doviz === 'USD' || (empty($i->alis_doviz) && $i->teklif_doviz === 'USD'); 
+                })->sum('alis_tutari');
+                
                 $toplamKarUSD = $toplamUSDTeklif - $toplamUSDAlis;
+
+                // TL hesaplamaları - teklif_doviz boş veya TL ise
+                $toplamTLTeklif = $filtreliIsler->filter(function($i){ 
+                    return empty($i->teklif_doviz) || $i->teklif_doviz === 'TL'; 
+                })->sum('teklif_tutari');
+                
+                $toplamTLAlis = $filtreliIsler->filter(function($i){ 
+                    return ($i->alis_doviz === 'TL') || (empty($i->alis_doviz) && (empty($i->teklif_doviz) || $i->teklif_doviz === 'TL')); 
+                })->sum('alis_tutari');
+                
+                $toplamKarTL = $toplamTLTeklif - $toplamTLAlis;
 
                 // Orijinal döviz bilgilerini topla (aciklama alanındaki [ORJ: ...] notlarından) — bilgilendirme amaçlı
                 $orjCount = 0;
