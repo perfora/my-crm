@@ -16,6 +16,9 @@
                 <button id="syncBtn" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium">
                     🔄 Senkron Et
                 </button>
+                <button id="cleanupBtn" class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium">
+                    🧹 CRM Dışı Sil
+                </button>
                 <span class="text-sm text-gray-500">Sonraki 30 gün</span>
             </div>
         </div>
@@ -157,6 +160,37 @@
                 } finally {
                     syncBtn.disabled = false;
                     syncBtn.textContent = original;
+                }
+            });
+        }
+
+        const cleanupBtn = document.getElementById('cleanupBtn');
+        if (cleanupBtn) {
+            cleanupBtn.addEventListener('click', async function() {
+                if (!confirm('CRM’de olmayan takvim kayıtları silinecek (son 30 gün + önümüzdeki 60 gün). Emin misiniz?')) {
+                    return;
+                }
+                cleanupBtn.disabled = true;
+                const original = cleanupBtn.textContent;
+                cleanupBtn.textContent = '⏳ Temizleniyor...';
+                try {
+                    const res = await fetch('/takvim/cleanup', { method: 'POST' });
+                    const data = await res.json();
+                    if (!res.ok || !data.success) {
+                        alert(data.error || 'Temizleme hatası oluştu.');
+                    } else {
+                        alert(`Temizlendi. Kontrol edilen: ${data.checked}, silinen: ${data.deleted}`);
+                        const syncRes = await fetch('/takvim/sync');
+                        const syncData = await syncRes.json();
+                        if (syncRes.ok && syncData.success) {
+                            renderEvents(syncData.events || []);
+                        }
+                    }
+                } catch (e) {
+                    alert('Temizleme hatası oluştu.');
+                } finally {
+                    cleanupBtn.disabled = false;
+                    cleanupBtn.textContent = original;
                 }
             });
         }
