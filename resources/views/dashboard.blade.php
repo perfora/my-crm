@@ -70,9 +70,9 @@
             }
             
             $kar2025 = $toplamTeklif2025 - $toplamAlis2025;
-            $karOrani2025 = $toplamTeklif2025 > 0 ? ($kar2025 / $toplamTeklif2025 * 100) : 0;
+            $karOrani2025 = $alis2025 > 0 ? ($kar2025 / $alis2025 * 100) : 0;
             $kar2026 = $toplamTeklif2026 - $toplamAlis2026;
-            $karOrani2026 = $toplamTeklif2026 > 0 ? ($kar2026 / $toplamTeklif2026 * 100) : 0;
+            $karOrani2026 = $alis2026 > 0 ? ($kar2026 / $alis2026 * 100) : 0;
             
             // Notion'dan senkronize edilmiş kayıtlar
             $notionIsler = \App\Models\TumIsler::whereNotNull('notion_id')->count();

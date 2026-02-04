@@ -162,7 +162,7 @@
                         html = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Bu yıl için veri bulunamadı.</td></tr>';
                     } else {
                         data.forEach(item => {
-                            const karOrani = item.toplam_teklif > 0 ? ((item.toplam_kar / item.toplam_teklif) * 100).toFixed(1) : 0;
+                            const karOrani = item.toplam_alis > 0 ? ((item.toplam_kar / item.toplam_alis) * 100).toFixed(1) : 0;
                             
                             html += `
                                 <tr class="hover:bg-gray-50" 
@@ -191,7 +191,7 @@
                             toplamKar += parseFloat(item.toplam_kar);
                         });
                         
-                        const toplamKarOrani = toplamTeklif > 0 ? ((toplamKar / toplamTeklif) * 100).toFixed(1) : 0;
+                        const toplamKarOrani = toplamAlis > 0 ? ((toplamKar / toplamAlis) * 100).toFixed(1) : 0;
                         
                         html += `
                             <tr class="bg-blue-50 font-bold">
@@ -230,13 +230,14 @@
                     let toplamZiyaret = 0;
                     let toplamArama = 0;
                     let toplamTeklif = 0;
+                    let toplamAlis = 0;
                     let toplamKar = 0;
                     
                     if(data.length === 0) {
                         html = '<tr><td colspan="9" class="px-6 py-8 text-center text-gray-500">Bu yıl için veri bulunamadı.</td></tr>';
                     } else {
                         data.forEach(item => {
-                            const karOrani = item.toplam_teklif > 0 ? ((item.toplam_kar / item.toplam_teklif) * 100).toFixed(1) : 0;
+                            const karOrani = item.toplam_alis > 0 ? ((item.toplam_kar / item.toplam_alis) * 100).toFixed(1) : 0;
                             const isZiyaret = item.ziyaret_adedi > 0 ? (item.adet / item.ziyaret_adedi).toFixed(2) : 0;
                             const karZiyaret = item.ziyaret_adedi > 0 ? (item.toplam_kar / item.ziyaret_adedi).toFixed(2) : 0;
                             
@@ -303,10 +304,11 @@
                             toplamZiyaret += parseInt(item.ziyaret_adedi);
                             toplamArama += parseInt(item.arama_adedi || 0);
                             toplamTeklif += parseFloat(item.toplam_teklif);
+                            toplamAlis += parseFloat(item.toplam_alis);
                             toplamKar += parseFloat(item.toplam_kar);
                         });
                         
-                        const toplamKarOrani = toplamTeklif > 0 ? ((toplamKar / toplamTeklif) * 100).toFixed(1) : 0;
+                        const toplamKarOrani = toplamAlis > 0 ? ((toplamKar / toplamAlis) * 100).toFixed(1) : 0;
                         const toplamIsZiyaret = toplamZiyaret > 0 ? (toplamAdet / toplamZiyaret).toFixed(2) : 0;
                         const toplamKarZiyaret = toplamZiyaret > 0 ? (toplamKar / toplamZiyaret).toFixed(2) : 0;
                         

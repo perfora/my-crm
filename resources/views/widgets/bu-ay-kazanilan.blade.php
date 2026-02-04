@@ -19,7 +19,7 @@
     }
     
     $toplamKar = $toplamTeklif - $toplamAlis;
-    $karOrani = $toplamTeklif > 0 ? ($toplamKar / $toplamTeklif * 100) : 0;
+    $karOrani = $toplamAlis > 0 ? ($toplamKar / $toplamAlis * 100) : 0;
     
     $columns = [
         ['label' => 'İş Adı', 'field' => 'name'],

@@ -40,7 +40,7 @@
                 $toplamAlis += $alisUSD;
             }
             $toplamKar = $toplamTeklif - $toplamAlis;
-            $karOrani = $toplamTeklif > 0 ? (($toplamKar / $toplamTeklif) * 100) : 0;
+            $karOrani = $toplamAlis > 0 ? (($toplamKar / $toplamAlis) * 100) : 0;
             
             // Müşteri bazında grupla
             $musteriGrup = $kazanilanIsler->groupBy('musteri_id')->map(function($isler) {

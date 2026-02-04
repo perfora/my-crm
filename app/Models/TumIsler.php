@@ -69,8 +69,9 @@ class TumIsler extends Model
 
     public function getKarOraniAttribute()
     {
-        if ($this->teklif_tutari && $this->alis_tutari && $this->teklif_tutari > 0) {
-            return (($this->teklif_tutari - $this->alis_tutari) / $this->teklif_tutari) * 100;
+        if ($this->teklif_tutari && $this->alis_tutari && $this->alis_tutari > 0) {
+            // Kar oranı alış üzerinden hesaplanır
+            return (($this->teklif_tutari - $this->alis_tutari) / $this->alis_tutari) * 100;
         }
         return null;
     }
