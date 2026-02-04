@@ -658,7 +658,9 @@
 
         function isRowReady(row) {
             const name = (getRowValue(row, 'ziyaret_ismi') || '').trim();
-            return name.length > 0;
+            const ziyaretTarihi = (getRowValue(row, 'ziyaret_tarihi') || '').trim();
+            const aramaTarihi = (getRowValue(row, 'arama_tarihi') || '').trim();
+            return name.length > 0 && (ziyaretTarihi.length > 0 || aramaTarihi.length > 0);
         }
 
         function createRow(row, onSuccess, onError) {
@@ -708,6 +710,7 @@
             row.removeClass('new-row');
             row.attr('data-id', newId);
             row.data('id', newId);
+            row.find('[data-id="new"]').attr('data-id', newId).data('id', newId);
             const checkbox = row.find('input[type="checkbox"]');
             checkbox.prop('disabled', false).removeClass('opacity-50').addClass('row-checkbox').attr('data-id', newId);
         }
