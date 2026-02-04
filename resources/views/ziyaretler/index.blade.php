@@ -664,7 +664,7 @@
         }
 
         function createRow(row, onSuccess, onError) {
-            if (row.data('saving')) return;
+            if (row.data('saving') || row.data('created')) return;
             row.data('saving', true);
             const payload = buildUpdatePayload(row, {});
             if (!payload.ziyaret_ismi) {
@@ -679,6 +679,7 @@
                     const newId = response && response.id;
                     if (newId) {
                         finalizeNewRow(row, newId);
+                        row.data('created', true);
                         row.data('saving', false);
                         if (onSuccess) onSuccess(newId);
                     } else {
