@@ -201,9 +201,9 @@ XML;
             return '';
         }
 
-        $nodes = $xpath->query('//*[local-name()="Body"]');
+        $nodes = $xpath->query('//*[local-name()="CalendarItem"]/*[local-name()="Body"]');
         if (!$nodes || $nodes->length === 0) {
-            $nodes = $xpath->query('//*[local-name()="TextBody"]');
+            $nodes = $xpath->query('//*[local-name()="CalendarItem"]/*[local-name()="TextBody"]');
         }
         if (!$nodes || $nodes->length === 0) {
             Log::info('EWS GetItem body bos', [
