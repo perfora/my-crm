@@ -582,8 +582,10 @@
             if (val !== undefined) return val;
             const dom = row[0];
             if (!dom) return '';
-            const attr = dom.getAttribute('data-' + key.replace(/_/g, '-'));
-            return attr ?? '';
+            const direct = dom.getAttribute('data-' + key);
+            if (direct !== null && direct !== undefined) return direct;
+            const dashed = dom.getAttribute('data-' + key.replace(/_/g, '-'));
+            return dashed ?? '';
         }
 
         function buildUpdatePayload(row, overrides = {}) {
