@@ -108,6 +108,30 @@ class ExchangeEwsService
         return $this->parseItemIdFromResponse($response->body());
     }
 
+    public function deleteVisitEvent(?string $itemId, ?string $changeKey = null): array
+    {
+        $url = config('services.ews.url');
+        $username = config('services.ews.username');
+        $password = config('services.ews.password');
+        $version = config('services.ews.version', 'Exchange2010_SP2');
+        $verifySsl = config('services.ews.verify_ssl', true);
+        $authType = config('services.ews.auth', 'basic');
+
+        if (empty($url) || empty($username) || empty($password) || empty($itemId)) {
+            return ['error' => 'EWS ayarları eksik veya itemId boş.'];
+        }
+
+        $soap = $this->buildDeleteItemRequest($itemId, $changeKey, $version);
+        $action = 'http://schemas.microsoft.com/exchange/services/2006/messages/DeleteItem';
+
+        $response = $this->sendEwsRequest($soap, $action, $url, $username, $password, $verifySsl, $authType);
+        if (!$response->successful()) {
+            return ['error' => 'EWS isteği başarısız. HTTP ' . $response->status()];
+        }
+
+        return ['success' => true];
+    }
+
     private function buildFindItemRequest(\DateTimeInterface $start, \DateTimeInterface $end, string $version): string
     {
         $startIso = $start->format('c');
@@ -268,6 +292,30 @@ XML;
                 </t:ItemChange>
             </m:ItemChanges>
         </m:UpdateItem>
+    </soap:Body>
+</soap:Envelope>
+XML;
+    }
+
+    private function buildDeleteItemRequest(string $itemId, ?string $changeKey, string $version): string
+    {
+        $itemId = htmlspecialchars($itemId, ENT_QUOTES, 'UTF-8');
+        $changeKey = $changeKey ? htmlspecialchars($changeKey, ENT_QUOTES, 'UTF-8') : null;
+        $changeKeyAttr = $changeKey ? " ChangeKey=\"{$changeKey}\"" : '';
+
+        return <<<XML
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"
+    xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages">
+    <soap:Header>
+        <t:RequestServerVersion Version="{$version}" />
+    </soap:Header>
+    <soap:Body>
+        <m:DeleteItem DeleteType="HardDelete" SendMeetingCancellations="SendToNone" AffectedTaskOccurrences="AllOccurrences">
+            <m:ItemIds>
+                <t:ItemId Id="{$itemId}"{$changeKeyAttr} />
+            </m:ItemIds>
+        </m:DeleteItem>
     </soap:Body>
 </soap:Envelope>
 XML;

@@ -753,6 +753,17 @@ Route::put('/ziyaretler/{id}', function ($id) {
 });
 Route::delete('/ziyaretler/{id}', function ($id) {
     $ziyaret = \App\Models\Ziyaret::findOrFail($id);
+    if ($ziyaret->ews_item_id) {
+        try {
+            $ews = app(\App\Services\ExchangeEwsService::class);
+            $ews->deleteVisitEvent($ziyaret->ews_item_id, $ziyaret->ews_change_key);
+        } catch (\Throwable $e) {
+            \Log::warning('EWS delete failed for ziyaret', [
+                'id' => $ziyaret->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
     $ziyaret->delete();
     
     return redirect('/ziyaretler')->with('message', 'Ziyaret silindi.');
