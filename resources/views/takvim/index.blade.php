@@ -28,29 +28,54 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Konu</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Başlangıç</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bitiş</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Konum</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($events as $event)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap font-medium">{{ $event['subject'] ?: '-' }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap font-medium">
+                                <button type="button" class="text-left font-medium text-gray-900 hover:text-blue-600 toggle-details" data-target="event-{{ $loop->index }}">
+                                    {{ $event['subject'] ?: '-' }}
+                                </button>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                 {{ $event['start'] ? \Carbon\Carbon::parse($event['start'])->timezone('Europe/Istanbul')->format('d.m.Y H:i') : '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                 {{ $event['end'] ? \Carbon\Carbon::parse($event['end'])->timezone('Europe/Istanbul')->format('d.m.Y H:i') : '-' }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $event['location'] ?: '-' }}</td>
+                        </tr>
+                        <tr id="event-{{ $loop->index }}" class="hidden bg-gray-50">
+                            <td colspan="3" class="px-6 py-4 text-sm text-gray-700">
+                                @php
+                                    $body = $event['body'] ?? '';
+                                    $escaped = e($body);
+                                    $withBreaks = nl2br($escaped);
+                                    $linkified = preg_replace('~(https?://[^\s<]+)~i', '<a href="$1" target="_blank" class="text-blue-600 hover:underline">$1</a>', $withBreaks);
+                                @endphp
+                                {!! $linkified ?: '<span class="text-gray-400">Açıklama yok.</span>' !!}
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-6 text-center text-gray-500">Takvim kaydı bulunamadı.</td>
+                            <td colspan="3" class="px-6 py-6 text-center text-gray-500">Takvim kaydı bulunamadı.</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
     </div>
+
+    <script>
+        document.querySelectorAll('.toggle-details').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const id = btn.getAttribute('data-target');
+                const row = document.getElementById(id);
+                if (row) {
+                    row.classList.toggle('hidden');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

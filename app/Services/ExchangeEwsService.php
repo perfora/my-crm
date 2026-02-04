@@ -70,6 +70,7 @@ class ExchangeEwsService
                     <t:FieldURI FieldURI="calendar:End" />
                     <t:FieldURI FieldURI="calendar:Location" />
                     <t:FieldURI FieldURI="calendar:Organizer" />
+                    <t:FieldURI FieldURI="item:Body" />
                 </t:AdditionalProperties>
             </m:ItemShape>
             <m:CalendarView StartDate="{$startIso}" EndDate="{$endIso}" />
@@ -113,6 +114,7 @@ XML;
         foreach ($items as $item) {
             $organizerName = $this->cleanText($this->xpathValue($xpath, $item, './/*[local-name()="Organizer"]//*[local-name()="Name"]'));
             $organizerEmail = $this->cleanText($this->xpathValue($xpath, $item, './/*[local-name()="Organizer"]//*[local-name()="EmailAddress"]'));
+            $body = $this->xpathValue($xpath, $item, './*[local-name()="Body"]');
             $events[] = [
                 'subject' => $this->xpathValue($xpath, $item, './*[local-name()="Subject"]'),
                 'start' => $this->xpathValue($xpath, $item, './*[local-name()="Start"]'),
@@ -120,6 +122,7 @@ XML;
                 'location' => $this->xpathValue($xpath, $item, './*[local-name()="Location"]'),
                 'organizer_name' => $organizerName,
                 'organizer_email' => $organizerEmail,
+                'body' => $body,
             ];
         }
 
