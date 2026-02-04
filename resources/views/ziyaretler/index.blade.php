@@ -655,7 +655,6 @@
                 }
             }
 
-            input.on('blur', saveEdit);
             input.on('keypress', function(e) {
                 if (e.which === 13) saveEdit();
             });
@@ -664,6 +663,10 @@
                     cell.html(originalContent);
                     cell.removeClass('editing');
                 }
+            });
+            input.on('blur', function() {
+                cell.html(originalContent);
+                cell.removeClass('editing');
             });
         });
 
@@ -841,7 +844,6 @@
                 }
             }
 
-            input.on('blur', saveDate);
             input.on('keypress', function(e) {
                 if (e.which === 13) saveDate();
             });
@@ -850,6 +852,10 @@
                     cell.html(originalContent);
                     cell.removeClass('editing');
                 }
+            });
+            input.on('blur', function() {
+                cell.html(originalContent);
+                cell.removeClass('editing');
             });
         });
     </script>
