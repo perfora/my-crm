@@ -639,8 +639,11 @@
                 } else {
                     $.ajax({
                         url: '/ziyaretler/' + id,
-                        method: 'PUT',
-                        data: buildUpdatePayload(row, { [field]: newValue }),
+                        method: 'POST',
+                        data: {
+                            _method: 'PUT',
+                            ...buildUpdatePayload(row, { [field]: newValue })
+                        },
                         success: function() {
                             cell.data('value', newValue);
                             setRowValue(row, field, newValue);
@@ -648,8 +651,9 @@
                             cell.removeClass('editing');
                         },
                         error: function(xhr) {
+                            const msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : (xhr.responseText || '');
                             console.error('Kaydedilemedi:', xhr.status, xhr.responseText);
-                            alert('Kaydedilemedi!');
+                            alert('Kaydedilemedi! ' + msg);
                             cell.html(originalContent);
                             cell.removeClass('editing');
                         }
@@ -722,8 +726,11 @@
                 } else {
                     $.ajax({
                         url: '/ziyaretler/' + id,
-                        method: 'PUT',
-                        data: buildUpdatePayload(row, { [field]: newValue }),
+                        method: 'POST',
+                        data: {
+                            _method: 'PUT',
+                            ...buildUpdatePayload(row, { [field]: newValue })
+                        },
                         success: function() {
                             cell.data('value', newValue);
                             if (field === 'musteri_id') {
@@ -761,8 +768,9 @@
                             cell.removeClass('editing');
                         },
                         error: function(xhr) {
+                            const msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : (xhr.responseText || '');
                             console.error('Kaydedilemedi:', xhr.status, xhr.responseText);
-                            alert('Kaydedilemedi!');
+                            alert('Kaydedilemedi! ' + msg);
                             cell.html(originalContent);
                             cell.removeClass('editing');
                         }
@@ -826,8 +834,11 @@
                 } else {
                     $.ajax({
                         url: '/ziyaretler/' + id,
-                        method: 'PUT',
-                        data: buildUpdatePayload(row, { [field]: newValue }),
+                        method: 'POST',
+                        data: {
+                            _method: 'PUT',
+                            ...buildUpdatePayload(row, { [field]: newValue })
+                        },
                         success: function() {
                             cell.data('value', newValue);
                             if (isTelefon) {
@@ -839,8 +850,9 @@
                             cell.removeClass('editing');
                         },
                         error: function(xhr) {
+                            const msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : (xhr.responseText || '');
                             console.error('Kaydedilemedi:', xhr.status, xhr.responseText);
-                            alert('Kaydedilemedi!');
+                            alert('Kaydedilemedi! ' + msg);
                             cell.html(originalContent);
                             cell.removeClass('editing');
                         }
