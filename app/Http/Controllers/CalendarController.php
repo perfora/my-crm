@@ -37,7 +37,7 @@ class CalendarController extends Controller
             return response()->json([
                 'success' => false,
                 'error' => $result['error'],
-            ], 500);
+            ], 500, [], JSON_INVALID_UTF8_SUBSTITUTE);
         }
 
         $events = $this->sanitizeUtf8($result['events'] ?? []);
@@ -45,7 +45,7 @@ class CalendarController extends Controller
         return response()->json([
             'success' => true,
             'events' => $events,
-        ]);
+        ], 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
     }
 
     private function sanitizeUtf8($value)
