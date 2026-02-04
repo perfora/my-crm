@@ -708,13 +708,13 @@ Route::put('/ziyaretler/{id}', function ($id) {
     $ziyaret = \App\Models\Ziyaret::findOrFail($id);
     
     $validated = request()->validate([
-        'ziyaret_ismi' => 'required|max:255',
-        'musteri_id' => 'nullable|exists:musteriler,id',
-        'ziyaret_tarihi' => 'nullable|date',
-        'arama_tarihi' => 'nullable|date',
-        'tur' => 'nullable|string',
-        'durumu' => 'nullable|string',
-        'ziyaret_notlari' => 'nullable|string',
+        'ziyaret_ismi' => 'sometimes|nullable|max:255',
+        'musteri_id' => 'sometimes|nullable|exists:musteriler,id',
+        'ziyaret_tarihi' => 'sometimes|nullable|date',
+        'arama_tarihi' => 'sometimes|nullable|date',
+        'tur' => 'sometimes|nullable|string',
+        'durumu' => 'sometimes|nullable|string',
+        'ziyaret_notlari' => 'sometimes|nullable|string',
     ]);
     
     $ziyaret->update($validated);
