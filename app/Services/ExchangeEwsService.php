@@ -13,6 +13,7 @@ class ExchangeEwsService
         $password = config('services.ews.password');
         $version = config('services.ews.version', 'Exchange2010_SP2');
         $verifySsl = config('services.ews.verify_ssl', true);
+        $authType = config('services.ews.auth', 'basic');
 
         if (empty($url) || empty($username) || empty($password)) {
             return ['error' => 'EWS ayarları eksik. Lütfen .env dosyasını kontrol edin.'];
@@ -20,8 +21,11 @@ class ExchangeEwsService
 
         $soap = $this->buildFindItemRequest($start, $end, $version);
 
-        $response = Http::withBasicAuth($username, $password)
-            ->withOptions(['verify' => $verifySsl])
+        $response = $authType === 'ntlm'
+            ? Http::withOptions(['auth' => [$username, $password, 'ntlm'], 'verify' => $verifySsl])
+            : Http::withBasicAuth($username, $password)->withOptions(['verify' => $verifySsl]);
+
+        $response = $response
             ->withHeaders([
                 'Content-Type' => 'text/xml; charset=utf-8',
                 'SOAPAction' => 'http://schemas.microsoft.com/exchange/services/2006/messages/FindItem',
