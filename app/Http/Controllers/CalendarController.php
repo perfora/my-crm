@@ -105,6 +105,75 @@ class CalendarController extends Controller
         ], 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
     }
 
+    public function pushCrm(ExchangeEwsService $ews)
+    {
+        $start = now()->subDays(30)->startOfDay();
+        $end = now()->addDays(60)->endOfDay();
+
+        $ziyaretler = \App\Models\Ziyaret::whereIn('durumu', ['Beklemede', 'Planlandı'])
+            ->where(function ($q) use ($start, $end) {
+                $q->whereBetween('ziyaret_tarihi', [$start, $end])
+                  ->orWhereBetween('arama_tarihi', [$start, $end]);
+            })
+            ->get();
+
+        $created = 0;
+        $updated = 0;
+        $skipped = 0;
+        $errors = 0;
+
+        foreach ($ziyaretler as $ziyaret) {
+            $subject = $ziyaret->ziyaret_ismi ?: 'Ziyaret';
+            $startAt = $ziyaret->ziyaret_tarihi ? \Carbon\Carbon::parse($ziyaret->ziyaret_tarihi) : null;
+            if (!$startAt && $ziyaret->arama_tarihi) {
+                $startAt = \Carbon\Carbon::parse($ziyaret->arama_tarihi)->setTime(9, 0);
+            }
+            if (!$startAt) {
+                $skipped++;
+                continue;
+            }
+            $endAt = $startAt->copy()->addMinutes(30);
+            $body = $ziyaret->ziyaret_notlari ?? '';
+
+            $result = $ews->createOrUpdateVisitEvent(
+                $ziyaret->ews_item_id,
+                $ziyaret->ews_change_key,
+                $subject,
+                $startAt,
+                $endAt,
+                $body
+            );
+
+            if (!empty($result['error'])) {
+                $errors++;
+                continue;
+            }
+
+            if (!empty($result['item_id'])) {
+                $ziyaret->update([
+                    'ews_item_id' => $result['item_id'],
+                    'ews_change_key' => $result['change_key'] ?? $ziyaret->ews_change_key,
+                ]);
+
+                if ($ziyaret->wasChanged('ews_item_id')) {
+                    $created++;
+                } else {
+                    $updated++;
+                }
+            } else {
+                $skipped++;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'created' => $created,
+            'updated' => $updated,
+            'skipped' => $skipped,
+            'errors' => $errors,
+        ], 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
+    }
+
     private function sanitizeUtf8($value)
     {
         if (is_array($value)) {

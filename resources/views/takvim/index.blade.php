@@ -16,6 +16,9 @@
                 <button id="syncBtn" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium">
                     🔄 Senkron Et
                 </button>
+                <button id="pushCrmBtn" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-sm font-medium">
+                    ⤴ CRM'den Yaz
+                </button>
                 <button id="cleanupBtn" class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium">
                     🧹 CRM Dışı Sil
                 </button>
@@ -165,6 +168,7 @@
         }
 
         const cleanupBtn = document.getElementById('cleanupBtn');
+        const pushCrmBtn = document.getElementById('pushCrmBtn');
         if (cleanupBtn) {
             cleanupBtn.addEventListener('click', async function() {
                 if (!confirm('CRM’de olmayan takvim kayıtları silinecek (son 30 gün + önümüzdeki 60 gün). Emin misiniz?')) {
@@ -191,6 +195,36 @@
                 } finally {
                     cleanupBtn.disabled = false;
                     cleanupBtn.textContent = original;
+                }
+            });
+        }
+
+        if (pushCrmBtn) {
+            pushCrmBtn.addEventListener('click', async function() {
+                if (!confirm("CRM'deki Beklemede/Planlandı kayıtları Outlook takvimine yazılacak. Emin misiniz?")) {
+                    return;
+                }
+                pushCrmBtn.disabled = true;
+                const original = pushCrmBtn.textContent;
+                pushCrmBtn.textContent = '⏳ Yazılıyor...';
+                try {
+                    const res = await fetch('/takvim/push-crm', { method: 'POST' });
+                    const data = await res.json();
+                    if (!res.ok || !data.success) {
+                        alert(data.error || 'CRM -> Takvim yazma hatası oluştu.');
+                    } else {
+                        alert(`Yazıldı. Yeni: ${data.created}, güncellenen: ${data.updated}, atlanan: ${data.skipped}, hata: ${data.errors}`);
+                        const syncRes = await fetch('/takvim/sync');
+                        const syncData = await syncRes.json();
+                        if (syncRes.ok && syncData.success) {
+                            renderEvents(syncData.events || []);
+                        }
+                    }
+                } catch (e) {
+                    alert('CRM -> Takvim yazma hatası oluştu.');
+                } finally {
+                    pushCrmBtn.disabled = false;
+                    pushCrmBtn.textContent = original;
                 }
             });
         }

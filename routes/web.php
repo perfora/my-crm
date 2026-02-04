@@ -80,6 +80,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/takvim', [App\Http\Controllers\CalendarController::class, 'index'])->name('calendar.index');
     Route::get('/takvim/sync', [App\Http\Controllers\CalendarController::class, 'sync'])->name('calendar.sync');
     Route::post('/takvim/cleanup', [App\Http\Controllers\CalendarController::class, 'cleanup'])->name('calendar.cleanup');
+    Route::post('/takvim/push-crm', [App\Http\Controllers\CalendarController::class, 'pushCrm'])->name('calendar.push-crm');
     
     // Settings ve Profile routes
     require __DIR__ . '/settings.php';
