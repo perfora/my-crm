@@ -37,7 +37,11 @@
                 ->whereYear('is_guncellenme_tarihi', $mevcutYil)
                 ->get();
             
-            // 2025 ve 2026 kazanılan işler
+            // 2024, 2025 ve 2026 kazanılan işler
+            $kazanilan2024 = \App\Models\TumIsler::where('tipi', 'Kazanıldı')
+                ->whereYear('kapanis_tarihi', 2024)
+                ->get();
+            
             $kazanilan2025 = \App\Models\TumIsler::where('tipi', 'Kazanıldı')
                 ->whereYear('kapanis_tarihi', 2025)
                 ->get();
@@ -46,10 +50,21 @@
                 ->whereYear('kapanis_tarihi', 2026)
                 ->get();
             
+            $toplamTeklif2024 = 0;
+            $toplamAlis2024 = 0;
             $toplamTeklif2025 = 0;
             $toplamAlis2025 = 0;
             $toplamTeklif2026 = 0;
             $toplamAlis2026 = 0;
+            
+            foreach($kazanilan2024 as $is) {
+                if($is->teklif_doviz === 'USD' && $is->teklif_tutari) {
+                    $toplamTeklif2024 += $is->teklif_tutari;
+                }
+                if($is->alis_doviz === 'USD' && $is->alis_tutari) {
+                    $toplamAlis2024 += $is->alis_tutari;
+                }
+            }
             
             foreach($kazanilan2025 as $is) {
                 if($is->teklif_doviz === 'USD' && $is->teklif_tutari) {
@@ -69,10 +84,12 @@
                 }
             }
             
+            $kar2024 = $toplamTeklif2024 - $toplamAlis2024;
+            $karOrani2024 = $toplamAlis2024 > 0 ? ($kar2024 / $toplamAlis2024 * 100) : 0;
             $kar2025 = $toplamTeklif2025 - $toplamAlis2025;
-            $karOrani2025 = $alis2025 > 0 ? ($kar2025 / $alis2025 * 100) : 0;
+            $karOrani2025 = $toplamAlis2025 > 0 ? ($kar2025 / $toplamAlis2025 * 100) : 0;
             $kar2026 = $toplamTeklif2026 - $toplamAlis2026;
-            $karOrani2026 = $alis2026 > 0 ? ($kar2026 / $alis2026 * 100) : 0;
+            $karOrani2026 = $toplamAlis2026 > 0 ? ($kar2026 / $toplamAlis2026 * 100) : 0;
             
             // Notion'dan senkronize edilmiş kayıtlar
             $notionIsler = \App\Models\TumIsler::whereNotNull('notion_id')->count();
@@ -165,9 +182,34 @@
         
         <!-- Yıllık Kazanç Karşılaştırma -->
         @if($widgets['yillik_karsilastirma'])
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-bold mb-4 text-gray-800">2025 Kazanılan İşler</h2>
+                <h2 class="text-xl font-bold mb-4 text-gray-800">📅 2024 Kazanılan İşler</h2>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">İş Sayısı:</span>
+                        <span class="font-bold text-lg">{{ $kazanilan2024->count() }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Toplam Teklif:</span>
+                        <span class="font-bold text-lg text-blue-600">${{ number_format($toplamTeklif2024, 2) }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Toplam Alış:</span>
+                        <span class="font-bold text-lg text-orange-600">${{ number_format($toplamAlis2024, 2) }}</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t">
+                        <span class="text-gray-600">Toplam Kar:</span>
+                        <div>
+                            <span class="font-bold text-lg text-green-600">${{ number_format($kar2024, 2) }}</span>
+                            <span class="text-sm text-gray-500">({{ number_format($karOrani2024, 1) }}%)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">📊 2025 Kazanılan İşler</h2>
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600">İş Sayısı:</span>
@@ -176,6 +218,10 @@
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600">Toplam Teklif:</span>
                         <span class="font-bold text-lg text-blue-600">${{ number_format($toplamTeklif2025, 2) }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Toplam Alış:</span>
+                        <span class="font-bold text-lg text-orange-600">${{ number_format($toplamAlis2025, 2) }}</span>
                     </div>
                     <div class="flex justify-between items-center pt-2 border-t">
                         <span class="text-gray-600">Toplam Kar:</span>
@@ -188,7 +234,7 @@
             </div>
             
             <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-bold mb-4 text-gray-800">2026 Kazanılan İşler</h2>
+                <h2 class="text-xl font-bold mb-4 text-gray-800">🎯 2026 Kazanılan İşler</h2>
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600">İş Sayısı:</span>
@@ -197,6 +243,10 @@
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600">Toplam Teklif:</span>
                         <span class="font-bold text-lg text-blue-600">${{ number_format($toplamTeklif2026, 2) }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Toplam Alış:</span>
+                        <span class="font-bold text-lg text-orange-600">${{ number_format($toplamAlis2026, 2) }}</span>
                     </div>
                     <div class="flex justify-between items-center pt-2 border-t">
                         <span class="text-gray-600">Toplam Kar:</span>
