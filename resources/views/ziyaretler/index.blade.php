@@ -489,7 +489,12 @@
             if (isTelefon) {
                 return date.toLocaleDateString('tr-TR');
             }
-            return date.toLocaleString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+            // Saat varsa (00:00'dan farklıysa) saat ile göster
+            if (date.getHours() !== 0 || date.getMinutes() !== 0) {
+                return date.toLocaleString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+            }
+            // Saat yoksa sadece tarih
+            return date.toLocaleDateString('tr-TR');
         }
 
         function buildNewRow() {
@@ -858,11 +863,11 @@
             if (currentValue) {
                 const date = new Date(currentValue);
                 if (!Number.isNaN(date.getTime())) {
-                    valueForInput = date.toISOString().slice(0, 10);
+                    valueForInput = date.toISOString().slice(0, 16);
                 }
             }
 
-            cell.html(`<input type="date" class="w-full px-2 py-1 border rounded text-sm" value="${valueForInput}" />`);
+            cell.html(`<input type="datetime-local" class="w-full px-2 py-1 border rounded text-sm" value="${valueForInput}" />`);
             const input = cell.find('input');
             input.focus();
 
