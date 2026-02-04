@@ -2147,22 +2147,33 @@
             
             cell.html(`<input type="date" class="w-full px-2 py-1 border rounded text-sm" value="${currentValue}" />`);
             const input = cell.find('input');
-            input.focus();
             
-            let changeTimeout = null;
+            // Input'u aç ama focus'u geciktir
+            setTimeout(() => input.focus(), 50);
+            
             let isSaving = false;
+            let hasChanged = false;
             
             function saveDate() {
                 if (isSaving) return;
-                isSaving = true;
                 
                 const newValue = input.val();
                 
-                // Tarih geçerli değilse kaydetme
-                if (newValue && newValue.length < 10) {
-                    isSaving = false;
+                // Değer değişmemişse iptal
+                if (!hasChanged) {
+                    cell.html(originalContent);
+                    cell.removeClass('editing');
                     return;
                 }
+                
+                // Tarih eksikse iptal
+                if (newValue && newValue.length < 10) {
+                    cell.html(originalContent);
+                    cell.removeClass('editing');
+                    return;
+                }
+                
+                isSaving = true;
                 
                 $.ajax({
                     url: '/tum-isler/' + id,
@@ -2191,26 +2202,18 @@
                 });
             }
             
-            // Change event'i ile kaydet (date picker kapatıldığında)
+            // Change olduğunu işaretle
             input.on('change', function() {
-                if (changeTimeout) clearTimeout(changeTimeout);
-                changeTimeout = setTimeout(saveDate, 300);
+                hasChanged = true;
             });
             
-            // Blur event - sadece input'tan tamamen çıkıldığında
+            // Blur olduğunda kaydet
             input.on('blur', function() {
                 setTimeout(function() {
                     if (!input.is(':focus') && !isSaving) {
-                        const val = input.val();
-                        // Eğer tam tarih girilmişse kaydet, yoksa iptal
-                        if (val && val.length === 10) {
-                            saveDate();
-                        } else {
-                            cell.html(originalContent);
-                            cell.removeClass('editing');
-                        }
+                        saveDate();
                     }
-                }, 300);
+                }, 200);
             });
             
             input.on('keydown', function(e) {
