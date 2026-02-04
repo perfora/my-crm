@@ -656,6 +656,40 @@
             }
         }
 
+        function isRowReady(row) {
+            const name = (getRowValue(row, 'ziyaret_ismi') || '').trim();
+            return name.length > 0;
+        }
+
+        function createRow(row, onSuccess, onError) {
+            if (row.data('saving')) return;
+            row.data('saving', true);
+            const payload = buildUpdatePayload(row, {});
+            if (!payload.ziyaret_ismi) {
+                row.data('saving', false);
+                return;
+            }
+            $.ajax({
+                url: '/ziyaretler',
+                method: 'POST',
+                data: payload,
+                success: function(response) {
+                    const newId = response && response.id;
+                    if (newId) {
+                        finalizeNewRow(row, newId);
+                        row.data('saving', false);
+                        if (onSuccess) onSuccess(newId);
+                    } else {
+                        location.reload();
+                    }
+                },
+                error: function() {
+                    row.data('saving', false);
+                    if (onError) onError();
+                }
+            });
+        }
+
         function focusNextEditableCell(currentCell) {
             const row = currentCell.closest('tr');
             const cells = row.find('.editable-cell, .editable-select, .editable-date');
@@ -699,29 +733,19 @@
                 saved = true;
                 const newValue = input.val().trim();
                 if (id === 'new') {
-                    $.ajax({
-                        url: '/ziyaretler',
-                        method: 'POST',
-                        data: { [field]: newValue },
-                        success: function(response) {
-                            const newId = response && response.id;
-                            if (newId) {
-                                finalizeNewRow(row, newId);
-                                cell.data('id', newId);
-                                row.data('id', newId);
-                                setRowValue(row, field, newValue);
-                                cell.html(newValue || '-');
-                                cell.removeClass('editing');
-                            } else {
-                                location.reload();
-                            }
-                        },
-                        error: function() {
+                    setRowValue(row, field, newValue);
+                    cell.html(newValue || '-');
+                    cell.removeClass('editing');
+                    if (isRowReady(row)) {
+                        createRow(row, function(newId) {
+                            cell.data('id', newId);
+                            row.data('id', newId);
+                        }, function() {
                             alert('Kayıt oluşturulamadı!');
                             cell.html(originalContent);
                             cell.removeClass('editing');
-                        }
-                    });
+                        });
+                    }
                 } else {
                     $.ajax({
                         url: '/ziyaretler/' + id,
@@ -805,29 +829,19 @@
                 saved = true;
                 const newValue = select.val();
                 if (id === 'new') {
-                    $.ajax({
-                        url: '/ziyaretler',
-                        method: 'POST',
-                        data: { [field]: newValue },
-                        success: function(response) {
-                            const newId = response && response.id;
-                            if (newId) {
-                                finalizeNewRow(row, newId);
-                                cell.data('id', newId);
-                                row.data('id', newId);
-                                setRowValue(row, field, newValue);
-                                renderSelectDisplay(cell, field, newValue, row);
-                                cell.removeClass('editing');
-                            } else {
-                                location.reload();
-                            }
-                        },
-                        error: function() {
+                    setRowValue(row, field, newValue);
+                    renderSelectDisplay(cell, field, newValue, row);
+                    cell.removeClass('editing');
+                    if (isRowReady(row)) {
+                        createRow(row, function(newId) {
+                            cell.data('id', newId);
+                            row.data('id', newId);
+                        }, function() {
                             alert('Kayıt oluşturulamadı!');
                             cell.html(originalContent);
                             cell.removeClass('editing');
-                        }
-                    });
+                        });
+                    }
                 } else {
                     $.ajax({
                         url: '/ziyaretler/' + id,
@@ -912,34 +926,23 @@
                 const field = isTelefon ? 'arama_tarihi' : 'ziyaret_tarihi';
 
                 if (id === 'new') {
-                    $.ajax({
-                        url: '/ziyaretler',
-                        method: 'POST',
-                        data: { [field]: newValue },
-                        success: function(response) {
-                            const newId = response && response.id;
-                            if (newId) {
-                                finalizeNewRow(row, newId);
-                                cell.data('id', newId);
-                                row.data('id', newId);
-                                if (isTelefon) {
-                                    setRowValue(row, 'arama_tarihi', newValue);
-                                } else {
-                                    setRowValue(row, 'ziyaret_tarihi', newValue);
-                                }
-                                cell.html(formatDateDisplay(newValue, isTelefon));
-                                cell.removeClass('editing');
-                            } else {
-                                location.reload();
-                            }
-                        },
-                        error: function(xhr) {
-                            console.error('Kayıt oluşturulamadı:', xhr.status, xhr.responseText);
-                            alert('Kayıt oluşturulamadı! ' + (xhr.responseJSON?.message || xhr.statusText));
+                    if (isTelefon) {
+                        setRowValue(row, 'arama_tarihi', newValue);
+                    } else {
+                        setRowValue(row, 'ziyaret_tarihi', newValue);
+                    }
+                    cell.html(formatDateDisplay(newValue, isTelefon));
+                    cell.removeClass('editing');
+                    if (isRowReady(row)) {
+                        createRow(row, function(newId) {
+                            cell.data('id', newId);
+                            row.data('id', newId);
+                        }, function() {
+                            alert('Kayıt oluşturulamadı!');
                             cell.html(originalContent);
                             cell.removeClass('editing');
-                        }
-                    });
+                        });
+                    }
                 } else {
                     $.ajax({
                         url: '/ziyaretler/' + id,

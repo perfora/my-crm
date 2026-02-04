@@ -717,6 +717,13 @@ Route::put('/ziyaretler/{id}', function ($id) {
         'ziyaret_notlari' => 'sometimes|nullable|string',
     ]);
     
+    if (!empty($validated['ziyaret_tarihi']) && empty($validated['durumu'])) {
+        $validated['durumu'] = 'Planlandı';
+    }
+    if (!empty($validated['arama_tarihi']) && empty($validated['durumu'])) {
+        $validated['durumu'] = 'Planlandı';
+    }
+
     $ziyaret->update($validated);
 
     // Outlook senkron - Beklemede/Planlandı ise yaz
@@ -772,6 +779,13 @@ Route::post('/ziyaretler', function () {
     if (empty($validated['ziyaret_ismi']) && !empty($validated['musteri_id'])) {
         $musteri = \App\Models\Musteri::find($validated['musteri_id']);
         $validated['ziyaret_ismi'] = $musteri ? $musteri->sirket . ' Ziyareti' : 'Ziyaret';
+    }
+    
+    if (!empty($validated['ziyaret_tarihi']) && empty($validated['durumu'])) {
+        $validated['durumu'] = 'Planlandı';
+    }
+    if (!empty($validated['arama_tarihi']) && empty($validated['durumu'])) {
+        $validated['durumu'] = 'Planlandı';
     }
     
     $ziyaret = \App\Models\Ziyaret::create($validated);
