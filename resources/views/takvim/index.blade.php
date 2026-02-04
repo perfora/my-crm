@@ -12,7 +12,12 @@
     <div class="container mx-auto px-4 py-6 max-w-screen-2xl">
         <div class="flex items-center justify-between mb-6">
             <h1 class="text-2xl font-bold text-gray-800">Takvim</h1>
-            <span class="text-sm text-gray-500">Sonraki 30 gün</span>
+            <div class="flex items-center gap-3">
+                <button id="syncBtn" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium">
+                    🔄 Senkron Et
+                </button>
+                <span class="text-sm text-gray-500">Sonraki 30 gün</span>
+            </div>
         </div>
 
         @if($error)
@@ -30,7 +35,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bitiş</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody id="calendar-body" class="bg-white divide-y divide-gray-200">
                     @forelse($events as $event)
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap font-medium">
@@ -67,15 +72,96 @@
     </div>
 
     <script>
-        document.querySelectorAll('.toggle-details').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                const id = btn.getAttribute('data-target');
-                const row = document.getElementById(id);
-                if (row) {
-                    row.classList.toggle('hidden');
+        const calendarBody = document.getElementById('calendar-body');
+        const syncBtn = document.getElementById('syncBtn');
+
+        function formatDate(iso) {
+            if (!iso) return '-';
+            const d = new Date(iso);
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        }
+
+        function renderEvents(events) {
+            if (!events || events.length === 0) {
+                calendarBody.innerHTML = `<tr><td colspan="3" class="px-6 py-6 text-center text-gray-500">Takvim kaydı bulunamadı.</td></tr>`;
+                return;
+            }
+
+            calendarBody.innerHTML = '';
+            events.forEach((event, index) => {
+                const subject = event.subject || '-';
+                const start = formatDate(event.start);
+                const end = formatDate(event.end);
+                const body = (event.body || '').trim();
+                const safeBody = body
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/\n/g, '<br>');
+
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap font-medium">
+                        <button type="button" class="text-left font-medium text-gray-900 hover:text-blue-600 toggle-details" data-target="event-${index}">
+                            ${subject}
+                        </button>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${start}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${end}</td>
+                `;
+                calendarBody.appendChild(row);
+
+                const detailRow = document.createElement('tr');
+                detailRow.id = `event-${index}`;
+                detailRow.className = 'hidden bg-gray-50';
+                detailRow.innerHTML = `
+                    <td colspan="3" class="px-6 py-4 text-sm text-gray-700">
+                        ${safeBody || '<span class="text-gray-400">Açıklama yok.</span>'}
+                    </td>
+                `;
+                calendarBody.appendChild(detailRow);
+            });
+
+            attachToggleHandlers();
+        }
+
+        function attachToggleHandlers() {
+            document.querySelectorAll('.toggle-details').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const id = btn.getAttribute('data-target');
+                    const row = document.getElementById(id);
+                    if (row) {
+                        row.classList.toggle('hidden');
+                    }
+                });
+            });
+        }
+
+        if (syncBtn) {
+            syncBtn.addEventListener('click', async function() {
+                syncBtn.disabled = true;
+                const original = syncBtn.textContent;
+                syncBtn.textContent = '⏳ Senkron...';
+                try {
+                    const res = await fetch('/takvim/sync');
+                    const data = await res.json();
+                    if (!res.ok || !data.success) {
+                        alert(data.error || 'Senkron hatası oluştu.');
+                    } else {
+                        renderEvents(data.events || []);
+                    }
+                } catch (e) {
+                    alert('Senkron hatası oluştu.');
+                } finally {
+                    syncBtn.disabled = false;
+                    syncBtn.textContent = original;
                 }
             });
-        });
+        }
+
+        attachToggleHandlers();
     </script>
 </body>
 </html>

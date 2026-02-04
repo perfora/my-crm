@@ -26,4 +26,23 @@ class CalendarController extends Controller
             'error' => null,
         ]);
     }
+
+    public function sync(ExchangeEwsService $ews)
+    {
+        $start = now()->startOfDay();
+        $end = now()->addDays(30)->endOfDay();
+
+        $result = $ews->getCalendarEvents($start, $end);
+        if (isset($result['error'])) {
+            return response()->json([
+                'success' => false,
+                'error' => $result['error'],
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'events' => $result['events'],
+        ]);
+    }
 }

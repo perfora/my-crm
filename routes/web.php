@@ -78,6 +78,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Takvim
     Route::get('/takvim', [App\Http\Controllers\CalendarController::class, 'index'])->name('calendar.index');
+    Route::get('/takvim/sync', [App\Http\Controllers\CalendarController::class, 'sync'])->name('calendar.sync');
     
     // Settings ve Profile routes
     require __DIR__ . '/settings.php';
