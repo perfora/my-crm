@@ -36,7 +36,7 @@
             cursor: pointer;
         }
         .editable-cell:hover, .editable-select:hover, .editable-date:hover {
-            background-color: #f9fafb;
+            background-color: #fef3c7 !important;
         }
         .toolbar-btn:disabled {
             opacity: 0.5;
