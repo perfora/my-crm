@@ -609,6 +609,53 @@
             return { ...payload, ...overrides };
         }
 
+        function normalizeDateTimeInput(value) {
+            if (!value) return null;
+            if (value.length === 10) {
+                return value + ' 09:00:00';
+            }
+            return value.replace('T', ' ') + ':00';
+        }
+
+        function renderSelectDisplay(cell, field, newValue, row) {
+            if (field === 'musteri_id') {
+                const found = musteriOptions.find(item => String(item.id) === String(newValue));
+                if (found) {
+                    cell.html(`<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${found.sirket}</span>`);
+                    setRowValue(row, 'musteri_id', found.id);
+                } else {
+                    cell.html('-');
+                }
+                return;
+            }
+            if (field === 'tur') {
+                if (newValue) {
+                    const badgeClass = newValue === 'Ziyaret' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800';
+                    cell.html(`<span class="px-2 py-1 text-xs rounded-full ${badgeClass}">${newValue}</span>`);
+                    setRowValue(row, 'tur', newValue);
+                } else {
+                    cell.html('-');
+                }
+                const dateCell = row.find('[data-field="tarih"]');
+                const isTelefon = newValue === 'Telefon';
+                const dateVal = isTelefon ? getRowValue(row, 'arama_tarihi') : getRowValue(row, 'ziyaret_tarihi');
+                dateCell.data('value', dateVal || '');
+                dateCell.html(formatDateDisplay(dateVal, isTelefon));
+                return;
+            }
+            if (field === 'durumu') {
+                if (newValue) {
+                    let badgeClass = 'bg-green-100 text-green-800';
+                    if (newValue === 'Beklemede') badgeClass = 'bg-yellow-100 text-yellow-800';
+                    else if (newValue === 'Planlandı') badgeClass = 'bg-blue-100 text-blue-800';
+                    cell.html(`<span class="px-2 py-1 text-xs rounded-full ${badgeClass}">${newValue}</span>`);
+                    setRowValue(row, 'durumu', newValue);
+                } else {
+                    cell.html('-');
+                }
+            }
+        }
+
         function focusNextEditableCell(currentCell) {
             const row = currentCell.closest('tr');
             const cells = row.find('.editable-cell, .editable-select, .editable-date');
@@ -769,8 +816,8 @@
                                 cell.data('id', newId);
                                 row.data('id', newId);
                                 setRowValue(row, field, newValue);
+                                renderSelectDisplay(cell, field, newValue, row);
                                 cell.removeClass('editing');
-                                cell.click();
                             } else {
                                 location.reload();
                             }
@@ -791,38 +838,7 @@
                         },
                         success: function() {
                             cell.data('value', newValue);
-                            if (field === 'musteri_id') {
-                                const found = musteriOptions.find(item => String(item.id) === String(newValue));
-                                if (found) {
-                                    cell.html(`<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${found.sirket}</span>`);
-                                    setRowValue(row, 'musteri_id', found.id);
-                                } else {
-                                    cell.html('-');
-                                }
-                            } else if (field === 'tur') {
-                                if (newValue) {
-                                    const badgeClass = newValue === 'Ziyaret' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800';
-                                    cell.html(`<span class="px-2 py-1 text-xs rounded-full ${badgeClass}">${newValue}</span>`);
-                                    setRowValue(row, 'tur', newValue);
-                                } else {
-                                    cell.html('-');
-                                }
-                                const dateCell = row.find('[data-field="tarih"]');
-                                const isTelefon = newValue === 'Telefon';
-                                const dateVal = isTelefon ? getRowValue(row, 'arama_tarihi') : getRowValue(row, 'ziyaret_tarihi');
-                                dateCell.data('value', dateVal || '');
-                                dateCell.html(formatDateDisplay(dateVal, isTelefon));
-                            } else if (field === 'durumu') {
-                                if (newValue) {
-                                    let badgeClass = 'bg-green-100 text-green-800';
-                                    if (newValue === 'Beklemede') badgeClass = 'bg-yellow-100 text-yellow-800';
-                                    else if (newValue === 'Planlandı') badgeClass = 'bg-blue-100 text-blue-800';
-                                    cell.html(`<span class="px-2 py-1 text-xs rounded-full ${badgeClass}">${newValue}</span>`);
-                                    setRowValue(row, 'durumu', newValue);
-                                } else {
-                                    cell.html('-');
-                                }
-                            }
+                            renderSelectDisplay(cell, field, newValue, row);
                             cell.removeClass('editing');
                         },
                         error: function(xhr) {
@@ -866,22 +882,25 @@
             const originalContent = cell.html();
             let saved = false;
 
+            const isNewRow = id === 'new';
             let valueForInput = '';
             if (currentValue) {
                 const date = new Date(currentValue);
                 if (!Number.isNaN(date.getTime())) {
-                    valueForInput = date.toISOString().slice(0, 16);
+                    valueForInput = isNewRow ? date.toISOString().slice(0, 10) : date.toISOString().slice(0, 16);
                 }
             }
 
-            cell.html(`<input type="datetime-local" class="w-full px-2 py-1 border rounded text-sm" value="${valueForInput}" />`);
+            const inputType = isNewRow ? 'date' : 'datetime-local';
+            cell.html(`<input type="${inputType}" class="w-full px-2 py-1 border rounded text-sm" value="${valueForInput}" />`);
             const input = cell.find('input');
             input.focus();
 
             function saveDate() {
                 if (saved) return;
                 saved = true;
-                const newValue = input.val();
+                const rawValue = input.val();
+                const newValue = normalizeDateTimeInput(rawValue);
                 
                 // Boş tarih gönderme
                 if (!newValue || newValue.trim() === '') {
