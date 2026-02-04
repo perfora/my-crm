@@ -570,25 +570,25 @@
                 }
 
                 // Para birimine göre ayrı toplamlar
-                // Eğer teklif_doviz USD ise ve alis_doviz boşsa, alis'i de USD kabul et
+                // Eğer döviz boşsa USD kabul ediyoruz (TL ancak açıkça seçilirse)
                 $toplamUSDTeklif = $filtreliIsler->filter(function($i){ 
-                    return $i->teklif_doviz === 'USD'; 
+                    return empty($i->teklif_doviz) || $i->teklif_doviz === 'USD'; 
                 })->sum('teklif_tutari');
                 
                 $toplamUSDAlis = $filtreliIsler->filter(function($i){ 
-                    // Eğer alis_doviz USD ise veya boş ama teklif_doviz USD ise
-                    return $i->alis_doviz === 'USD' || (empty($i->alis_doviz) && $i->teklif_doviz === 'USD'); 
+                    // Alış USD ise veya boş ama teklif USD/boş ise
+                    return $i->alis_doviz === 'USD' || (empty($i->alis_doviz) && (empty($i->teklif_doviz) || $i->teklif_doviz === 'USD')); 
                 })->sum('alis_tutari');
                 
                 $toplamKarUSD = $toplamUSDTeklif - $toplamUSDAlis;
 
-                // TL hesaplamaları - teklif_doviz boş veya TL ise
+                // TL hesaplamaları - yalnızca açıkça TL seçilenler
                 $toplamTLTeklif = $filtreliIsler->filter(function($i){ 
-                    return empty($i->teklif_doviz) || $i->teklif_doviz === 'TL'; 
+                    return $i->teklif_doviz === 'TL'; 
                 })->sum('teklif_tutari');
                 
                 $toplamTLAlis = $filtreliIsler->filter(function($i){ 
-                    return ($i->alis_doviz === 'TL') || (empty($i->alis_doviz) && (empty($i->teklif_doviz) || $i->teklif_doviz === 'TL')); 
+                    return ($i->alis_doviz === 'TL') || (empty($i->alis_doviz) && $i->teklif_doviz === 'TL'); 
                 })->sum('alis_tutari');
                 
                 $toplamKarTL = $toplamTLTeklif - $toplamTLAlis;
@@ -940,7 +940,7 @@
                                 </td>
                                 <td class="px-3 py-3 whitespace-nowrap editable-number" data-field="teklif_tutari" data-id="{{ $is->id }}" data-value="{{ $is->teklif_tutari }}">
                                     @if($is->teklif_tutari !== null)
-                                        @if($is->teklif_doviz === 'USD')
+                                        @if(empty($is->teklif_doviz) || $is->teklif_doviz === 'USD')
                                             ${{ number_format($is->teklif_tutari, 2) }}
                                         @else
                                             {{ number_format($is->teklif_tutari, 2) }}
@@ -951,7 +951,7 @@
                                 </td>
                                 <td class="px-3 py-3 whitespace-nowrap editable-number" data-field="alis_tutari" data-id="{{ $is->id }}" data-value="{{ $is->alis_tutari }}">
                                     @if($is->alis_tutari !== null)
-                                        @if($is->alis_doviz === 'USD')
+                                        @if(empty($is->alis_doviz) || $is->alis_doviz === 'USD')
                                             ${{ number_format($is->alis_tutari, 2) }}
                                         @else
                                             {{ number_format($is->alis_tutari, 2) }}
@@ -963,7 +963,7 @@
                                 <td class="px-3 py-3 whitespace-nowrap">
                                     @if($is->kar_tutari)
                                         @php
-                                            $isUsd = ($is->teklif_doviz === 'USD' || $is->alis_doviz === 'USD');
+                                            $isUsd = (empty($is->teklif_doviz) || $is->teklif_doviz === 'USD' || $is->alis_doviz === 'USD');
                                         @endphp
                                         <span class="font-semibold {{ $is->kar_tutari > 0 ? 'text-green-600' : 'text-red-600' }}">
                                             @if($isUsd)
