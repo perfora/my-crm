@@ -604,7 +604,7 @@
                 }
             @endphp
             
-            @if(request()->hasAny(['yil', 'tipi', 'turu', 'musteri_id']))
+            @if(request()->hasAny(['yil', 'tipi', 'turu', 'musteri_id', 'marka_id', 'name', 'oncelik', 'register_durum', 'teklif_min', 'teklif_max', 'alis_min', 'alis_max', 'kar_min', 'kar_max', 'acilis_start', 'acilis_end', 'kapanis_start', 'kapanis_end', 'lisans_start', 'lisans_end', 'updated_start', 'updated_end']))
                 <div class="mt-4 p-4 bg-blue-50 rounded">
                     <div class="grid grid-cols-4 gap-4 text-center">
                         <div>
@@ -629,7 +629,7 @@
                             ⚠️ <strong>{{ $orjCount }}</strong> kayıtta orijinal döviz tespit edildi — toplam orijinal teklif: <strong>{{ number_format($orjTeklifSum, 2) }} USD</strong>@if($orjAlisSum > 0), orijinal alış: <strong>{{ number_format($orjAlisSum, 2) }} USD</strong>@endif.
                         </div>
                     @endif
-                
+                </div>
             @endif
         
 
