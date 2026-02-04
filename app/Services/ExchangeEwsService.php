@@ -414,13 +414,13 @@ XML;
                 $changeKey = $itemIdNode->item(0)->attributes?->getNamedItem('ChangeKey')?->nodeValue ?? '';
             }
             $events[] = [
-                'subject' => $this->xpathValue($xpath, $item, './*[local-name()="Subject"]'),
+                'subject' => $this->cleanText($this->xpathValue($xpath, $item, './*[local-name()="Subject"]')),
                 'start' => $this->xpathValue($xpath, $item, './*[local-name()="Start"]'),
                 'end' => $this->xpathValue($xpath, $item, './*[local-name()="End"]'),
-                'location' => $this->xpathValue($xpath, $item, './*[local-name()="Location"]'),
+                'location' => $this->cleanText($this->xpathValue($xpath, $item, './*[local-name()="Location"]')),
                 'organizer_name' => $organizerName,
                 'organizer_email' => $organizerEmail,
-                'body' => $body,
+                'body' => $this->cleanText($body),
                 'item_id' => $itemId,
                 'change_key' => $changeKey,
             ];

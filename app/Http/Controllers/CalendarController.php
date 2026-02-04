@@ -40,9 +40,25 @@ class CalendarController extends Controller
             ], 500);
         }
 
+        $events = $this->sanitizeUtf8($result['events'] ?? []);
+
         return response()->json([
             'success' => true,
-            'events' => $result['events'],
+            'events' => $events,
         ]);
+    }
+
+    private function sanitizeUtf8($value)
+    {
+        if (is_array($value)) {
+            return array_map([$this, 'sanitizeUtf8'], $value);
+        }
+
+        if (is_string($value)) {
+            $converted = @iconv('UTF-8', 'UTF-8//IGNORE', $value);
+            return $converted !== false ? $converted : $value;
+        }
+
+        return $value;
     }
 }
