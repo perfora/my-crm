@@ -84,6 +84,10 @@ XML;
 
     private function parseFindItemResponse(string $xmlString): array
     {
+        $length = strlen($xmlString);
+        $head = substr($xmlString, 0, 500);
+        $tail = substr($xmlString, max(0, $length - 500));
+
         // XML parse için daha toleranslı ol
         $cleanXml = preg_replace('/[^\x09\x0A\x0D\x20-\x7E\xC0-\xFF]/', '', $xmlString);
         libxml_use_internal_errors(true);
@@ -91,7 +95,9 @@ XML;
         $loaded = $dom->loadXML($cleanXml, LIBXML_NOERROR | LIBXML_NOWARNING | LIBXML_RECOVER);
         if (!$loaded) {
             Log::error('EWS XML parse edilemedi. İlk 500 karakter:', [
-                'snippet' => substr($xmlString, 0, 500),
+                'length' => $length,
+                'head' => $head,
+                'tail' => $tail,
                 'errors' => array_map(fn($e) => trim($e->message), libxml_get_errors()),
             ]);
             libxml_clear_errors();
@@ -99,8 +105,10 @@ XML;
         }
         $xml = simplexml_import_dom($dom);
         if (!$xml) {
-            Log::error('EWS XML parse edilemedi (import). İlk 500 karakter:', [
-                'snippet' => substr($xmlString, 0, 500),
+            Log::error('EWS XML parse edilemedi (import).', [
+                'length' => $length,
+                'head' => $head,
+                'tail' => $tail,
             ]);
             libxml_clear_errors();
             return ['error' => 'EWS cevabı parse edilemedi. Sunucu geçerli SOAP/XML dönmüyor olabilir.'];
