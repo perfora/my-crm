@@ -111,12 +111,15 @@ XML;
 
         $events = [];
         foreach ($items as $item) {
+            $organizerName = $this->xpathValue($xpath, $item, './/*[local-name()="Organizer"]//*[local-name()="Name"]');
+            $organizerEmail = $this->xpathValue($xpath, $item, './/*[local-name()="Organizer"]//*[local-name()="EmailAddress"]');
             $events[] = [
                 'subject' => $this->xpathValue($xpath, $item, './*[local-name()="Subject"]'),
                 'start' => $this->xpathValue($xpath, $item, './*[local-name()="Start"]'),
                 'end' => $this->xpathValue($xpath, $item, './*[local-name()="End"]'),
                 'location' => $this->xpathValue($xpath, $item, './*[local-name()="Location"]'),
-                'organizer' => $this->xpathValue($xpath, $item, './/*[local-name()="Organizer"]//*[local-name()="EmailAddress"]'),
+                'organizer_name' => $organizerName,
+                'organizer_email' => $organizerEmail,
             ];
         }
 

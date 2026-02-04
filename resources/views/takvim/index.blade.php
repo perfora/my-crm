@@ -36,10 +36,23 @@
                     @forelse($events as $event)
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap font-medium">{{ $event['subject'] ?: '-' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $event['start'] ?: '-' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $event['end'] ?: '-' }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                {{ $event['start'] ? \Carbon\Carbon::parse($event['start'])->timezone('Europe/Istanbul')->format('d.m.Y H:i') : '-' }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                {{ $event['end'] ? \Carbon\Carbon::parse($event['end'])->timezone('Europe/Istanbul')->format('d.m.Y H:i') : '-' }}
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $event['location'] ?: '-' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $event['organizer'] ?: '-' }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                @php
+                                    $organizer = $event['organizer_name'] ?: '';
+                                    $organizerEmail = $event['organizer_email'] ?: '';
+                                    if (!$organizer && $organizerEmail) {
+                                        $organizer = $organizerEmail;
+                                    }
+                                @endphp
+                                {{ $organizer ?: '-' }}
+                            </td>
                         </tr>
                     @empty
                         <tr>
