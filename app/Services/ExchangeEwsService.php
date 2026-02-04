@@ -143,6 +143,9 @@ XML;
             $text = $converted;
         }
         $text = preg_replace('/\x{FFFD}/u', '', $text) ?? $text;
-        return preg_replace('/[^\P{C}\n\t\r]/u', '', $text) ?? $text;
+        $text = preg_replace('/[^\P{C}\n\t\r]/u', '', $text) ?? $text;
+        // Sonda kalan bozuk karakterleri temizle
+        $text = preg_replace('/[^\p{L}\p{N}\s\.\-\(\)]+$/u', '', $text) ?? $text;
+        return $text;
     }
 }
