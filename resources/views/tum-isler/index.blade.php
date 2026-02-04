@@ -621,16 +621,6 @@
             
             @if(request()->hasAny(['yil', 'tipi', 'turu', 'musteri_id', 'marka_id', 'name', 'oncelik', 'register_durum', 'teklif_min', 'teklif_max', 'alis_min', 'alis_max', 'kar_min', 'kar_max', 'acilis_start', 'acilis_end', 'kapanis_start', 'kapanis_end', 'lisans_start', 'lisans_end', 'updated_start', 'updated_end']))
                 <div class="mt-4 p-4 bg-blue-50 rounded">
-                    <!-- DEBUG -->
-                    <div class="mb-2 p-2 bg-yellow-100 text-xs font-mono break-all">
-                        <strong>Debug:</strong> Kayıt: {{ $filtreliIsler->count() }} | 
-                        Teklif: ${{ number_format($toplamUSDTeklif, 2) }} | 
-                        Alış: ${{ number_format($toplamUSDAlis, 2) }} | 
-                        request('yil'): {{ request('yil') ?? 'NULL' }} |
-                        request('tipi'): {{ request('tipi') ?? 'NULL' }} |
-                        ALL PARAMS: {{ json_encode(request()->all()) }}
-                    </div>
-                    <!-- /DEBUG -->
                     <div class="grid grid-cols-4 gap-4 text-center">
                         <div>
                             <div class="text-sm text-gray-600">İş Sayısı</div>
