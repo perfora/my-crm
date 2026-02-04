@@ -2149,8 +2149,20 @@
             const input = cell.find('input');
             input.focus();
             
+            let changeTimeout = null;
+            let isSaving = false;
+            
             function saveDate() {
+                if (isSaving) return;
+                isSaving = true;
+                
                 const newValue = input.val();
+                
+                // Tarih geçerli değilse kaydetme
+                if (newValue && newValue.length < 10) {
+                    isSaving = false;
+                    return;
+                }
                 
                 $.ajax({
                     url: '/tum-isler/' + id,
@@ -2168,24 +2180,39 @@
                             cell.html('-');
                         }
                         cell.removeClass('editing');
+                        isSaving = false;
                     },
                     error: function() {
                         alert('Kaydedilemedi!');
                         cell.html(originalContent);
                         cell.removeClass('editing');
+                        isSaving = false;
                     }
                 });
             }
             
-            input.on('change', saveDate);
+            // Change event'i ile kaydet (date picker kapatıldığında)
+            input.on('change', function() {
+                if (changeTimeout) clearTimeout(changeTimeout);
+                changeTimeout = setTimeout(saveDate, 300);
+            });
+            
+            // Blur event - sadece input'tan tamamen çıkıldığında
             input.on('blur', function() {
                 setTimeout(function() {
-                    if (!input.is(':focus')) {
-                        cell.html(originalContent);
-                        cell.removeClass('editing');
+                    if (!input.is(':focus') && !isSaving) {
+                        const val = input.val();
+                        // Eğer tam tarih girilmişse kaydet, yoksa iptal
+                        if (val && val.length === 10) {
+                            saveDate();
+                        } else {
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
+                        }
                     }
-                }, 200);
+                }, 300);
             });
+            
             input.on('keydown', function(e) {
                 if (e.which === 27) {
                     cell.html(originalContent);
