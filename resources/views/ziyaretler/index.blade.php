@@ -594,14 +594,15 @@
         }
 
         function buildUpdatePayload(row, overrides = {}) {
+            const normalize = (val) => (val === '' ? null : val);
             const payload = {
-                ziyaret_ismi: getRowValue(row, 'ziyaret_ismi') || '',
-                musteri_id: getRowValue(row, 'musteri_id') || null,
-                ziyaret_tarihi: getRowValue(row, 'ziyaret_tarihi') || null,
-                arama_tarihi: getRowValue(row, 'arama_tarihi') || null,
-                tur: getRowValue(row, 'tur') || null,
-                durumu: getRowValue(row, 'durumu') || null,
-                ziyaret_notlari: getRowValue(row, 'ziyaret_notlari') || null
+                ziyaret_ismi: normalize(getRowValue(row, 'ziyaret_ismi') || ''),
+                musteri_id: normalize(getRowValue(row, 'musteri_id') || ''),
+                ziyaret_tarihi: normalize(getRowValue(row, 'ziyaret_tarihi') || ''),
+                arama_tarihi: normalize(getRowValue(row, 'arama_tarihi') || ''),
+                tur: normalize(getRowValue(row, 'tur') || ''),
+                durumu: normalize(getRowValue(row, 'durumu') || ''),
+                ziyaret_notlari: normalize(getRowValue(row, 'ziyaret_notlari') || '')
             };
             return { ...payload, ...overrides };
         }
@@ -646,7 +647,8 @@
                             cell.html(newValue || '-');
                             cell.removeClass('editing');
                         },
-                        error: function() {
+                        error: function(xhr) {
+                            console.error('Kaydedilemedi:', xhr.status, xhr.responseText);
                             alert('Kaydedilemedi!');
                             cell.html(originalContent);
                             cell.removeClass('editing');
@@ -758,7 +760,8 @@
                             }
                             cell.removeClass('editing');
                         },
-                        error: function() {
+                        error: function(xhr) {
+                            console.error('Kaydedilemedi:', xhr.status, xhr.responseText);
                             alert('Kaydedilemedi!');
                             cell.html(originalContent);
                             cell.removeClass('editing');
@@ -835,7 +838,8 @@
                             cell.html(formatDateDisplay(newValue, isTelefon));
                             cell.removeClass('editing');
                         },
-                        error: function() {
+                        error: function(xhr) {
+                            console.error('Kaydedilemedi:', xhr.status, xhr.responseText);
                             alert('Kaydedilemedi!');
                             cell.html(originalContent);
                             cell.removeClass('editing');
