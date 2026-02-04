@@ -32,6 +32,12 @@
         .sortable:hover {
             background-color: #f3f4f6;
         }
+        .editable-cell, .editable-select, .editable-date {
+            cursor: pointer;
+        }
+        .editable-cell:hover, .editable-select:hover, .editable-date:hover {
+            background-color: #f9fafb;
+        }
         .toolbar-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -254,8 +260,10 @@
                                 <td class="px-3 py-4 text-center">
                                     <input type="checkbox" class="row-checkbox cursor-pointer" data-id="{{ $ziyaret->id }}">
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap font-medium">{{ $ziyaret->ziyaret_ismi }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 whitespace-nowrap font-medium editable-cell" data-field="ziyaret_ismi" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->ziyaret_ismi }}">
+                                    {{ $ziyaret->ziyaret_ismi }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="musteri_id" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->musteri_id ?? '' }}">
                                     @if($ziyaret->musteri)
                                         <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
                                             {{ $ziyaret->musteri->sirket }}
@@ -264,7 +272,7 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 whitespace-nowrap editable-date" data-field="tarih" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->tur == 'Telefon' ? $ziyaret->arama_tarihi : $ziyaret->ziyaret_tarihi }}">
                                     @if($ziyaret->tur == 'Telefon' && $ziyaret->arama_tarihi)
                                         {{ \Carbon\Carbon::parse($ziyaret->arama_tarihi)->format('d.m.Y') }}
                                     @elseif($ziyaret->ziyaret_tarihi)
@@ -273,7 +281,7 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="tur" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->tur ?? '' }}">
                                     @if($ziyaret->tur)
                                         <span class="px-2 py-1 text-xs rounded-full 
                                             {{ $ziyaret->tur == 'Ziyaret' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800' }}">
@@ -283,7 +291,7 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="durumu" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->durumu ?? '' }}">
                                     @if($ziyaret->durumu)
                                         <span class="px-2 py-1 text-xs rounded-full 
                                             @if($ziyaret->durumu == 'Beklemede') bg-yellow-100 text-yellow-800
@@ -296,7 +304,7 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 text-sm">
+                                <td class="px-6 py-4 text-sm editable-cell" data-field="ziyaret_notlari" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->ziyaret_notlari ?? '' }}">
                                     <div class="max-w-xs truncate">
                                         {{ $ziyaret->ziyaret_notlari ?? '-' }}
                                     </div>
@@ -484,77 +492,61 @@
             return options;
         }
 
-        function buildNewRow(prefill = {}) {
-            const turVal = prefill.tur || '';
-            const durumuVal = prefill.durumu || '';
-            const ziyaretTarihiVal = prefill.ziyaret_tarihi || '';
-            const aramaTarihiVal = prefill.arama_tarihi || '';
-            const dateVal = turVal === 'Telefon' ? aramaTarihiVal : ziyaretTarihiVal;
+        function formatDateDisplay(value, isTelefon) {
+            if (!value) return '-';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return value;
+            if (isTelefon) {
+                return date.toLocaleDateString('tr-TR');
+            }
+            return date.toLocaleString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+        }
 
+        function buildNewRow() {
             return `
                 <tr class="new-row bg-yellow-50">
                     <td class="px-3 py-4 text-center">
                         <input type="checkbox" disabled class="opacity-50">
                     </td>
-                    <td class="px-6 py-4">
-                        <input type="text" class="w-full border rounded px-2 py-1" placeholder="Ziyaret ismi..." value="${prefill.ziyaret_ismi || ''}">
+                    <td class="px-6 py-4 whitespace-nowrap font-medium editable-cell" data-field="ziyaret_ismi" data-id="new" data-value="">
+                        <span class="text-gray-400">Ziyaret ismi...</span>
                     </td>
-                    <td class="px-6 py-4">
-                        <select class="w-full border rounded px-2 py-1">
-                            ${renderMusteriOptions(prefill.musteri_id)}
-                        </select>
+                    <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="musteri_id" data-id="new" data-value="">
+                        <span class="text-gray-400">Müşteri seçiniz...</span>
                     </td>
-                    <td class="px-6 py-4">
-                        <input type="datetime-local" class="w-full border rounded px-2 py-1" value="${dateVal || ''}">
+                    <td class="px-6 py-4 whitespace-nowrap editable-date" data-field="tarih" data-id="new" data-value="">
+                        <span class="text-gray-400">Tarih seçiniz...</span>
                     </td>
-                    <td class="px-6 py-4">
-                        <select class="w-full border rounded px-2 py-1">
-                            <option value="">Seçiniz</option>
-                            <option value="Ziyaret" ${turVal === 'Ziyaret' ? 'selected' : ''}>Ziyaret</option>
-                            <option value="Telefon" ${turVal === 'Telefon' ? 'selected' : ''}>Telefon</option>
-                        </select>
+                    <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="tur" data-id="new" data-value="">
+                        <span class="text-gray-400">Tür seçiniz...</span>
                     </td>
-                    <td class="px-6 py-4">
-                        <select class="w-full border rounded px-2 py-1">
-                            <option value="">Seçiniz</option>
-                            <option value="Beklemede" ${durumuVal === 'Beklemede' ? 'selected' : ''}>Beklemede</option>
-                            <option value="Planlandı" ${durumuVal === 'Planlandı' ? 'selected' : ''}>Planlandı</option>
-                            <option value="Tamamlandı" ${durumuVal === 'Tamamlandı' ? 'selected' : ''}>Tamamlandı</option>
-                        </select>
+                    <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="durumu" data-id="new" data-value="">
+                        <span class="text-gray-400">Durum seçiniz...</span>
                     </td>
-                    <td class="px-6 py-4">
-                        <input type="text" class="w-full border rounded px-2 py-1" placeholder="Not..." value="${prefill.ziyaret_notlari || ''}">
+                    <td class="px-6 py-4 text-sm editable-cell" data-field="ziyaret_notlari" data-id="new" data-value="">
+                        <span class="text-gray-400">Not...</span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                        <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded mr-2" onclick="saveNewRow(this)">Kaydet</button>
-                        <button class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-1 rounded" onclick="cancelNewRow(this)">Vazgeç</button>
-                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">-</td>
                 </tr>
             `;
         }
 
         window.addNewRow = function() {
             const tbody = document.querySelector('#ziyaretler-table tbody');
-            const newRowHtml = buildNewRow();
-            $(tbody).prepend(newRowHtml);
+            $(tbody).prepend(buildNewRow());
         };
 
         window.duplicateSelected = function() {
             if (selectedIds.length === 0) return;
             const row = document.querySelector(`tr[data-id="${selectedIds[0]}"]`);
             if (!row) return;
-            const prefill = {
-                ziyaret_ismi: row.dataset.ziyaret_ismi || '',
-                musteri_id: row.dataset.musteri_id || '',
-                ziyaret_tarihi: row.dataset.ziyaret_tarihi ? row.dataset.ziyaret_tarihi.replace(' ', 'T').slice(0, 16) : '',
-                arama_tarihi: row.dataset.arama_tarihi || '',
-                tur: row.dataset.tur || '',
-                durumu: row.dataset.durumu || '',
-                ziyaret_notlari: row.dataset.ziyaret_notlari || ''
-            };
-            const tbody = document.querySelector('#ziyaretler-table tbody');
-            const newRowHtml = buildNewRow(prefill);
-            $(tbody).prepend(newRowHtml);
+            const newRow = $(buildNewRow());
+            newRow.find('[data-field="ziyaret_ismi"]').data('value', row.dataset.ziyaret_ismi || '').text(row.dataset.ziyaret_ismi || 'Ziyaret ismi...');
+            newRow.find('[data-field="musteri_id"]').data('value', row.dataset.musteri_id || '');
+            newRow.find('[data-field="tur"]').data('value', row.dataset.tur || '');
+            newRow.find('[data-field="durumu"]').data('value', row.dataset.durumu || '');
+            newRow.find('[data-field="ziyaret_notlari"]').data('value', row.dataset.ziyaret_notlari || '').text(row.dataset.ziyaret_notlari || 'Not...');
+            $('#ziyaretler-table tbody').prepend(newRow);
         };
 
         window.deleteSelected = function() {
@@ -579,57 +571,281 @@
             });
         };
 
-        window.saveNewRow = function(btn) {
-            const row = btn.closest('tr');
-            const inputs = row.querySelectorAll('input, select');
-            const [ziyaretIsmiEl, musteriEl, tarihEl, turEl, durumuEl, notlarEl] = inputs;
-
-            const ziyaret_ismi = ziyaretIsmiEl.value.trim();
-            const musteri_id = musteriEl.value || null;
-            const tarihVal = tarihEl.value;
-            const tur = turEl.value || null;
-            const durumu = durumuEl.value || null;
-            const ziyaret_notlari = notlarEl.value || null;
-
-            if (!ziyaret_ismi) {
-                alert('Ziyaret ismi zorunlu.');
-                return;
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
+        });
 
+        function getRowValue(row, key) {
+            const val = row.data(key);
+            if (val !== undefined) return val;
+            const dom = row[0];
+            if (!dom) return '';
+            const attr = dom.getAttribute('data-' + key.replace(/_/g, '-'));
+            return attr ?? '';
+        }
+
+        function buildUpdatePayload(row, overrides = {}) {
             const payload = {
-                ziyaret_ismi,
-                musteri_id,
-                tur,
-                durumu,
-                ziyaret_notlari
+                ziyaret_ismi: getRowValue(row, 'ziyaret_ismi') || '',
+                musteri_id: getRowValue(row, 'musteri_id') || null,
+                ziyaret_tarihi: getRowValue(row, 'ziyaret_tarihi') || null,
+                arama_tarihi: getRowValue(row, 'arama_tarihi') || null,
+                tur: getRowValue(row, 'tur') || null,
+                durumu: getRowValue(row, 'durumu') || null,
+                ziyaret_notlari: getRowValue(row, 'ziyaret_notlari') || null
             };
+            return { ...payload, ...overrides };
+        }
 
-            if (tur === 'Telefon') {
-                payload.arama_tarihi = tarihVal ? tarihVal.split('T')[0] : null;
-            } else {
-                payload.ziyaret_tarihi = tarihVal || null;
+        $(document).on('click', '.editable-cell:not(.editing)', function(e) {
+            e.stopPropagation();
+            const cell = $(this);
+            const field = cell.data('field');
+            const id = cell.data('id');
+            const currentValue = cell.data('value') || '';
+            const row = cell.closest('tr');
+
+            cell.addClass('editing');
+            const originalContent = cell.html();
+
+            cell.html(`<input type="text" class="w-full px-2 py-1 border rounded text-sm" value="${currentValue}" />`);
+            const input = cell.find('input');
+            input.focus();
+
+            function saveEdit() {
+                const newValue = input.val().trim();
+                if (id === 'new') {
+                    $.ajax({
+                        url: '/ziyaretler',
+                        method: 'POST',
+                        data: { [field]: newValue },
+                        success: function() { location.reload(); },
+                        error: function() {
+                            alert('Kayıt oluşturulamadı!');
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
+                        }
+                    });
+                } else {
+                    $.ajax({
+                        url: '/ziyaretler/' + id,
+                        method: 'PUT',
+                        data: buildUpdatePayload(row, { [field]: newValue }),
+                        success: function() {
+                            cell.data('value', newValue);
+                            row.data(field, newValue);
+                            cell.html(newValue || '-');
+                            cell.removeClass('editing');
+                        },
+                        error: function() {
+                            alert('Kaydedilemedi!');
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
+                        }
+                    });
+                }
             }
 
-            $.ajax({
-                url: '/ziyaretler',
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                data: payload,
-                success: function() {
-                    location.reload();
-                },
-                error: function() {
-                    alert('Kayıt eklenemedi. Lütfen tekrar deneyin.');
+            input.on('blur', saveEdit);
+            input.on('keypress', function(e) {
+                if (e.which === 13) saveEdit();
+            });
+            input.on('keydown', function(e) {
+                if (e.which === 27) {
+                    cell.html(originalContent);
+                    cell.removeClass('editing');
                 }
             });
-        };
+        });
 
-        window.cancelNewRow = function(btn) {
-            const row = btn.closest('tr');
-            row.remove();
-        };
+        $(document).on('click', '.editable-select:not(.editing)', function(e) {
+            e.stopPropagation();
+            const cell = $(this);
+            const field = cell.data('field');
+            const id = cell.data('id');
+            const currentValue = cell.data('value') || '';
+            const row = cell.closest('tr');
+
+            cell.addClass('editing');
+            const originalContent = cell.html();
+
+            let options = '';
+            if (field === 'musteri_id') {
+                options = renderMusteriOptions(currentValue);
+            } else if (field === 'tur') {
+                options = `
+                    <option value="">Seçiniz</option>
+                    <option value="Ziyaret" ${currentValue === 'Ziyaret' ? 'selected' : ''}>Ziyaret</option>
+                    <option value="Telefon" ${currentValue === 'Telefon' ? 'selected' : ''}>Telefon</option>
+                `;
+            } else if (field === 'durumu') {
+                options = `
+                    <option value="">Seçiniz</option>
+                    <option value="Beklemede" ${currentValue === 'Beklemede' ? 'selected' : ''}>Beklemede</option>
+                    <option value="Planlandı" ${currentValue === 'Planlandı' ? 'selected' : ''}>Planlandı</option>
+                    <option value="Tamamlandı" ${currentValue === 'Tamamlandı' ? 'selected' : ''}>Tamamlandı</option>
+                `;
+            }
+
+            cell.html(`<select class="w-full px-2 py-1 border rounded text-sm">${options}</select>`);
+            const select = cell.find('select');
+            select.focus();
+
+            function saveSelect() {
+                const newValue = select.val();
+                if (id === 'new') {
+                    $.ajax({
+                        url: '/ziyaretler',
+                        method: 'POST',
+                        data: { [field]: newValue },
+                        success: function() { location.reload(); },
+                        error: function() {
+                            alert('Kayıt oluşturulamadı!');
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
+                        }
+                    });
+                } else {
+                    $.ajax({
+                        url: '/ziyaretler/' + id,
+                        method: 'PUT',
+                        data: buildUpdatePayload(row, { [field]: newValue }),
+                        success: function() {
+                            cell.data('value', newValue);
+                            const row = cell.closest('tr');
+                            if (field === 'musteri_id') {
+                                const found = musteriOptions.find(item => String(item.id) === String(newValue));
+                                if (found) {
+                                    cell.html(`<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${found.sirket}</span>`);
+                                    row.data('musteri_id', found.id);
+                                } else {
+                                    cell.html('-');
+                                }
+                            } else if (field === 'tur') {
+                                if (newValue) {
+                                    const badgeClass = newValue === 'Ziyaret' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800';
+                                    cell.html(`<span class="px-2 py-1 text-xs rounded-full ${badgeClass}">${newValue}</span>`);
+                                    row.data('tur', newValue);
+                                } else {
+                                    cell.html('-');
+                                }
+                                const dateCell = row.find('[data-field="tarih"]');
+                                const isTelefon = newValue === 'Telefon';
+                                const dateVal = isTelefon ? row.data('arama_tarihi') : row.data('ziyaret_tarihi');
+                                dateCell.data('value', dateVal || '');
+                                dateCell.html(formatDateDisplay(dateVal, isTelefon));
+                            } else if (field === 'durumu') {
+                                if (newValue) {
+                                    let badgeClass = 'bg-green-100 text-green-800';
+                                    if (newValue === 'Beklemede') badgeClass = 'bg-yellow-100 text-yellow-800';
+                                    else if (newValue === 'Planlandı') badgeClass = 'bg-blue-100 text-blue-800';
+                                    cell.html(`<span class="px-2 py-1 text-xs rounded-full ${badgeClass}">${newValue}</span>`);
+                                    row.data('durumu', newValue);
+                                } else {
+                                    cell.html('-');
+                                }
+                            }
+                            cell.removeClass('editing');
+                        },
+                        error: function() {
+                            alert('Kaydedilemedi!');
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
+                        }
+                    });
+                }
+            }
+
+            select.on('change', saveSelect);
+            select.on('blur', function() {
+                cell.html(originalContent);
+                cell.removeClass('editing');
+            });
+            select.on('keydown', function(e) {
+                if (e.which === 27) {
+                    cell.html(originalContent);
+                    cell.removeClass('editing');
+                }
+            });
+        });
+
+        $(document).on('click', '.editable-date:not(.editing)', function(e) {
+            e.stopPropagation();
+            const cell = $(this);
+            const id = cell.data('id');
+            const currentValue = cell.data('value') || '';
+            const row = cell.closest('tr');
+            const tur = row.data('tur') || '';
+            const isTelefon = tur === 'Telefon';
+
+            cell.addClass('editing');
+            const originalContent = cell.html();
+
+            let valueForInput = '';
+            if (currentValue) {
+                const date = new Date(currentValue);
+                if (!Number.isNaN(date.getTime())) {
+                    valueForInput = date.toISOString().slice(0, 16);
+                }
+            }
+
+            cell.html(`<input type="datetime-local" class="w-full px-2 py-1 border rounded text-sm" value="${valueForInput}" />`);
+            const input = cell.find('input');
+            input.focus();
+
+            function saveDate() {
+                const newValue = input.val();
+                const field = isTelefon ? 'arama_tarihi' : 'ziyaret_tarihi';
+
+                if (id === 'new') {
+                    $.ajax({
+                        url: '/ziyaretler',
+                        method: 'POST',
+                        data: { [field]: newValue },
+                        success: function() { location.reload(); },
+                        error: function() {
+                            alert('Kayıt oluşturulamadı!');
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
+                        }
+                    });
+                } else {
+                    $.ajax({
+                        url: '/ziyaretler/' + id,
+                        method: 'PUT',
+                        data: buildUpdatePayload(row, { [field]: newValue }),
+                        success: function() {
+                            cell.data('value', newValue);
+                            if (isTelefon) {
+                                row.data('arama_tarihi', newValue);
+                            } else {
+                                row.data('ziyaret_tarihi', newValue);
+                            }
+                            cell.html(formatDateDisplay(newValue, isTelefon));
+                            cell.removeClass('editing');
+                        },
+                        error: function() {
+                            alert('Kaydedilemedi!');
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
+                        }
+                    });
+                }
+            }
+
+            input.on('blur', saveDate);
+            input.on('keypress', function(e) {
+                if (e.which === 13) saveDate();
+            });
+            input.on('keydown', function(e) {
+                if (e.which === 27) {
+                    cell.html(originalContent);
+                    cell.removeClass('editing');
+                }
+            });
+        });
     </script>
 </body>
 </html>
