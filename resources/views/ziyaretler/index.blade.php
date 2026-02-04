@@ -858,11 +858,11 @@
             if (currentValue) {
                 const date = new Date(currentValue);
                 if (!Number.isNaN(date.getTime())) {
-                    valueForInput = date.toISOString().slice(0, 16);
+                    valueForInput = date.toISOString().slice(0, 10);
                 }
             }
 
-            cell.html(`<input type="datetime-local" class="w-full px-2 py-1 border rounded text-sm" value="${valueForInput}" />`);
+            cell.html(`<input type="date" class="w-full px-2 py-1 border rounded text-sm" value="${valueForInput}" />`);
             const input = cell.find('input');
             input.focus();
 
