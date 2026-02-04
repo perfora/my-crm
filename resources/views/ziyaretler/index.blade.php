@@ -249,14 +249,14 @@
                         @forelse($ziyaretler as $ziyaret)
                             <tr data-row="1"
                                 data-id="{{ $ziyaret->id }}"
-                                data-ziyaret_ismi="{{ $ziyaret->ziyaret_ismi }}" 
+                                data-ziyaret-ismi="{{ $ziyaret->ziyaret_ismi }}" 
                                 data-musteri="{{ $ziyaret->musteri ? $ziyaret->musteri->sirket : '' }}" 
-                                data-musteri_id="{{ $ziyaret->musteri_id ?? '' }}"
-                                data-ziyaret_tarihi="{{ $ziyaret->ziyaret_tarihi }}" 
-                                data-arama_tarihi="{{ $ziyaret->arama_tarihi }}"
+                                data-musteri-id="{{ $ziyaret->musteri_id ?? '' }}"
+                                data-ziyaret-tarihi="{{ $ziyaret->ziyaret_tarihi }}" 
+                                data-arama-tarihi="{{ $ziyaret->arama_tarihi }}"
                                 data-tur="{{ $ziyaret->tur ?? '' }}" 
                                 data-durumu="{{ $ziyaret->durumu ?? '' }}"
-                                data-ziyaret_notlari="{{ $ziyaret->ziyaret_notlari ?? '' }}">
+                                data-ziyaret-notlari="{{ $ziyaret->ziyaret_notlari ?? '' }}">
                                 <td class="px-3 py-4 text-center">
                                     <input type="checkbox" class="row-checkbox cursor-pointer" data-id="{{ $ziyaret->id }}">
                                 </td>
@@ -540,12 +540,13 @@
             if (selectedIds.length === 0) return;
             const row = document.querySelector(`tr[data-id="${selectedIds[0]}"]`);
             if (!row) return;
+            const $row = $(row);
             const newRow = $(buildNewRow());
-            newRow.find('[data-field="ziyaret_ismi"]').data('value', row.dataset.ziyaret_ismi || '').text(row.dataset.ziyaret_ismi || 'Ziyaret ismi...');
-            newRow.find('[data-field="musteri_id"]').data('value', row.dataset.musteri_id || '');
-            newRow.find('[data-field="tur"]').data('value', row.dataset.tur || '');
-            newRow.find('[data-field="durumu"]').data('value', row.dataset.durumu || '');
-            newRow.find('[data-field="ziyaret_notlari"]').data('value', row.dataset.ziyaret_notlari || '').text(row.dataset.ziyaret_notlari || 'Not...');
+            newRow.find('[data-field="ziyaret_ismi"]').data('value', getRowValue($row, 'ziyaret_ismi') || '').text(getRowValue($row, 'ziyaret_ismi') || 'Ziyaret ismi...');
+            newRow.find('[data-field="musteri_id"]').data('value', getRowValue($row, 'musteri_id') || '');
+            newRow.find('[data-field="tur"]').data('value', getRowValue($row, 'tur') || '');
+            newRow.find('[data-field="durumu"]').data('value', getRowValue($row, 'durumu') || '');
+            newRow.find('[data-field="ziyaret_notlari"]').data('value', getRowValue($row, 'ziyaret_notlari') || '').text(getRowValue($row, 'ziyaret_notlari') || 'Not...');
             $('#ziyaretler-table tbody').prepend(newRow);
         };
 
@@ -582,10 +583,14 @@
             if (val !== undefined) return val;
             const dom = row[0];
             if (!dom) return '';
-            const direct = dom.getAttribute('data-' + key);
-            if (direct !== null && direct !== undefined) return direct;
             const dashed = dom.getAttribute('data-' + key.replace(/_/g, '-'));
-            return dashed ?? '';
+            if (dashed !== null && dashed !== undefined) return dashed;
+            return '';
+        }
+
+        function setRowValue(row, key, value) {
+            row.data(key, value);
+            row.attr('data-' + key.replace(/_/g, '-'), value ?? '');
         }
 
         function buildUpdatePayload(row, overrides = {}) {
@@ -637,7 +642,7 @@
                         data: buildUpdatePayload(row, { [field]: newValue }),
                         success: function() {
                             cell.data('value', newValue);
-                            row.data(field, newValue);
+                            setRowValue(row, field, newValue);
                             cell.html(newValue || '-');
                             cell.removeClass('editing');
                         },
@@ -716,12 +721,11 @@
                         data: buildUpdatePayload(row, { [field]: newValue }),
                         success: function() {
                             cell.data('value', newValue);
-                            const row = cell.closest('tr');
                             if (field === 'musteri_id') {
                                 const found = musteriOptions.find(item => String(item.id) === String(newValue));
                                 if (found) {
                                     cell.html(`<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${found.sirket}</span>`);
-                                    row.data('musteri_id', found.id);
+                                    setRowValue(row, 'musteri_id', found.id);
                                 } else {
                                     cell.html('-');
                                 }
@@ -729,13 +733,13 @@
                                 if (newValue) {
                                     const badgeClass = newValue === 'Ziyaret' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800';
                                     cell.html(`<span class="px-2 py-1 text-xs rounded-full ${badgeClass}">${newValue}</span>`);
-                                    row.data('tur', newValue);
+                                    setRowValue(row, 'tur', newValue);
                                 } else {
                                     cell.html('-');
                                 }
                                 const dateCell = row.find('[data-field="tarih"]');
                                 const isTelefon = newValue === 'Telefon';
-                                const dateVal = isTelefon ? row.data('arama_tarihi') : row.data('ziyaret_tarihi');
+                                const dateVal = isTelefon ? getRowValue(row, 'arama_tarihi') : getRowValue(row, 'ziyaret_tarihi');
                                 dateCell.data('value', dateVal || '');
                                 dateCell.html(formatDateDisplay(dateVal, isTelefon));
                             } else if (field === 'durumu') {
@@ -744,7 +748,7 @@
                                     if (newValue === 'Beklemede') badgeClass = 'bg-yellow-100 text-yellow-800';
                                     else if (newValue === 'Planlandı') badgeClass = 'bg-blue-100 text-blue-800';
                                     cell.html(`<span class="px-2 py-1 text-xs rounded-full ${badgeClass}">${newValue}</span>`);
-                                    row.data('durumu', newValue);
+                                    setRowValue(row, 'durumu', newValue);
                                 } else {
                                     cell.html('-');
                                 }
@@ -779,7 +783,7 @@
             const id = cell.data('id');
             const currentValue = cell.data('value') || '';
             const row = cell.closest('tr');
-            const tur = row.data('tur') || '';
+            const tur = getRowValue(row, 'tur') || '';
             const isTelefon = tur === 'Telefon';
 
             cell.addClass('editing');
@@ -821,9 +825,9 @@
                         success: function() {
                             cell.data('value', newValue);
                             if (isTelefon) {
-                                row.data('arama_tarihi', newValue);
+                                setRowValue(row, 'arama_tarihi', newValue);
                             } else {
-                                row.data('ziyaret_tarihi', newValue);
+                                setRowValue(row, 'ziyaret_tarihi', newValue);
                             }
                             cell.html(formatDateDisplay(newValue, isTelefon));
                             cell.removeClass('editing');
