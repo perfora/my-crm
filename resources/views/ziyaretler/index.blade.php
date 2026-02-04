@@ -882,6 +882,14 @@
                 if (saved) return;
                 saved = true;
                 const newValue = input.val();
+                
+                // Boş tarih gönderme
+                if (!newValue || newValue.trim() === '') {
+                    cell.html(originalContent);
+                    cell.removeClass('editing');
+                    return;
+                }
+                
                 const field = isTelefon ? 'arama_tarihi' : 'ziyaret_tarihi';
 
                 if (id === 'new') {
@@ -906,8 +914,9 @@
                                 location.reload();
                             }
                         },
-                        error: function() {
-                            alert('Kayıt oluşturulamadı!');
+                        error: function(xhr) {
+                            console.error('Kayıt oluşturulamadı:', xhr.status, xhr.responseText);
+                            alert('Kayıt oluşturulamadı! ' + (xhr.responseJSON?.message || xhr.statusText));
                             cell.html(originalContent);
                             cell.removeClass('editing');
                         }
