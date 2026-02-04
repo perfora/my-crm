@@ -75,6 +75,9 @@ Route::middleware(['auth'])->group(function () {
     
     // Dashboard - Özelleştirilebilir widget sistemi (alias)
     Route::get('/dashboard', fn () => view('pages.dashboard'))->name('dashboard.index');
+
+    // Takvim
+    Route::get('/takvim', [App\Http\Controllers\CalendarController::class, 'index'])->name('calendar.index');
     
     // Settings ve Profile routes
     require __DIR__ . '/settings.php';

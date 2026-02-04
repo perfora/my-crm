@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'ews' => [
+        'url' => env('EWS_URL'),
+        'username' => env('EWS_USERNAME'),
+        'password' => env('EWS_PASSWORD'),
+        'version' => env('EWS_VERSION', 'Exchange2010_SP2'),
+    ],
+
 ];
