@@ -2026,6 +2026,33 @@
                         success: function(response) {
                             cell.data('value', newValue);
                             
+                            // Eğer tipi "Kazanıldı" seçildiyse ve kapanış tarihi boşsa, bugünün tarihini yaz
+                            if (field === 'tipi' && newValue === 'Kazanıldı') {
+                                const row = cell.closest('tr');
+                                const kapanisCell = row.find('[data-field="kapanis_tarihi"]');
+                                const currentKapanis = kapanisCell.data('value');
+                                
+                                if (!currentKapanis || currentKapanis === '') {
+                                    // Bugünün tarihini al (YYYY-MM-DD formatında)
+                                    const today = new Date();
+                                    const todayStr = today.toISOString().split('T')[0];
+                                    
+                                    // Kapanış tarihini güncelle
+                                    $.ajax({
+                                        url: '/tum-isler/' + id,
+                                        method: 'PUT',
+                                        data: {
+                                            kapanis_tarihi: todayStr
+                                        },
+                                        success: function() {
+                                            kapanisCell.data('value', todayStr);
+                                            const formatted = new Date(todayStr).toLocaleDateString('tr-TR');
+                                            kapanisCell.html(formatted);
+                                        }
+                                    });
+                                }
+                            }
+                            
                             // Rebuild the display
                             if (field === 'tipi') {
                                 cell.html(`<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${newValue || '-'}</span>`);
