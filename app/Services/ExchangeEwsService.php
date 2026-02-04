@@ -103,32 +103,32 @@ XML;
             libxml_clear_errors();
             return ['error' => 'EWS cevabı parse edilemedi. Sunucu geçerli SOAP/XML dönmüyor olabilir.'];
         }
-        $xml = simplexml_import_dom($dom);
-        if (!$xml) {
-            Log::error('EWS XML parse edilemedi (import).', [
-                'length' => $length,
-                'head' => $head,
-                'tail' => $tail,
-            ]);
-            libxml_clear_errors();
-            return ['error' => 'EWS cevabı parse edilemedi. Sunucu geçerli SOAP/XML dönmüyor olabilir.'];
-        }
         libxml_clear_errors();
 
-        // Namespace prefix değişebildiği için local-name ile yakala
-        $items = $xml->xpath('//*[local-name()="CalendarItem"]') ?: [];
+        // DOMXPath ile namespace bağımsız gez
+        $xpath = new \DOMXPath($dom);
+        $items = $xpath->query('//*[local-name()="CalendarItem"]') ?: [];
 
         $events = [];
         foreach ($items as $item) {
             $events[] = [
-                'subject' => (string)($item->Subject ?? ''),
-                'start' => (string)($item->Start ?? ''),
-                'end' => (string)($item->End ?? ''),
-                'location' => (string)($item->Location ?? ''),
-                'organizer' => (string)($item->Organizer->Mailbox->EmailAddress ?? ''),
+                'subject' => $this->xpathValue($xpath, $item, './*[local-name()="Subject"]'),
+                'start' => $this->xpathValue($xpath, $item, './*[local-name()="Start"]'),
+                'end' => $this->xpathValue($xpath, $item, './*[local-name()="End"]'),
+                'location' => $this->xpathValue($xpath, $item, './*[local-name()="Location"]'),
+                'organizer' => $this->xpathValue($xpath, $item, './/*[local-name()="Organizer"]//*[local-name()="EmailAddress"]'),
             ];
         }
 
         return ['events' => $events];
+    }
+
+    private function xpathValue(\DOMXPath $xpath, \DOMNode $context, string $query): string
+    {
+        $nodes = $xpath->query($query, $context);
+        if (!$nodes || $nodes->length === 0) {
+            return '';
+        }
+        return trim($nodes->item(0)->textContent ?? '');
     }
 }
