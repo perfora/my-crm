@@ -138,6 +138,10 @@ XML;
     private function cleanText(string $text): string
     {
         // Yazdırılamayan karakterleri temizle
+        $converted = @iconv('UTF-8', 'UTF-8//IGNORE', $text);
+        if ($converted !== false) {
+            $text = $converted;
+        }
         $text = preg_replace('/\x{FFFD}/u', '', $text) ?? $text;
         return preg_replace('/[^\P{C}\n\t\r]/u', '', $text) ?? $text;
     }
