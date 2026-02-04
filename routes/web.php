@@ -717,6 +717,29 @@ Route::put('/ziyaretler/{id}', function ($id) {
     ]);
     
     $ziyaret->update($validated);
+
+    // Outlook senkron - Beklemede/Planlandı ise yaz
+    if (in_array($ziyaret->durumu, ['Beklemede', 'Planlandı']) && $ziyaret->ziyaret_tarihi) {
+        $subject = $ziyaret->ziyaret_ismi ?: 'Ziyaret';
+        $start = \Carbon\Carbon::parse($ziyaret->ziyaret_tarihi);
+        $end = $start->copy()->addMinutes(30);
+        $body = $ziyaret->ziyaret_notlari ?? '';
+        $ews = app(\App\Services\ExchangeEwsService::class);
+        $result = $ews->createOrUpdateVisitEvent(
+            $ziyaret->ews_item_id,
+            $ziyaret->ews_change_key,
+            $subject,
+            $start,
+            $end,
+            $body
+        );
+        if (empty($result['error']) && !empty($result['item_id'])) {
+            $ziyaret->update([
+                'ews_item_id' => $result['item_id'],
+                'ews_change_key' => $result['change_key'] ?? $ziyaret->ews_change_key,
+            ]);
+        }
+    }
     
     return redirect('/ziyaretler')->with('message', 'Ziyaret güncellendi.');
 });
@@ -750,7 +773,30 @@ Route::post('/ziyaretler', function () {
         $validated['ziyaret_ismi'] = $musteri ? $musteri->sirket . ' Ziyareti' : 'Ziyaret';
     }
     
-    \App\Models\Ziyaret::create($validated);
+    $ziyaret = \App\Models\Ziyaret::create($validated);
+
+    // Outlook senkron - Beklemede/Planlandı ise yaz
+    if (in_array($ziyaret->durumu, ['Beklemede', 'Planlandı']) && $ziyaret->ziyaret_tarihi) {
+        $subject = $ziyaret->ziyaret_ismi ?: 'Ziyaret';
+        $start = \Carbon\Carbon::parse($ziyaret->ziyaret_tarihi);
+        $end = $start->copy()->addMinutes(30);
+        $body = $ziyaret->ziyaret_notlari ?? '';
+        $ews = app(\App\Services\ExchangeEwsService::class);
+        $result = $ews->createOrUpdateVisitEvent(
+            null,
+            null,
+            $subject,
+            $start,
+            $end,
+            $body
+        );
+        if (empty($result['error']) && !empty($result['item_id'])) {
+            $ziyaret->update([
+                'ews_item_id' => $result['item_id'],
+                'ews_change_key' => $result['change_key'] ?? null,
+            ]);
+        }
+    }
     
     // Mobil'den geliyorsa mobil'e yönlendir
     if (str_contains(request()->header('referer', ''), '/mobile')) {

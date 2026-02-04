@@ -73,6 +73,41 @@ class ExchangeEwsService
         return ['events' => $events];
     }
 
+    public function createOrUpdateVisitEvent(
+        ?string $itemId,
+        ?string $changeKey,
+        string $subject,
+        \DateTimeInterface $start,
+        \DateTimeInterface $end,
+        string $body = ''
+    ): array {
+        $url = config('services.ews.url');
+        $username = config('services.ews.username');
+        $password = config('services.ews.password');
+        $version = config('services.ews.version', 'Exchange2010_SP2');
+        $verifySsl = config('services.ews.verify_ssl', true);
+        $authType = config('services.ews.auth', 'basic');
+
+        if (empty($url) || empty($username) || empty($password)) {
+            return ['error' => 'EWS ayarları eksik.'];
+        }
+
+        if ($itemId && $changeKey) {
+            $soap = $this->buildUpdateItemRequest($itemId, $changeKey, $subject, $start, $end, $body, $version);
+            $action = 'http://schemas.microsoft.com/exchange/services/2006/messages/UpdateItem';
+        } else {
+            $soap = $this->buildCreateItemRequest($subject, $start, $end, $body, $version);
+            $action = 'http://schemas.microsoft.com/exchange/services/2006/messages/CreateItem';
+        }
+
+        $response = $this->sendEwsRequest($soap, $action, $url, $username, $password, $verifySsl, $authType);
+        if (!$response->successful()) {
+            return ['error' => 'EWS isteği başarısız. HTTP ' . $response->status()];
+        }
+
+        return $this->parseItemIdFromResponse($response->body());
+    }
+
     private function buildFindItemRequest(\DateTimeInterface $start, \DateTimeInterface $end, string $version): string
     {
         $startIso = $start->format('c');
@@ -136,6 +171,130 @@ XML;
     </soap:Body>
 </soap:Envelope>
 XML;
+    }
+
+    private function buildCreateItemRequest(
+        string $subject,
+        \DateTimeInterface $start,
+        \DateTimeInterface $end,
+        string $body,
+        string $version
+    ): string {
+        $subject = htmlspecialchars($subject, ENT_QUOTES, 'UTF-8');
+        $body = htmlspecialchars($body, ENT_QUOTES, 'UTF-8');
+        $startIso = $start->format('c');
+        $endIso = $end->format('c');
+
+        return <<<XML
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"
+    xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages">
+    <soap:Header>
+        <t:RequestServerVersion Version="{$version}" />
+    </soap:Header>
+    <soap:Body>
+        <m:CreateItem SendMeetingInvitations="SendToNone">
+            <m:SavedItemFolderId>
+                <t:DistinguishedFolderId Id="calendar" />
+            </m:SavedItemFolderId>
+            <m:Items>
+                <t:CalendarItem>
+                    <t:Subject>{$subject}</t:Subject>
+                    <t:Body BodyType="Text">{$body}</t:Body>
+                    <t:Start>{$startIso}</t:Start>
+                    <t:End>{$endIso}</t:End>
+                </t:CalendarItem>
+            </m:Items>
+        </m:CreateItem>
+    </soap:Body>
+</soap:Envelope>
+XML;
+    }
+
+    private function buildUpdateItemRequest(
+        string $itemId,
+        string $changeKey,
+        string $subject,
+        \DateTimeInterface $start,
+        \DateTimeInterface $end,
+        string $body,
+        string $version
+    ): string {
+        $itemId = htmlspecialchars($itemId, ENT_QUOTES, 'UTF-8');
+        $changeKey = htmlspecialchars($changeKey, ENT_QUOTES, 'UTF-8');
+        $subject = htmlspecialchars($subject, ENT_QUOTES, 'UTF-8');
+        $body = htmlspecialchars($body, ENT_QUOTES, 'UTF-8');
+        $startIso = $start->format('c');
+        $endIso = $end->format('c');
+
+        return <<<XML
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"
+    xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages">
+    <soap:Header>
+        <t:RequestServerVersion Version="{$version}" />
+    </soap:Header>
+    <soap:Body>
+        <m:UpdateItem MessageDisposition="SaveOnly" ConflictResolution="AutoResolve" SendMeetingInvitationsOrCancellations="SendToNone">
+            <m:ItemChanges>
+                <t:ItemChange>
+                    <t:ItemId Id="{$itemId}" ChangeKey="{$changeKey}" />
+                    <t:Updates>
+                        <t:SetItemField>
+                            <t:FieldURI FieldURI="item:Subject" />
+                            <t:CalendarItem>
+                                <t:Subject>{$subject}</t:Subject>
+                            </t:CalendarItem>
+                        </t:SetItemField>
+                        <t:SetItemField>
+                            <t:FieldURI FieldURI="item:Body" />
+                            <t:CalendarItem>
+                                <t:Body BodyType="Text">{$body}</t:Body>
+                            </t:CalendarItem>
+                        </t:SetItemField>
+                        <t:SetItemField>
+                            <t:FieldURI FieldURI="calendar:Start" />
+                            <t:CalendarItem>
+                                <t:Start>{$startIso}</t:Start>
+                            </t:CalendarItem>
+                        </t:SetItemField>
+                        <t:SetItemField>
+                            <t:FieldURI FieldURI="calendar:End" />
+                            <t:CalendarItem>
+                                <t:End>{$endIso}</t:End>
+                            </t:CalendarItem>
+                        </t:SetItemField>
+                    </t:Updates>
+                </t:ItemChange>
+            </m:ItemChanges>
+        </m:UpdateItem>
+    </soap:Body>
+</soap:Envelope>
+XML;
+    }
+
+    private function parseItemIdFromResponse(string $xmlString): array
+    {
+        $cleanXml = preg_replace('/[^\x09\x0A\x0D\x20-\x7E\xC0-\xFF]/', '', $xmlString);
+        libxml_use_internal_errors(true);
+        $dom = new \DOMDocument('1.0', 'UTF-8');
+        if (!$dom->loadXML($cleanXml, LIBXML_NOERROR | LIBXML_NOWARNING | LIBXML_RECOVER)) {
+            libxml_clear_errors();
+            return ['error' => 'EWS cevabı parse edilemedi.'];
+        }
+        libxml_clear_errors();
+        $xpath = new \DOMXPath($dom);
+        $responseCode = $this->xpathValue($xpath, $dom, '//*[local-name()="ResponseCode"]');
+        if ($responseCode && $responseCode !== 'NoError') {
+            return ['error' => 'EWS hata kodu: ' . $responseCode];
+        }
+        $itemIdNode = $xpath->query('//*[local-name()="ItemId"]')->item(0);
+        if (!$itemIdNode) {
+            return ['error' => 'EWS ItemId bulunamadı.'];
+        }
+        $itemId = $itemIdNode->attributes?->getNamedItem('Id')?->nodeValue ?? '';
+        $changeKey = $itemIdNode->attributes?->getNamedItem('ChangeKey')?->nodeValue ?? '';
+        return ['item_id' => $itemId, 'change_key' => $changeKey];
     }
 
     private function sendEwsRequest(

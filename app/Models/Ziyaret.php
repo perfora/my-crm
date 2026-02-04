@@ -16,6 +16,8 @@ class Ziyaret extends Model
         'tur',
         'durumu',
         'ziyaret_notlari',
+        'ews_item_id',
+        'ews_change_key',
     ];
 
     protected $casts = [
