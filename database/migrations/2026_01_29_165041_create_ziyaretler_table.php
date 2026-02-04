@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('ziyaretler', function (Blueprint $table) {
             $table->id();
-            $table->string('ziyaret_ismi'); // Ziyaret İsmi (title)
+            $table->string('ziyaret_ismi')->nullable(); // Ziyaret İsmi (title)
             
             // Müşteri ile ilişki
             $table->foreignId('musteri_id')->nullable()->constrained('musteriler')->onDelete('set null');
