@@ -2216,8 +2216,13 @@
                 }, 200);
             });
             
+            // Klavye kontrolü
             input.on('keydown', function(e) {
-                if (e.which === 27) {
+                if (e.which === 13) { // Enter
+                    e.preventDefault();
+                    hasChanged = true; // Değişti olarak işaretle
+                    input.blur(); // Blur tetikle, saveDate çağrılsın
+                } else if (e.which === 27) { // ESC
                     cell.html(originalContent);
                     cell.removeClass('editing');
                 }
