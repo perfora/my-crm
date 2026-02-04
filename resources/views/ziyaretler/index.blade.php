@@ -657,7 +657,7 @@
                         method: 'POST',
                         data: { [field]: newValue },
                         success: function(response) {
-                            const newId = response?.id;
+                            const newId = response && response.id;
                             if (newId) {
                                 finalizeNewRow(row, newId);
                                 cell.data('id', newId);
@@ -763,7 +763,7 @@
                         method: 'POST',
                         data: { [field]: newValue },
                         success: function(response) {
-                            const newId = response?.id;
+                            const newId = response && response.id;
                             if (newId) {
                                 finalizeNewRow(row, newId);
                                 cell.data('id', newId);
@@ -898,7 +898,7 @@
                         method: 'POST',
                         data: { [field]: newValue },
                         success: function(response) {
-                            const newId = response?.id;
+                            const newId = response && response.id;
                             if (newId) {
                                 finalizeNewRow(row, newId);
                                 cell.data('id', newId);
