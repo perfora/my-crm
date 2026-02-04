@@ -630,7 +630,6 @@
             cell.addClass('editing');
             const originalContent = cell.html();
             let saved = false;
-            let saved = false;
 
             cell.html(`<input type="text" class="w-full px-2 py-1 border rounded text-sm" value="${currentValue}" />`);
             const input = cell.find('input');
