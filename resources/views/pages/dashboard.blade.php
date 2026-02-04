@@ -27,6 +27,16 @@
             ->whereYear('kapanis_tarihi', 2026)
             ->count();
         
+        // 2024 Kazanılan İşler
+        $isler2024 = \App\Models\TumIsler::where('tipi', 'Kazanıldı')
+            ->whereYear('kapanis_tarihi', 2024)
+            ->get();
+        $adet2024 = $isler2024->count();
+        $teklif2024 = $isler2024->sum('teklif_tutari');
+        $alis2024 = $isler2024->sum('alis_tutari');
+        $kar2024 = $teklif2024 - $alis2024;
+        $karOran2024 = $teklif2024 > 0 ? ($kar2024 / $teklif2024) * 100 : 0;
+
         // 2025 Kazanılan İşler
         $isler2025 = \App\Models\TumIsler::where('tipi', 'Kazanıldı')
             ->whereYear('kapanis_tarihi', 2025)
@@ -180,7 +190,33 @@
         </div>
 
         <!-- Yıllık Karşılaştırma -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- 2024 Kazanılan -->
+            <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-500">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">📅 2024 Kazanılan İşler</h2>
+                    <span class="text-3xl font-bold text-blue-600">{{ $adet2024 }}</span>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                        <span class="text-gray-700 font-semibold">Toplam Teklif:</span>
+                        <span class="text-lg font-bold text-gray-900">${{ number_format($teklif2024, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                        <span class="text-gray-700 font-semibold">Toplam Alış:</span>
+                        <span class="text-lg font-bold text-gray-900">${{ number_format($alis2024, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-green-50 rounded">
+                        <span class="text-gray-700 font-semibold">Toplam Kar:</span>
+                        <span class="text-lg font-bold text-green-600">${{ number_format($kar2024, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-blue-50 rounded">
+                        <span class="text-gray-700 font-semibold">Kar Oranı:</span>
+                        <span class="text-lg font-bold text-blue-600">%{{ number_format($karOran2024, 1) }}</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- 2025 Kazanılan -->
             <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-indigo-500">
                 <div class="flex items-center justify-between mb-4">
