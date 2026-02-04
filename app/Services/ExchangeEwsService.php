@@ -192,8 +192,24 @@ XML;
         }
         libxml_clear_errors();
         $xpath = new \DOMXPath($dom);
+        $responseCode = $this->xpathValue($xpath, $dom, '//*[local-name()="ResponseCode"]');
+        if ($responseCode && $responseCode !== 'NoError') {
+            Log::warning('EWS GetItem hata kodu', [
+                'code' => $responseCode,
+                'item_id' => $itemId,
+            ]);
+            return '';
+        }
+
         $nodes = $xpath->query('//*[local-name()="Body"]');
         if (!$nodes || $nodes->length === 0) {
+            $nodes = $xpath->query('//*[local-name()="TextBody"]');
+        }
+        if (!$nodes || $nodes->length === 0) {
+            Log::info('EWS GetItem body bos', [
+                'item_id' => $itemId,
+                'change_key' => $changeKey,
+            ]);
             return '';
         }
         return $this->cleanText(trim($nodes->item(0)->textContent ?? ''));
