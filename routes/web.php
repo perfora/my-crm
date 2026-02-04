@@ -776,6 +776,17 @@ Route::post('/ziyaretler', function () {
     
     $ziyaret = \App\Models\Ziyaret::create($validated);
 
+    if (request()->ajax()) {
+        $musteri = null;
+        if (!empty($ziyaret->musteri_id)) {
+            $musteri = \App\Models\Musteri::find($ziyaret->musteri_id);
+        }
+        return response()->json([
+            'id' => $ziyaret->id,
+            'musteri' => $musteri ? ['id' => $musteri->id, 'sirket' => $musteri->sirket] : null,
+        ]);
+    }
+
     // Outlook senkron - Beklemede/Planlandı ise yaz
     if (in_array($ziyaret->durumu, ['Beklemede', 'Planlandı']) && $ziyaret->ziyaret_tarihi) {
         $subject = $ziyaret->ziyaret_ismi ?: 'Ziyaret';

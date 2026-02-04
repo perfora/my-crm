@@ -607,6 +607,28 @@
             return { ...payload, ...overrides };
         }
 
+        function focusNextEditableCell(currentCell) {
+            const row = currentCell.closest('tr');
+            const cells = row.find('.editable-cell, .editable-select, .editable-date');
+            const index = cells.index(currentCell);
+            let next = cells.eq(index + 1);
+            if (!next.length) {
+                const nextRow = row.nextAll('tr').find('.editable-cell, .editable-select, .editable-date').first();
+                if (nextRow.length) next = nextRow;
+            }
+            if (next && next.length) {
+                setTimeout(() => next.click(), 0);
+            }
+        }
+
+        function finalizeNewRow(row, newId) {
+            row.removeClass('new-row');
+            row.attr('data-id', newId);
+            row.data('id', newId);
+            const checkbox = row.find('input[type="checkbox"]');
+            checkbox.prop('disabled', false).removeClass('opacity-50').addClass('row-checkbox').attr('data-id', newId);
+        }
+
         $(document).on('click', '.editable-cell:not(.editing)', function(e) {
             e.stopPropagation();
             const cell = $(this);
@@ -617,19 +639,35 @@
 
             cell.addClass('editing');
             const originalContent = cell.html();
+            let saved = false;
+            let saved = false;
 
             cell.html(`<input type="text" class="w-full px-2 py-1 border rounded text-sm" value="${currentValue}" />`);
             const input = cell.find('input');
             input.focus();
 
             function saveEdit() {
+                if (saved) return;
+                saved = true;
                 const newValue = input.val().trim();
                 if (id === 'new') {
                     $.ajax({
                         url: '/ziyaretler',
                         method: 'POST',
-                        data: { [field]: newValue },
-                        success: function() { location.reload(); },
+                        data: buildUpdatePayload(row, { [field]: newValue }),
+                        success: function(response) {
+                            const newId = response?.id;
+                            if (newId) {
+                                finalizeNewRow(row, newId);
+                                cell.data('id', newId);
+                                row.data('id', newId);
+                                setRowValue(row, field, newValue);
+                                cell.html(newValue || '-');
+                                cell.removeClass('editing');
+                            } else {
+                                location.reload();
+                            }
+                        },
                         error: function() {
                             alert('Kayıt oluşturulamadı!');
                             cell.html(originalContent);
@@ -669,10 +707,14 @@
                     cell.html(originalContent);
                     cell.removeClass('editing');
                 }
+                if (e.which === 9) {
+                    e.preventDefault();
+                    saveEdit();
+                    focusNextEditableCell(cell);
+                }
             });
             input.on('blur', function() {
-                cell.html(originalContent);
-                cell.removeClass('editing');
+                if (!saved) saveEdit();
             });
         });
 
@@ -710,13 +752,27 @@
             select.focus();
 
             function saveSelect() {
+                if (saved) return;
+                saved = true;
                 const newValue = select.val();
                 if (id === 'new') {
                     $.ajax({
                         url: '/ziyaretler',
                         method: 'POST',
-                        data: { [field]: newValue },
-                        success: function() { location.reload(); },
+                        data: buildUpdatePayload(row, { [field]: newValue }),
+                        success: function(response) {
+                            const newId = response?.id;
+                            if (newId) {
+                                finalizeNewRow(row, newId);
+                                cell.data('id', newId);
+                                row.data('id', newId);
+                                setRowValue(row, field, newValue);
+                                cell.removeClass('editing');
+                                cell.click();
+                            } else {
+                                location.reload();
+                            }
+                        },
                         error: function() {
                             alert('Kayıt oluşturulamadı!');
                             cell.html(originalContent);
@@ -779,15 +835,19 @@
             }
 
             select.on('change', saveSelect);
-            select.on('blur', function() {
-                cell.html(originalContent);
-                cell.removeClass('editing');
-            });
             select.on('keydown', function(e) {
                 if (e.which === 27) {
                     cell.html(originalContent);
                     cell.removeClass('editing');
                 }
+                if (e.which === 9) {
+                    e.preventDefault();
+                    saveSelect();
+                    focusNextEditableCell(cell);
+                }
+            });
+            select.on('blur', function() {
+                if (!saved) saveSelect();
             });
         });
 
@@ -802,6 +862,7 @@
 
             cell.addClass('editing');
             const originalContent = cell.html();
+            let saved = false;
 
             let valueForInput = '';
             if (currentValue) {
@@ -816,6 +877,8 @@
             input.focus();
 
             function saveDate() {
+                if (saved) return;
+                saved = true;
                 const newValue = input.val();
                 const field = isTelefon ? 'arama_tarihi' : 'ziyaret_tarihi';
 
@@ -823,8 +886,24 @@
                     $.ajax({
                         url: '/ziyaretler',
                         method: 'POST',
-                        data: { [field]: newValue },
-                        success: function() { location.reload(); },
+                        data: buildUpdatePayload(row, { [field]: newValue }),
+                        success: function(response) {
+                            const newId = response?.id;
+                            if (newId) {
+                                finalizeNewRow(row, newId);
+                                cell.data('id', newId);
+                                row.data('id', newId);
+                                if (isTelefon) {
+                                    setRowValue(row, 'arama_tarihi', newValue);
+                                } else {
+                                    setRowValue(row, 'ziyaret_tarihi', newValue);
+                                }
+                                cell.html(formatDateDisplay(newValue, isTelefon));
+                                cell.removeClass('editing');
+                            } else {
+                                location.reload();
+                            }
+                        },
                         error: function() {
                             alert('Kayıt oluşturulamadı!');
                             cell.html(originalContent);
@@ -868,10 +947,14 @@
                     cell.html(originalContent);
                     cell.removeClass('editing');
                 }
+                if (e.which === 9) {
+                    e.preventDefault();
+                    saveDate();
+                    focusNextEditableCell(cell);
+                }
             });
             input.on('blur', function() {
-                cell.html(originalContent);
-                cell.removeClass('editing');
+                if (!saved) saveDate();
             });
         });
     </script>
