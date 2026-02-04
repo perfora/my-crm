@@ -223,7 +223,6 @@
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="tur">Tür <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="durumu">Durum <span class="sort-icon"></span></th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notlar</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlemler</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -309,22 +308,10 @@
                                         {{ $ziyaret->ziyaret_notlari ?? '-' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    <a href="/ziyaretler/{{ $ziyaret->id }}/edit" class="text-blue-600 hover:text-blue-800 mr-3">
-                                        ✏️ Düzenle
-                                    </a>
-                                    <form action="/ziyaretler/{{ $ziyaret->id }}" method="POST" class="inline" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-800">
-                                            🗑️ Sil
-                                        </button>
-                                    </form>
-                                </td>
                             </tr>
                         @empty
                             <tr class="empty-row">
-                                <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+                                <td colspan="7" class="px-6 py-4 text-center text-gray-500">
                                     Henüz ziyaret kaydı yok.
                                 </td>
                             </tr>
@@ -654,7 +641,7 @@
                     $.ajax({
                         url: '/ziyaretler',
                         method: 'POST',
-                        data: buildUpdatePayload(row, { [field]: newValue }),
+                        data: { [field]: newValue },
                         success: function(response) {
                             const newId = response?.id;
                             if (newId) {
@@ -680,7 +667,7 @@
                         method: 'POST',
                         data: {
                             _method: 'PUT',
-                            ...buildUpdatePayload(row, { [field]: newValue })
+                            [field]: newValue
                         },
                         success: function() {
                             cell.data('value', newValue);
@@ -759,7 +746,7 @@
                     $.ajax({
                         url: '/ziyaretler',
                         method: 'POST',
-                        data: buildUpdatePayload(row, { [field]: newValue }),
+                        data: { [field]: newValue },
                         success: function(response) {
                             const newId = response?.id;
                             if (newId) {
@@ -785,7 +772,7 @@
                         method: 'POST',
                         data: {
                             _method: 'PUT',
-                            ...buildUpdatePayload(row, { [field]: newValue })
+                            [field]: newValue
                         },
                         success: function() {
                             cell.data('value', newValue);
@@ -886,7 +873,7 @@
                     $.ajax({
                         url: '/ziyaretler',
                         method: 'POST',
-                        data: buildUpdatePayload(row, { [field]: newValue }),
+                        data: { [field]: newValue },
                         success: function(response) {
                             const newId = response?.id;
                             if (newId) {
@@ -916,7 +903,7 @@
                         method: 'POST',
                         data: {
                             _method: 'PUT',
-                            ...buildUpdatePayload(row, { [field]: newValue })
+                            [field]: newValue
                         },
                         success: function() {
                             cell.data('value', newValue);
