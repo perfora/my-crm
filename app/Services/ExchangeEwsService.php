@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ExchangeEwsService
 {
@@ -36,7 +37,15 @@ class ExchangeEwsService
             return ['error' => 'EWS isteği başarısız. HTTP ' . $response->status()];
         }
 
-        return $this->parseFindItemResponse($response->body());
+        $body = $response->body();
+        if (stripos($body, '<soap:Envelope') === false && stripos($body, '<s:Envelope') === false) {
+            Log::error('EWS SOAP dönmedi. İlk 500 karakter:', [
+                'snippet' => substr($body, 0, 500),
+            ]);
+            return ['error' => 'EWS SOAP cevabı gelmedi. HTML/redirect olabilir. EWS URL ve NTLM yetkisini kontrol edin.'];
+        }
+
+        return $this->parseFindItemResponse($body);
     }
 
     private function buildFindItemRequest(\DateTimeInterface $start, \DateTimeInterface $end, string $version): string
@@ -77,7 +86,10 @@ XML;
     {
         $xml = @simplexml_load_string($xmlString);
         if (!$xml) {
-            return ['error' => 'EWS cevabı parse edilemedi.'];
+            Log::error('EWS XML parse edilemedi. İlk 500 karakter:', [
+                'snippet' => substr($xmlString, 0, 500),
+            ]);
+            return ['error' => 'EWS cevabı parse edilemedi. Sunucu geçerli SOAP/XML dönmüyor olabilir.'];
         }
 
         $xml->registerXPathNamespace('t', 'http://schemas.microsoft.com/exchange/services/2006/types');
