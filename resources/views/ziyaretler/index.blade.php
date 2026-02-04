@@ -38,6 +38,9 @@
         .editable-cell:hover, .editable-select:hover, .editable-date:hover {
             background-color: #fef3c7 !important;
         }
+        .editable-cell *, .editable-select *, .editable-date * {
+            pointer-events: none;
+        }
         .toolbar-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
