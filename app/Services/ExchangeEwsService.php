@@ -92,8 +92,8 @@ XML;
             return ['error' => 'EWS cevabı parse edilemedi. Sunucu geçerli SOAP/XML dönmüyor olabilir.'];
         }
 
-        $xml->registerXPathNamespace('t', 'http://schemas.microsoft.com/exchange/services/2006/types');
-        $items = $xml->xpath('//t:CalendarItem') ?: [];
+        // Namespace prefix değişebildiği için local-name ile yakala
+        $items = $xml->xpath('//*[local-name()="CalendarItem"]') ?: [];
 
         $events = [];
         foreach ($items as $item) {
