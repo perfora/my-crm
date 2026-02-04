@@ -553,7 +553,10 @@
             selectedIds.forEach(id => {
                 $.ajax({
                     url: '/ziyaretler/' + id,
-                    method: 'DELETE',
+                    method: 'POST',
+                    data: {
+                        _method: 'DELETE'
+                    },
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
@@ -562,6 +565,10 @@
                         if (completed === selectedIds.length) {
                             location.reload();
                         }
+                    },
+                    error: function(xhr) {
+                        console.error('Silme hatası:', xhr.status, xhr.responseText);
+                        alert('Silme işlemi başarısız: ' + (xhr.responseJSON?.message || xhr.statusText));
                     }
                 });
             });
