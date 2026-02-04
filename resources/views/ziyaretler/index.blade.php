@@ -739,6 +739,7 @@
             cell.html(`<select class="w-full px-2 py-1 border rounded text-sm">${options}</select>`);
             const select = cell.find('select');
             select.focus();
+            let saved = false;
 
             function saveSelect() {
                 if (saved) return;
