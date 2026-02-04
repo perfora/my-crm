@@ -111,8 +111,8 @@ XML;
 
         $events = [];
         foreach ($items as $item) {
-            $organizerName = $this->xpathValue($xpath, $item, './/*[local-name()="Organizer"]//*[local-name()="Name"]');
-            $organizerEmail = $this->xpathValue($xpath, $item, './/*[local-name()="Organizer"]//*[local-name()="EmailAddress"]');
+            $organizerName = $this->cleanText($this->xpathValue($xpath, $item, './/*[local-name()="Organizer"]//*[local-name()="Name"]'));
+            $organizerEmail = $this->cleanText($this->xpathValue($xpath, $item, './/*[local-name()="Organizer"]//*[local-name()="EmailAddress"]'));
             $events[] = [
                 'subject' => $this->xpathValue($xpath, $item, './*[local-name()="Subject"]'),
                 'start' => $this->xpathValue($xpath, $item, './*[local-name()="Start"]'),
@@ -133,5 +133,11 @@ XML;
             return '';
         }
         return trim($nodes->item(0)->textContent ?? '');
+    }
+
+    private function cleanText(string $text): string
+    {
+        // Yazdırılamayan karakterleri temizle
+        return preg_replace('/[^\P{C}\n\t\r]/u', '', $text) ?? $text;
     }
 }
