@@ -20,18 +20,26 @@
                     <a href="/kisiler" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('kisiler*') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
                         Kişiler
                     </a>
-                    <a href="/urunler" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('urunler*') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
-                        📦 Ürünler
-                    </a>
-                    <a href="/tedarikci-fiyatlari" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('tedarikci-fiyatlari*') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
-                        💰 Fiyatlar
-                    </a>
-                    <a href="/fiyat-teklifleri" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('fiyat-teklifleri*') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
-                        📄 Teklifler
-                    </a>
-                    <a href="/teklif-kosullari" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('teklif-kosullari*') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
-                        📋 Teklif Koşulları
-                    </a>
+                    <div class="relative group">
+                        <button class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('fiyat-teklifleri*') || request()->is('teklif-kosullari*') || request()->is('urunler*') || request()->is('tedarikci-fiyatlari*') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100' }} inline-flex items-center gap-1">
+                            📄 Teklifler
+                            <span class="text-xs">▼</span>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-56 bg-white border rounded-lg shadow-lg py-2 hidden group-hover:block z-50">
+                            <a href="/fiyat-teklifleri" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                📄 Teklifler
+                            </a>
+                            <a href="/teklif-kosullari" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                📋 Teklif Koşulları
+                            </a>
+                            <a href="/urunler" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                📦 Ürünler
+                            </a>
+                            <a href="/tedarikci-fiyatlari" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                💰 Fiyatlar
+                            </a>
+                        </div>
+                    </div>
                     <a href="/takvim" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('takvim*') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
                         📅 Takvim
                     </a>
