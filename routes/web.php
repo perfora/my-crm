@@ -771,7 +771,9 @@ Route::post('/tum-isler', function () {
         'kaybedilme_nedeni' => 'nullable|string',
         'register_durum' => 'nullable|string',
         'teklif_tutari' => 'nullable|numeric',
+        'teklif_doviz' => 'nullable|string',
         'alis_tutari' => 'nullable|numeric',
+        'alis_doviz' => 'nullable|string',
         'kur' => 'nullable|numeric',
         'kapanis_tarihi' => 'nullable|date',
         'lisans_bitis' => 'nullable|date',
@@ -779,6 +781,14 @@ Route::post('/tum-isler', function () {
         'gecmis_notlar' => 'nullable|string',
         'aciklama' => 'nullable|string',
     ]);
+
+    // Varsayılan döviz: kullanıcı seçmediyse ve tutar girildiyse USD kabul et
+    if (!empty($validated['teklif_tutari']) && empty($validated['teklif_doviz'])) {
+        $validated['teklif_doviz'] = 'USD';
+    }
+    if (!empty($validated['alis_tutari']) && empty($validated['alis_doviz'])) {
+        $validated['alis_doviz'] = 'USD';
+    }
     
     // AJAX inline editing için yeni kayıt
     if (request()->ajax() || request()->wantsJson()) {
@@ -834,7 +844,9 @@ Route::put('/tum-isler/{id}', function ($id) {
             'kaybedilme_nedeni' => 'nullable|string',
             'register_durum' => 'nullable|string',
             'teklif_tutari' => 'nullable|numeric',
+            'teklif_doviz' => 'nullable|string',
             'alis_tutari' => 'nullable|numeric',
+            'alis_doviz' => 'nullable|string',
             'kur' => 'nullable|numeric',
             'kapanis_tarihi' => 'nullable|date',
             'lisans_bitis' => 'nullable|date',
@@ -842,6 +854,14 @@ Route::put('/tum-isler/{id}', function ($id) {
             'gecmis_notlar' => 'nullable|string',
             'aciklama' => 'nullable|string',
         ]);
+
+        // Inline düzenlemede döviz seçilmediyse, girilen tutarı USD say
+        if (array_key_exists('teklif_tutari', $validated) && !empty($validated['teklif_tutari']) && empty($validated['teklif_doviz'])) {
+            $validated['teklif_doviz'] = 'USD';
+        }
+        if (array_key_exists('alis_tutari', $validated) && !empty($validated['alis_tutari']) && empty($validated['alis_doviz'])) {
+            $validated['alis_doviz'] = 'USD';
+        }
         
         $is->update($validated);
         
@@ -866,7 +886,9 @@ Route::put('/tum-isler/{id}', function ($id) {
         'kaybedilme_nedeni' => 'nullable|string',
         'register_durum' => 'nullable|string',
         'teklif_tutari' => 'nullable|numeric',
+        'teklif_doviz' => 'nullable|string',
         'alis_tutari' => 'nullable|numeric',
+        'alis_doviz' => 'nullable|string',
         'kur' => 'nullable|numeric',
         'kapanis_tarihi' => 'nullable|date',
         'lisans_bitis' => 'nullable|date',
@@ -874,6 +896,13 @@ Route::put('/tum-isler/{id}', function ($id) {
         'gecmis_notlar' => 'nullable|string',
         'aciklama' => 'nullable|string',
     ]);
+
+    if (!empty($validated['teklif_tutari']) && empty($validated['teklif_doviz'])) {
+        $validated['teklif_doviz'] = 'USD';
+    }
+    if (!empty($validated['alis_tutari']) && empty($validated['alis_doviz'])) {
+        $validated['alis_doviz'] = 'USD';
+    }
     
     $is->update($validated);
     
