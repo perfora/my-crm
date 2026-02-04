@@ -40,6 +40,7 @@ return [
         'username' => env('EWS_USERNAME'),
         'password' => env('EWS_PASSWORD'),
         'version' => env('EWS_VERSION', 'Exchange2010_SP2'),
+        'verify_ssl' => env('EWS_VERIFY_SSL', true),
     ],
 
 ];
