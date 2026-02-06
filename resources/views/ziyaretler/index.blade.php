@@ -206,14 +206,19 @@
                         @forelse($ziyaretler as $ziyaret)
                             <tr data-row="1"
                                 data-id="{{ $ziyaret->id }}"
-                                data-ziyaret-ismi="{{ $ziyaret->ziyaret_ismi }}" 
+                                data-ziyaret-ismi="{{ $ziyaret->ziyaret_ismi }}"
+                                data-ziyaret_ismi="{{ $ziyaret->ziyaret_ismi }}"
                                 data-musteri="{{ $ziyaret->musteri ? $ziyaret->musteri->sirket : '' }}" 
                                 data-musteri-id="{{ $ziyaret->musteri_id ?? '' }}"
+                                data-musteri_id="{{ $ziyaret->musteri_id ?? '' }}"
                                 data-ziyaret-tarihi="{{ $ziyaret->ziyaret_tarihi }}" 
+                                data-ziyaret_tarihi="{{ $ziyaret->ziyaret_tarihi }}"
                                 data-arama-tarihi="{{ $ziyaret->arama_tarihi }}"
+                                data-arama_tarihi="{{ $ziyaret->arama_tarihi }}"
                                 data-tur="{{ $ziyaret->tur ?? '' }}" 
                                 data-durumu="{{ $ziyaret->durumu ?? '' }}"
-                                data-ziyaret-notlari="{{ $ziyaret->ziyaret_notlari ?? '' }}">
+                                data-ziyaret-notlari="{{ $ziyaret->ziyaret_notlari ?? '' }}"
+                                data-ziyaret_notlari="{{ $ziyaret->ziyaret_notlari ?? '' }}">
                                 <td class="px-3 py-4 text-center">
                                     <input type="checkbox" class="row-checkbox cursor-pointer" data-id="{{ $ziyaret->id }}">
                                 </td>
