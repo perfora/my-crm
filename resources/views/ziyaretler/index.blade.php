@@ -567,10 +567,11 @@
             return { ...payload, ...overrides };
         }
 
-        function normalizeDateTimeInput(value) {
+        function normalizeDateTimeInput(value, optionalTime = '') {
             if (!value) return null;
             if (value.length === 10) {
-                return value + ' 09:00:00';
+                const time = optionalTime && optionalTime.length === 5 ? optionalTime + ':00' : '00:00:00';
+                return value + ' ' + time;
             }
             return value.replace('T', ' ') + ':00';
         }
@@ -875,23 +876,37 @@
 
             const isNewRow = id === 'new';
             let valueForInput = '';
+            let dateForInput = '';
+            let timeForInput = '';
             if (currentValue) {
                 const date = new Date(currentValue);
                 if (!Number.isNaN(date.getTime())) {
-                    valueForInput = isNewRow ? date.toISOString().slice(0, 10) : date.toISOString().slice(0, 16);
+                    valueForInput = date.toISOString().slice(0, 16);
+                    dateForInput = date.toISOString().slice(0, 10);
+                    timeForInput = date.toISOString().slice(11, 16);
                 }
             }
 
-            const inputType = isNewRow ? 'date' : 'datetime-local';
-            cell.html(`<input type="${inputType}" class="w-full px-2 py-1 border rounded text-sm" value="${valueForInput}" />`);
-            const input = cell.find('input');
+            if (isNewRow) {
+                cell.html(`
+                    <div class="flex items-center gap-2">
+                        <input type="date" class="date-input w-full px-2 py-1 border rounded text-sm" value="${dateForInput}" />
+                        <input type="time" class="time-input w-28 px-2 py-1 border rounded text-sm" value="${timeForInput}" />
+                    </div>
+                `);
+            } else {
+                cell.html(`<input type="datetime-local" class="w-full px-2 py-1 border rounded text-sm" value="${valueForInput}" />`);
+            }
+
+            const input = isNewRow ? cell.find('.date-input') : cell.find('input');
             input.focus();
 
             function saveDate() {
                 if (saved) return;
                 saved = true;
-                const rawValue = input.val();
-                const newValue = normalizeDateTimeInput(rawValue);
+                const rawValue = isNewRow ? cell.find('.date-input').val() : input.val();
+                const rawTime = isNewRow ? cell.find('.time-input').val() : '';
+                const newValue = normalizeDateTimeInput(rawValue, rawTime);
                 
                 // Boş tarih gönderme
                 if (!newValue || newValue.trim() === '') {
@@ -952,6 +967,11 @@
             input.on('keypress', function(e) {
                 if (e.which === 13) saveDate();
             });
+            if (isNewRow) {
+                cell.find('.time-input').on('keypress', function(e) {
+                    if (e.which === 13) saveDate();
+                });
+            }
             input.on('keydown', function(e) {
                 if (e.which === 27) {
                     cell.html(originalContent);
@@ -964,8 +984,17 @@
                 }
             });
             input.on('blur', function() {
-                if (!saved) saveDate();
+                setTimeout(function() {
+                    if (!saved && cell.find(':focus').length === 0) saveDate();
+                }, 0);
             });
+            if (isNewRow) {
+                cell.find('.time-input').on('blur', function() {
+                    setTimeout(function() {
+                        if (!saved && cell.find(':focus').length === 0) saveDate();
+                    }, 0);
+                });
+            }
         });
 
         const noteModal = document.getElementById('note-modal');
