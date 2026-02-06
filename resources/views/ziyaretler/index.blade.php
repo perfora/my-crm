@@ -45,6 +45,18 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+        .note-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+        .note-modal.open {
+            display: flex;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -58,77 +70,6 @@
                 {{ session('message') }}
             </div>
         @endif
-
-        <!-- Form -->
-        <div class="bg-white rounded-lg shadow mb-6">
-            <div class="p-6 flex justify-between items-center cursor-pointer" onclick="toggleForm()">
-                <h2 class="text-xl font-bold">Yeni Ziyaret Ekle</h2>
-                <span id="form-toggle-icon" class="text-2xl transform transition-transform">▼</span>
-            </div>
-            <div id="ziyaret-ekle-form" style="display: none;">
-                <form method="POST" action="/ziyaretler" class="space-y-4 px-6 pb-6">
-                    @csrf
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Ziyaret İsmi *</label>
-                        <input type="text" name="ziyaret_ismi" required class="w-full border rounded px-3 py-2">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Müşteri</label>
-                        <select name="musteri_id" id="musteri-select" class="w-full border rounded px-3 py-2">
-                            <option value="">Seçiniz</option>
-                            @php
-                                $musteriler = \App\Models\Musteri::orderBy('sirket')->get();
-                            @endphp
-                            @foreach($musteriler as $musteri)
-                                <option value="{{ $musteri->id }}">{{ $musteri->sirket }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Ziyaret Tarihi</label>
-                        <input type="datetime-local" name="ziyaret_tarihi" class="w-full border rounded px-3 py-2">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Arama Tarihi</label>
-                        <input type="date" name="arama_tarihi" class="w-full border rounded px-3 py-2">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Tür</label>
-                        <select name="tur" class="w-full border rounded px-3 py-2">
-                            <option value="">Seçiniz</option>
-                            <option value="Ziyaret">Ziyaret</option>
-                            <option value="Telefon">Telefon</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Durumu</label>
-                        <select name="durumu" class="w-full border rounded px-3 py-2">
-                            <option value="">Seçiniz</option>
-                            <option value="Beklemede">Beklemede</option>
-                            <option value="Planlandı">Planlandı</option>
-                            <option value="Tamamlandı">Tamamlandı</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium mb-1">Ziyaret Notları</label>
-                    <textarea name="ziyaret_notlari" rows="4" class="w-full border rounded px-3 py-2"></textarea>
-                </div>
-                
-                <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
-                    Ziyaret Ekle
-                </button>
-                </form>
-            </div>
-        </div>
 
         <!-- Filtreler -->
         <div class="bg-white rounded-lg shadow mb-6">
@@ -173,6 +114,14 @@
                                 <option value="Planlandı" {{ request('durumu') == 'Planlandı' ? 'selected' : '' }}>Planlandı</option>
                                 <option value="Tamamlandı" {{ request('durumu') == 'Tamamlandı' ? 'selected' : '' }}>Tamamlandı</option>
                             </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Başlangıç Tarihi</label>
+                            <input type="date" name="tarih_baslangic" value="{{ request('tarih_baslangic') }}" class="w-full border rounded px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Bitiş Tarihi</label>
+                            <input type="date" name="tarih_bitis" value="{{ request('tarih_bitis') }}" class="w-full border rounded px-3 py-2">
                         </div>
                     </div>
                     
@@ -244,6 +193,12 @@
                             if(request('durumu')) {
                                 $query->where('durumu', request('durumu'));
                             }
+                            if(request('tarih_baslangic')) {
+                                $query->whereDate('ziyaret_tarihi', '>=', request('tarih_baslangic'));
+                            }
+                            if(request('tarih_bitis')) {
+                                $query->whereDate('ziyaret_tarihi', '<=', request('tarih_bitis'));
+                            }
                             
                             $ziyaretler = $query->latest('ziyaret_tarihi')->get();
                         @endphp
@@ -307,8 +262,11 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-sm editable-cell" data-field="ziyaret_notlari" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->ziyaret_notlari ?? '' }}">
-                                    <div class="max-w-xs truncate">
-                                        {{ $ziyaret->ziyaret_notlari ?? '-' }}
+                                    <div class="flex items-center gap-2">
+                                        <div class="max-w-xs truncate">
+                                            {{ $ziyaret->ziyaret_notlari ?? '-' }}
+                                        </div>
+                                        <button type="button" class="notes-edit-btn text-xs text-blue-600 hover:underline">Düzenle</button>
                                     </div>
                                 </td>
                             </tr>
@@ -325,23 +283,18 @@
         </div>
     </div>
 
+    <div id="note-modal" class="note-modal">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl p-5">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-semibold">Ziyaret Notu</h3>
+                <button id="note-modal-close" class="text-gray-500 hover:text-gray-800">✕</button>
+            </div>
+            <textarea id="note-modal-text" class="w-full h-64 border rounded p-3 text-sm" readonly></textarea>
+        </div>
+    </div>
+
     <script>
         // Form ve filtre toggle fonksiyonları
-        function toggleForm() {
-            const form = document.getElementById('ziyaret-ekle-form');
-            const icon = document.getElementById('form-toggle-icon');
-            
-            if (form && icon) {
-                if (form.style.display === 'none') {
-                    form.style.display = 'block';
-                    icon.style.transform = 'rotate(180deg)';
-                } else {
-                    form.style.display = 'none';
-                    icon.style.transform = 'rotate(0deg)';
-                }
-            }
-        }
-        
         function toggleFilters() {
             const filters = document.getElementById('filters-form');
             const icon = document.getElementById('filter-toggle-icon');
@@ -361,7 +314,7 @@
 
         $(document).ready(function() {
             // Select2 başlat
-            $('#musteri-select, #filter-musteri-select').select2({
+            $('#filter-musteri-select').select2({
                 placeholder: 'Müşteri ara...',
                 allowClear: true,
                 language: {
@@ -724,6 +677,13 @@
             const currentValue = cell.data('value') || '';
             const row = cell.closest('tr');
 
+            if (field === 'ziyaret_notlari' && !cell.data('forceEdit')) {
+                const text = currentValue || '';
+                openNoteModal(text);
+                return;
+            }
+            cell.data('forceEdit', false);
+
             cell.addClass('editing');
             const originalContent = cell.html();
             let saved = false;
@@ -792,6 +752,14 @@
             input.on('blur', function() {
                 if (!saved) saveEdit();
             });
+        });
+
+        $(document).on('click', '.notes-edit-btn', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const cell = $(this).closest('td.editable-cell');
+            cell.data('forceEdit', true);
+            cell.trigger('click');
         });
 
         $(document).on('click', '.editable-select:not(.editing)', function(e) {
@@ -993,6 +961,24 @@
             input.on('blur', function() {
                 if (!saved) saveDate();
             });
+        });
+
+        const noteModal = document.getElementById('note-modal');
+        const noteModalText = document.getElementById('note-modal-text');
+        const noteModalClose = document.getElementById('note-modal-close');
+
+        function openNoteModal(text) {
+            noteModalText.value = text || '';
+            noteModal.classList.add('open');
+        }
+
+        function closeNoteModal() {
+            noteModal.classList.remove('open');
+        }
+
+        noteModalClose.addEventListener('click', closeNoteModal);
+        noteModal.addEventListener('click', function(e) {
+            if (e.target === noteModal) closeNoteModal();
         });
     </script>
 </body>
