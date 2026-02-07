@@ -59,6 +59,11 @@ Route::post('/logout', function() {
     return redirect('/login');
 })->name('logout');
 
+// Static asset compatibility routes for environments serving files under /public
+Route::get('/favicon.ico', fn () => redirect('/public/favicon.ico', 301));
+Route::get('/favicon.svg', fn () => redirect('/public/favicon.svg', 301));
+Route::get('/apple-touch-icon.png', fn () => redirect('/public/apple-touch-icon.png', 301));
+
 // Protected Routes (require authentication)
 Route::middleware(['auth'])->group(function () {
     
