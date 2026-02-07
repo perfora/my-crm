@@ -4,9 +4,13 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use App\Models\Kisi;
 use App\Models\Ziyaret;
 use App\Models\TumIsler;
+use App\Models\SystemLog;
+use App\Models\ChangeJournal;
+use App\Support\LogSanitizer;
 
 // Login/Logout Routes (no auth middleware)
 Route::get('/finans', function () {
@@ -80,6 +84,29 @@ Route::middleware(['auth'])->group(function () {
     
     // Dashboard - Özelleştirilebilir widget sistemi (alias)
     Route::get('/dashboard', fn () => view('pages.dashboard'))->name('dashboard.index');
+
+    // System logs screen
+    Route::get('/sistem-loglari', function (Request $request) {
+        $query = SystemLog::query()->latest('id');
+        if ($request->filled('channel')) {
+            $query->where('channel', $request->string('channel'));
+        }
+        if ($request->filled('level')) {
+            $query->where('level', $request->string('level'));
+        }
+        if ($request->filled('q')) {
+            $q = (string) $request->string('q');
+            $query->where(function ($inner) use ($q) {
+                $inner->where('message', 'like', '%'.$q.'%')
+                    ->orWhere('url', 'like', '%'.$q.'%')
+                    ->orWhere('source', 'like', '%'.$q.'%');
+            });
+        }
+
+        return view('sistem-loglari.index', [
+            'logs' => $query->limit(300)->get(),
+        ]);
+    })->name('system-logs.index');
 
     // Takvim
     Route::get('/takvim', [App\Http\Controllers\CalendarController::class, 'index'])->name('calendar.index');
@@ -1082,5 +1109,81 @@ Route::middleware(['auth'])->group(function () {
         $page = request('page', 'tum-isler');
         \App\Models\SavedFilter::where('page', $page)->where('name', $name)->delete();
         return response()->json(['success' => true]);
+    });
+
+    // Client-side (F12) errors
+    Route::post('/api/client-errors', function (Request $request) {
+        $data = $request->validate([
+            'level' => 'nullable|string|max:32',
+            'source' => 'nullable|string|max:128',
+            'message' => 'required|string|max:4000',
+            'file' => 'nullable|string|max:1000',
+            'line' => 'nullable|integer',
+            'col' => 'nullable|integer',
+            'stack' => 'nullable|string|max:12000',
+            'url' => 'nullable|string|max:2000',
+            'user_agent' => 'nullable|string|max:4000',
+        ]);
+
+        $fingerprint = hash(
+            'sha256',
+            ($data['message'] ?? '').'|'.($data['file'] ?? '').'|'.($data['line'] ?? '').'|'.($data['url'] ?? '')
+        );
+
+        SystemLog::create([
+            'channel' => 'client',
+            'level' => $data['level'] ?? 'error',
+            'source' => $data['source'] ?? 'js',
+            'message' => $data['message'],
+            'file' => $data['file'] ?? null,
+            'line' => $data['line'] ?? null,
+            'url' => $data['url'] ?? $request->headers->get('referer'),
+            'method' => 'CLIENT',
+            'user_id' => auth()->id(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $data['user_agent'] ?? $request->userAgent(),
+            'request_id' => (string) Str::uuid(),
+            'fingerprint' => $fingerprint,
+            'context' => LogSanitizer::sanitize([
+                'col' => $data['col'] ?? null,
+                'stack' => $data['stack'] ?? null,
+            ]),
+        ]);
+
+        return response()->json(['ok' => true]);
+    });
+
+    // Change journal: attempt-based tracking for AI/manual iterations
+    Route::get('/api/change-journals', function (Request $request) {
+        $query = ChangeJournal::query()->latest('id');
+        if ($request->filled('task_key')) {
+            $query->where('task_key', $request->string('task_key'));
+        }
+        return response()->json($query->limit(100)->get());
+    });
+
+    Route::post('/api/change-journals', function (Request $request) {
+        $data = $request->validate([
+            'task_key' => 'nullable|string|max:128',
+            'attempt_no' => 'nullable|integer|min:1',
+            'actor' => 'required|string|max:64',
+            'status' => 'required|in:pending,success,fail',
+            'summary' => 'required|string|max:4000',
+            'commit_hash' => 'nullable|string|max:64',
+            'meta' => 'nullable|array',
+        ]);
+
+        $journal = ChangeJournal::create([
+            'task_key' => $data['task_key'] ?? null,
+            'attempt_no' => $data['attempt_no'] ?? 1,
+            'actor' => $data['actor'],
+            'status' => $data['status'],
+            'summary' => $data['summary'],
+            'commit_hash' => $data['commit_hash'] ?? null,
+            'user_id' => auth()->id(),
+            'meta' => LogSanitizer::sanitize($data['meta'] ?? []),
+        ]);
+
+        return response()->json($journal);
     });
 });

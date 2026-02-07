@@ -49,6 +49,9 @@
                     <a href="/raporlar" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('raporlar*') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
                         📊 Raporlar
                     </a>
+                    <a href="/sistem-loglari" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('sistem-loglari*') ? 'bg-red-500 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
+                        🛠️ Loglar
+                    </a>
                     <a href="/notion-settings" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('notion-settings*') ? 'bg-purple-500 text-white' : 'text-purple-700 hover:bg-purple-100' }}">
                         🔗 Notion
                     </a>
@@ -111,3 +114,5 @@
         });
     })();
 </script>
+
+<script src="{{ asset('js/crm-error-tracker.js') }}"></script>
