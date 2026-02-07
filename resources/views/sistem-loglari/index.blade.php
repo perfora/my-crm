@@ -91,8 +91,8 @@
         </div>
     </div>
 
-    <script>
-        const logMap = @json($logs->keyBy('id')->map(function ($log) {
+    @php
+        $logMap = $logs->keyBy('id')->map(function ($log) {
             return [
                 'id' => $log->id,
                 'created_at' => optional($log->created_at)->toDateTimeString(),
@@ -110,7 +110,11 @@
                 'line' => $log->line,
                 'context' => $log->context,
             ];
-        }));
+        });
+    @endphp
+
+    <script>
+        const logMap = @json($logMap);
 
         function showLogDetail(id) {
             const modal = document.getElementById('log-detail-modal');
@@ -128,4 +132,3 @@
     </script>
 </body>
 </html>
-
