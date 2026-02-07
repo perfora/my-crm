@@ -8,16 +8,31 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('ziyaretler', function (Blueprint $table) {
-            $table->string('ews_item_id')->nullable()->after('ziyaret_notlari');
-            $table->string('ews_change_key')->nullable()->after('ews_item_id');
-        });
+        if (!Schema::hasColumn('ziyaretler', 'ews_item_id')) {
+            Schema::table('ziyaretler', function (Blueprint $table) {
+                $table->string('ews_item_id')->nullable()->after('ziyaret_notlari');
+            });
+        }
+
+        if (!Schema::hasColumn('ziyaretler', 'ews_change_key')) {
+            Schema::table('ziyaretler', function (Blueprint $table) {
+                $table->string('ews_change_key')->nullable()->after('ews_item_id');
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('ziyaretler', function (Blueprint $table) {
-            $table->dropColumn(['ews_item_id', 'ews_change_key']);
-        });
+        if (Schema::hasColumn('ziyaretler', 'ews_change_key')) {
+            Schema::table('ziyaretler', function (Blueprint $table) {
+                $table->dropColumn('ews_change_key');
+            });
+        }
+
+        if (Schema::hasColumn('ziyaretler', 'ews_item_id')) {
+            Schema::table('ziyaretler', function (Blueprint $table) {
+                $table->dropColumn('ews_item_id');
+            });
+        }
     }
 };
