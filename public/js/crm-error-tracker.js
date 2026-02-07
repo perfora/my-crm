@@ -5,6 +5,7 @@
     return;
   }
   window.__crmErrorTrackerLoaded = true;
+  window.__crmClientErrorTrackerInitialized = true;
 
   var endpoint = '/api/client-errors';
   var sentFingerprints = {};
@@ -36,16 +37,13 @@
 
       payload._token = getCsrfToken();
       var body = JSON.stringify(payload);
-      if (navigator.sendBeacon) {
-        var blob = new Blob([body], { type: 'application/json' });
-        navigator.sendBeacon(endpoint, blob);
-        return;
-      }
 
       fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
           'X-CSRF-TOKEN': getCsrfToken()
         },
         credentials: 'same-origin',

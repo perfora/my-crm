@@ -1156,7 +1156,7 @@ Route::middleware(['auth'])->group(function () {
         ]);
 
         return response()->json(['ok' => true]);
-    });
+    })->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
     // Change journal: attempt-based tracking for AI/manual iterations
     Route::get('/api/change-journals', function (Request $request) {
