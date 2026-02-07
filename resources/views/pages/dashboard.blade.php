@@ -402,10 +402,10 @@
 
     <!-- Yan Yana Widget'lar: Ziyaretler & Lisans -->
     <div class="container mx-auto px-6 py-8 max-w-screen-2xl">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <!-- Sol: Yaklaşan Ziyaretler -->
             @if($showYaklasanZiyaretler)
-            <div class="bg-white rounded-lg shadow-lg border-t-4 border-purple-500">
+            <div class="bg-white rounded-lg shadow-lg border-t-4 border-purple-500 lg:col-span-1">
                 <div class="p-4 border-b bg-purple-50">
                     <div class="flex justify-between items-center">
                         <div>
@@ -447,7 +447,7 @@
             @endif
 
             <!-- Sağ: Lisans Yenilenecek İşler -->
-            <div>
+            <div class="{{ $showYaklasanZiyaretler ? 'lg:col-span-3' : 'lg:col-span-4' }}">
                 @include('widgets.lisans-yenilenecek')
             </div>
         </div>
