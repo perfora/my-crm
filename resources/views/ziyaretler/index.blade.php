@@ -344,6 +344,7 @@
         </div>
     </div>
 
+    <script src="{{ asset('js/crm-toolbar.js') }}"></script>
     <script>
         // Form ve filtre toggle fonksiyonları
         function toggleFilters() {
@@ -368,30 +369,6 @@
             document.querySelectorAll('.col-' + columnName).forEach(el => {
                 el.style.display = isVisible ? '' : 'none';
             });
-        }
-
-        function saveColumnPreferences() {
-            const prefs = {};
-            document.querySelectorAll('.column-toggle').forEach(cb => {
-                prefs[cb.dataset.column] = cb.checked;
-            });
-            localStorage.setItem(columnStorageKey, JSON.stringify(prefs));
-        }
-
-        function loadColumnPreferences() {
-            const raw = localStorage.getItem(columnStorageKey);
-            if (!raw) return;
-            try {
-                const prefs = JSON.parse(raw);
-                document.querySelectorAll('.column-toggle').forEach(cb => {
-                    if (Object.prototype.hasOwnProperty.call(prefs, cb.dataset.column)) {
-                        cb.checked = !!prefs[cb.dataset.column];
-                        toggleColumn(cb.dataset.column, cb.checked);
-                    }
-                });
-            } catch (e) {
-                console.warn('Sütun tercihleri okunamadı:', e);
-            }
         }
 
         function getSelect2Config(placeholder, extra = {}) {
@@ -594,53 +571,14 @@
                 document.getElementById('scroll-content-top').style.width = table.offsetWidth + 'px';
             });
 
-            // Sütun menüsü
-            const columnBtn = document.getElementById('column-toggle-btn');
-            const columnMenu = document.getElementById('column-menu');
-            columnBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                columnMenu.classList.toggle('hidden');
-            });
-            document.addEventListener('click', function(e) {
-                if (!columnMenu.contains(e.target) && !columnBtn.contains(e.target)) {
-                    columnMenu.classList.add('hidden');
+            window.CrmToolbar.init({
+                storageKey: columnStorageKey,
+                onColumnToggle: function(column, isVisible) {
+                    toggleColumn(column, isVisible);
+                },
+                onSelectionChange: function(ids) {
+                    selectedIds = ids;
                 }
-            });
-            document.querySelectorAll('.column-toggle').forEach(cb => {
-                cb.addEventListener('change', function() {
-                    toggleColumn(this.dataset.column, this.checked);
-                    saveColumnPreferences();
-                });
-            });
-            loadColumnPreferences();
-
-            function updateSelection() {
-                selectedIds = [];
-                $('.row-checkbox:checked').each(function() {
-                    selectedIds.push($(this).data('id'));
-                });
-
-                const hasSelection = selectedIds.length > 0;
-                $('#btn-duplicate').prop('disabled', !hasSelection);
-                $('#btn-delete').prop('disabled', !hasSelection);
-
-                if (hasSelection) {
-                    $('#selection-count').text(selectedIds.length + ' kayıt seçili');
-                } else {
-                    $('#selection-count').text('');
-                }
-            }
-
-            $(document).on('change', '.row-checkbox', function() {
-                updateSelection();
-                const totalCheckboxes = $('.row-checkbox').length;
-                const checkedCheckboxes = $('.row-checkbox:checked').length;
-                $('#select-all').prop('checked', totalCheckboxes > 0 && totalCheckboxes === checkedCheckboxes);
-            });
-
-            $('#select-all').on('change', function() {
-                $('.row-checkbox').prop('checked', $(this).is(':checked'));
-                updateSelection();
             });
         });
 
