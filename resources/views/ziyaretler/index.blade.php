@@ -22,6 +22,10 @@
         .select2-container--default .select2-selection--single .select2-selection__arrow {
             height: 40px;
         }
+        .select2-dropdown-inline-edit .select2-results {
+            max-height: 280px;
+            overflow-y: auto;
+        }
         .scroll-sync {
             overflow-x: auto;
         }
@@ -255,7 +259,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap editable-select col-musteri" data-field="musteri_id" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->musteri_id ?? '' }}">
                                     @if($ziyaret->musteri)
-                                        <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                                        <span class="inline-block max-w-[180px] truncate align-middle px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800" title="{{ $ziyaret->musteri->sirket }}">
                                             {{ $ziyaret->musteri->sirket }}
                                         </span>
                                     @else
@@ -519,6 +523,27 @@
             return options;
         }
 
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function shortText(value, maxLength = 24) {
+            const text = String(value || '');
+            if (text.length <= maxLength) return text;
+            return text.slice(0, maxLength - 1) + '…';
+        }
+
+        function renderMusteriBadgeHtml(name) {
+            const safeFull = escapeHtml(name);
+            const safeShort = escapeHtml(shortText(name, 24));
+            return `<span class="inline-block max-w-[180px] truncate align-middle px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800" title="${safeFull}">${safeShort}</span>`;
+        }
+
         function formatDateDisplay(value, isTelefon) {
             if (!value) return '-';
             const date = new Date(value);
@@ -658,7 +683,7 @@
             if (field === 'musteri_id') {
                 const found = musteriOptions.find(item => String(item.id) === String(newValue));
                 if (found) {
-                    cell.html(`<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${found.sirket}</span>`);
+                    cell.html(renderMusteriBadgeHtml(found.sirket));
                     setRowValue(row, 'musteri_id', found.id);
                 } else {
                     cell.html('-');
@@ -877,8 +902,28 @@
 
             cell.html(`<select class="w-full px-2 py-1 border rounded text-sm">${options}</select>`);
             const select = cell.find('select');
-            select.focus();
             let saved = false;
+
+            if (field === 'musteri_id') {
+                select.select2({
+                    dropdownParent: $('body'),
+                    width: '100%',
+                    placeholder: 'Müşteri ara...',
+                    allowClear: true,
+                    minimumResultsForSearch: 0,
+                    dropdownCssClass: 'select2-dropdown-inline-edit',
+                    language: {
+                        noResults: function() { return 'Sonuç bulunamadı'; },
+                        searching: function() { return 'Aranıyor...'; }
+                    }
+                });
+                select.select2('open');
+                setTimeout(function() {
+                    $('.select2-search__field').focus();
+                }, 50);
+            } else {
+                select.focus();
+            }
 
             function saveSelect() {
                 if (saved) return;
@@ -922,25 +967,45 @@
                 }
             }
 
-            select.on('change', saveSelect);
-            select.on('keydown', function(e) {
-                if (e.which === 27) {
-                    cell.html(originalContent);
-                    cell.removeClass('editing');
-                }
-                if (e.which === 13) {
-                    e.preventDefault();
-                    saveSelect();
-                }
-                if (e.which === 9) {
-                    e.preventDefault();
-                    saveSelect();
-                    focusNextEditableCell(cell);
-                }
-            });
-            select.on('blur', function() {
-                if (!saved) saveSelect();
-            });
+            if (field === 'musteri_id') {
+                let valueChanged = false;
+                select.on('change', function() { valueChanged = true; });
+                select.on('select2:select', function() { saveSelect(); });
+                select.on('select2:clear', function() { saveSelect(); });
+                select.on('select2:close', function() {
+                    if (!saved) {
+                        if (valueChanged) {
+                            saveSelect();
+                        } else {
+                            select.select2('destroy');
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
+                        }
+                    } else {
+                        select.select2('destroy');
+                    }
+                });
+            } else {
+                select.on('change', saveSelect);
+                select.on('keydown', function(e) {
+                    if (e.which === 27) {
+                        cell.html(originalContent);
+                        cell.removeClass('editing');
+                    }
+                    if (e.which === 13) {
+                        e.preventDefault();
+                        saveSelect();
+                    }
+                    if (e.which === 9) {
+                        e.preventDefault();
+                        saveSelect();
+                        focusNextEditableCell(cell);
+                    }
+                });
+                select.on('blur', function() {
+                    if (!saved) saveSelect();
+                });
+            }
         });
 
         $(document).on('click', '.editable-date:not(.editing)', function(e) {
