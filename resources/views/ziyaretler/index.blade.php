@@ -889,11 +889,11 @@
 
         function focusNextEditableCell(currentCell) {
             const row = currentCell.closest('tr');
-            const cells = row.find('.editable-cell, .editable-select, .editable-date');
+            const cells = row.find('.editable-cell:visible, .editable-select:visible, .editable-date:visible');
             const index = cells.index(currentCell);
             let next = cells.eq(index + 1);
             if (!next.length) {
-                const nextRow = row.nextAll('tr').find('.editable-cell, .editable-select, .editable-date').first();
+                const nextRow = row.nextAll('tr').find('.editable-cell:visible, .editable-select:visible, .editable-date:visible').first();
                 if (nextRow.length) next = nextRow;
             }
             if (next && next.length) {
@@ -935,8 +935,14 @@
 
             function saveEdit() {
                 if (saved) return;
-                saved = true;
                 const newValue = input.val().trim();
+                if (String(newValue) === String(currentValue).trim()) {
+                    saved = true;
+                    cell.html(originalContent);
+                    cell.removeClass('editing');
+                    return;
+                }
+                saved = true;
                 if (id === 'new') {
                     setRowValue(row, field, newValue);
                     cell.html(newValue || '-');
@@ -981,6 +987,7 @@
             });
             input.on('keydown', function(e) {
                 if (e.which === 27) {
+                    saved = true;
                     cell.html(originalContent);
                     cell.removeClass('editing');
                 }
@@ -1053,8 +1060,17 @@
 
             function saveSelect() {
                 if (saved) return;
-                saved = true;
                 const newValue = select.val();
+                if (String(newValue || '') === String(currentValue || '')) {
+                    saved = true;
+                    if (select.hasClass('select2-hidden-accessible')) {
+                        select.select2('destroy');
+                    }
+                    cell.html(originalContent);
+                    cell.removeClass('editing');
+                    return;
+                }
+                saved = true;
                 if (id === 'new') {
                     setRowValue(row, field, newValue);
                     renderSelectDisplay(cell, field, newValue, row);
@@ -1093,7 +1109,32 @@
                 }
             }
 
+            function wireSelectKeyboardNav() {
+                select.on('select2:open', function() {
+                    setTimeout(function() {
+                        const searchField = $('.select2-container--open .select2-search__field');
+                        if (!searchField.length) return;
+                        searchField.off('keydown.crmNav').on('keydown.crmNav', function(e) {
+                            if (e.key === 'Tab') {
+                                e.preventDefault();
+                                saveSelect();
+                                focusNextEditableCell(cell);
+                            }
+                            if (e.key === 'Escape') {
+                                saved = true;
+                                if (select.hasClass('select2-hidden-accessible')) {
+                                    select.select2('destroy');
+                                }
+                                cell.html(originalContent);
+                                cell.removeClass('editing');
+                            }
+                        });
+                    }, 0);
+                });
+            }
+
             if (field === 'musteri_id') {
+                wireSelectKeyboardNav();
                 let valueChanged = false;
                 select.on('change', function() { valueChanged = true; });
                 select.on('select2:select', function() { saveSelect(); });
@@ -1112,6 +1153,7 @@
                     }
                 });
             } else {
+                wireSelectKeyboardNav();
                 let valueChanged = false;
                 select.on('change', function() { valueChanged = true; });
                 select.on('select2:select', function() { saveSelect(); });
@@ -1174,17 +1216,24 @@
 
             function saveDate() {
                 if (saved) return;
-                saved = true;
                 const rawValue = isNewRow ? cell.find('.date-input').val() : input.val();
                 const rawTime = isNewRow ? cell.find('.time-input').val() : '';
                 const newValue = normalizeDateTimeInput(rawValue, rawTime);
                 
                 // Boş tarih gönderme
                 if (!newValue || newValue.trim() === '') {
+                    saved = true;
                     cell.html(originalContent);
                     cell.removeClass('editing');
                     return;
                 }
+                if (!isNewRow && String(newValue || '') === String(currentValue || '')) {
+                    saved = true;
+                    cell.html(originalContent);
+                    cell.removeClass('editing');
+                    return;
+                }
+                saved = true;
                 
                 const field = isTelefon ? 'arama_tarihi' : 'ziyaret_tarihi';
 
@@ -1245,6 +1294,7 @@
             }
             input.on('keydown', function(e) {
                 if (e.which === 27) {
+                    saved = true;
                     cell.html(originalContent);
                     cell.removeClass('editing');
                 }
@@ -1261,6 +1311,7 @@
             if (isNewRow) {
                 cell.find('.time-input').on('keydown', function(e) {
                     if (e.which === 27) {
+                        saved = true;
                         cell.html(originalContent);
                         cell.removeClass('editing');
                     }
