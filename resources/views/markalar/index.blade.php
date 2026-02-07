@@ -130,9 +130,20 @@
         </div>
     </div>
 
+    <script src="{{ asset('js/crm-toolbar.js') }}"></script>
     <script>
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         let selectedIds = [];
+        const columnStorageKey = 'markalar_column_preferences_v1';
+        const toolbar = window.CrmToolbar.init({
+            storageKey: columnStorageKey,
+            onColumnToggle: function(column, isVisible) {
+                toggleColumn(column, isVisible);
+            },
+            onSelectionChange: function(ids) {
+                selectedIds = ids;
+            }
+        });
         const sortDirection = {};
 
         function toggleFilters() {
@@ -141,13 +152,6 @@
             const isHidden = filters.style.display === 'none';
             filters.style.display = isHidden ? 'block' : 'none';
             icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
-        }
-
-        function updateSelection() {
-            selectedIds = [...document.querySelectorAll('.row-checkbox:checked')].map(cb => Number(cb.dataset.id));
-            document.getElementById('btn-duplicate').disabled = selectedIds.length === 0;
-            document.getElementById('btn-delete').disabled = selectedIds.length === 0;
-            document.getElementById('selection-count').textContent = selectedIds.length ? `${selectedIds.length} kayıt seçili` : '';
         }
 
         function addNewRow() {
@@ -462,31 +466,8 @@
             });
         }
 
-        document.addEventListener('click', (e) => {
-            const colBtn = document.getElementById('column-toggle-btn');
-            const colMenu = document.getElementById('column-menu');
-            if (colBtn.contains(e.target)) {
-                colMenu.classList.toggle('hidden');
-                return;
-            }
-            if (!colMenu.contains(e.target)) colMenu.classList.add('hidden');
-        });
-
         document.getElementById('filter-name').addEventListener('input', applyFilters);
         updateFilterButtons();
-        document.getElementById('select-all').addEventListener('change', function () {
-            document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = this.checked);
-            updateSelection();
-        });
-
-        document.addEventListener('change', (e) => {
-            if (e.target.classList.contains('row-checkbox')) {
-                updateSelection();
-            }
-            if (e.target.classList.contains('column-toggle')) {
-                toggleColumn(e.target.dataset.column, e.target.checked);
-            }
-        });
 
         document.addEventListener('click', (e) => {
             if (e.target.closest('.editable-cell')) {
