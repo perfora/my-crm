@@ -130,7 +130,7 @@
         </div>
     </div>
 
-    <script src="{{ asset('js/crm-toolbar.js') }}"></script>
+    <script src="{{ asset('public/js/crm-toolbar.js') }}"></script>
     <script>
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         let selectedIds = [];

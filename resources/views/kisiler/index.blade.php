@@ -337,7 +337,7 @@
         </div>
     </div>
 
-    <script src="{{ asset('js/crm-toolbar.js') }}"></script>
+    <script src="{{ asset('public/js/crm-toolbar.js') }}"></script>
     <script>
         // Form ve filtre toggle fonksiyonları
         function toggleForm() {

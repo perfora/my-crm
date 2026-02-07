@@ -425,7 +425,7 @@
         </div>
     </div>
 
-    <script src="{{ asset('js/crm-toolbar.js') }}"></script>
+    <script src="{{ asset('public/js/crm-toolbar.js') }}"></script>
     <script>
         // Global değişkenler
         let existingTuruValues = @json($existingTuruValues);

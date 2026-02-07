@@ -115,4 +115,4 @@
     })();
 </script>
 
-<script src="{{ asset('js/crm-error-tracker.js') }}"></script>
+<script src="{{ asset('public/js/crm-error-tracker.js') }}"></script>
