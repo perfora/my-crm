@@ -928,6 +928,10 @@
                     cell.html(originalContent);
                     cell.removeClass('editing');
                 }
+                if (e.which === 13) {
+                    e.preventDefault();
+                    saveSelect();
+                }
                 if (e.which === 9) {
                     e.preventDefault();
                     saveSelect();
@@ -1055,12 +1059,29 @@
                     cell.html(originalContent);
                     cell.removeClass('editing');
                 }
+                if (isNewRow && e.which === 9) {
+                    // Tarihten Tab ile saate geçişte kaydetme yapma
+                    return;
+                }
                 if (e.which === 9) {
                     e.preventDefault();
                     saveDate();
                     focusNextEditableCell(cell);
                 }
             });
+            if (isNewRow) {
+                cell.find('.time-input').on('keydown', function(e) {
+                    if (e.which === 27) {
+                        cell.html(originalContent);
+                        cell.removeClass('editing');
+                    }
+                    if (e.which === 9) {
+                        e.preventDefault();
+                        saveDate();
+                        focusNextEditableCell(cell);
+                    }
+                });
+            }
             input.on('blur', function() {
                 setTimeout(function() {
                     if (!saved && cell.find(':focus').length === 0) saveDate();
