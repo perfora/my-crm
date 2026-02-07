@@ -75,6 +75,20 @@
             </div>
         @endif
 
+        <!-- Kayıtlı Filtreler -->
+        <div class="bg-white rounded-lg shadow mb-6 p-4">
+            <div class="flex flex-wrap items-center gap-3">
+                <label class="text-sm font-medium text-gray-600">Kayıtlı Filtreler:</label>
+                <div id="savedFiltersButtons" class="flex gap-1.5 flex-wrap flex-1">
+                    <p class="text-sm text-gray-500">Henüz kayıtlı filtre yok</p>
+                </div>
+                <input type="text" id="filterName" class="border border-gray-200 rounded px-2 py-1.5 text-sm w-48" placeholder="Filtre adı">
+                <button type="button" onclick="saveCurrentFilter()" class="bg-green-500 text-white px-3 py-1.5 rounded text-sm hover:bg-green-600">
+                    + Kaydet
+                </button>
+            </div>
+        </div>
+
         <!-- Filtreler -->
         <div class="bg-white rounded-lg shadow mb-6">
             <div class="p-6 flex justify-between items-center cursor-pointer" onclick="toggleFilters()">
@@ -82,7 +96,7 @@
                 <span id="filter-toggle-icon" class="text-2xl transform transition-transform">▼</span>
             </div>
             <div id="filters-form" style="display: none;">
-                <form method="GET" action="/ziyaretler" class="space-y-4 px-6 pb-6">
+                <form id="filterForm" method="GET" action="/ziyaretler" class="space-y-4 px-6 pb-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium mb-1">Ziyaret İsmi</label>
@@ -394,7 +408,120 @@
             }, extra);
         }
 
+        async function saveCurrentFilter() {
+            const filterName = (document.getElementById('filterName').value || '').trim();
+            if (!filterName) {
+                alert('Lütfen filtre adı girin!');
+                return;
+            }
+
+            const formData = {};
+            const form = document.getElementById('filterForm');
+            const inputs = form.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                if (input.name && input.value) {
+                    formData[input.name] = input.value;
+                }
+            });
+
+            const response = await fetch('/api/saved-filters', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    name: filterName,
+                    page: 'ziyaretler',
+                    filter_data: formData
+                })
+            });
+
+            if (!response.ok) {
+                alert('Filtre kaydedilemedi!');
+                return;
+            }
+
+            document.getElementById('filterName').value = '';
+            await updateFilterButtons();
+        }
+
+        async function loadFilter(filterName) {
+            const response = await fetch('/api/saved-filters?page=ziyaretler');
+            const filters = await response.json();
+            const filter = filters.find(f => f.name === filterName);
+            if (!filter) return;
+
+            const form = document.getElementById('filterForm');
+            const allInputs = form.querySelectorAll('input, select');
+            allInputs.forEach(input => {
+                if (!input.name) return;
+                input.value = '';
+                if ($(input).hasClass('select2-hidden-accessible')) {
+                    $(input).val('').trigger('change');
+                }
+            });
+
+            Object.keys(filter.filter_data || {}).forEach(key => {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (!input) return;
+                input.value = filter.filter_data[key];
+                if ($(input).hasClass('select2-hidden-accessible')) {
+                    $(input).val(filter.filter_data[key]).trigger('change');
+                }
+            });
+
+            form.submit();
+        }
+
+        async function deleteFilter(filterName) {
+            if (!confirm('Bu filtre silinsin mi?\n\n' + filterName)) return;
+
+            const response = await fetch('/api/saved-filters/' + encodeURIComponent(filterName) + '?page=ziyaretler', {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+
+            if (!response.ok) {
+                alert('Filtre silinemedi!');
+                return;
+            }
+
+            await updateFilterButtons();
+        }
+
+        async function updateFilterButtons() {
+            const response = await fetch('/api/saved-filters?page=ziyaretler');
+            const filters = await response.json();
+            const container = document.getElementById('savedFiltersButtons');
+
+            if (!filters.length) {
+                container.innerHTML = '<p class="text-sm text-gray-500">Henüz kayıtlı filtre yok</p>';
+                return;
+            }
+
+            let html = '';
+            filters.forEach(filter => {
+                const safeName = String(filter.name).replace(/'/g, "\\'");
+                html += `
+                    <div class="inline-flex items-center gap-0.5 bg-blue-50 hover:bg-blue-100 rounded border border-blue-200 transition-colors">
+                        <button type="button" onclick="loadFilter('${safeName}'); return false;" class="px-2 py-0.5 text-xs font-medium text-blue-700">
+                            ${filter.name}
+                        </button>
+                        <button type="button" onclick="deleteFilter('${safeName}'); return false;" class="px-1.5 py-0.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-r text-xs">
+                            ×
+                        </button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
         $(document).ready(function() {
+            updateFilterButtons();
+
             // Select2 başlat
             $('#filter-musteri-select').select2(getSelect2Config('Müşteri ara...', {
                 dropdownCssClass: ''
