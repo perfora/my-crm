@@ -380,20 +380,25 @@
             }
         }
 
+        function getSelect2Config(placeholder, extra = {}) {
+            return Object.assign({
+                placeholder: placeholder,
+                allowClear: true,
+                width: '100%',
+                minimumResultsForSearch: 0,
+                dropdownCssClass: 'select2-dropdown-inline-edit',
+                language: {
+                    noResults: function() { return 'Sonuç bulunamadı'; },
+                    searching: function() { return 'Aranıyor...'; }
+                }
+            }, extra);
+        }
+
         $(document).ready(function() {
             // Select2 başlat
-            $('#filter-musteri-select').select2({
-                placeholder: 'Müşteri ara...',
-                allowClear: true,
-                language: {
-                    noResults: function() {
-                        return 'Sonuç bulunamadı';
-                    },
-                    searching: function() {
-                        return 'Aranıyor...';
-                    }
-                }
-            });
+            $('#filter-musteri-select').select2(getSelect2Config('Müşteri ara...', {
+                dropdownCssClass: ''
+            }));
 
             // Scroll senkronizasyonu
             const scrollTop = document.getElementById('scroll-top');
@@ -905,24 +910,18 @@
             let saved = false;
 
             if (field === 'musteri_id') {
-                select.select2({
-                    dropdownParent: $('body'),
-                    width: '100%',
-                    placeholder: 'Müşteri ara...',
-                    allowClear: true,
-                    minimumResultsForSearch: 0,
-                    dropdownCssClass: 'select2-dropdown-inline-edit',
-                    language: {
-                        noResults: function() { return 'Sonuç bulunamadı'; },
-                        searching: function() { return 'Aranıyor...'; }
-                    }
-                });
+                select.select2(getSelect2Config('Müşteri ara...', {
+                    dropdownParent: $('body')
+                }));
                 select.select2('open');
                 setTimeout(function() {
                     $('.select2-search__field').focus();
                 }, 50);
             } else {
-                select.focus();
+                select.select2(getSelect2Config('Seçiniz...', {
+                    dropdownParent: $('body')
+                }));
+                select.select2('open');
             }
 
             function saveSelect() {
@@ -986,24 +985,22 @@
                     }
                 });
             } else {
-                select.on('change', saveSelect);
-                select.on('keydown', function(e) {
-                    if (e.which === 27) {
-                        cell.html(originalContent);
-                        cell.removeClass('editing');
+                let valueChanged = false;
+                select.on('change', function() { valueChanged = true; });
+                select.on('select2:select', function() { saveSelect(); });
+                select.on('select2:clear', function() { saveSelect(); });
+                select.on('select2:close', function() {
+                    if (!saved) {
+                        if (valueChanged) {
+                            saveSelect();
+                        } else {
+                            select.select2('destroy');
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
+                        }
+                    } else {
+                        select.select2('destroy');
                     }
-                    if (e.which === 13) {
-                        e.preventDefault();
-                        saveSelect();
-                    }
-                    if (e.which === 9) {
-                        e.preventDefault();
-                        saveSelect();
-                        focusNextEditableCell(cell);
-                    }
-                });
-                select.on('blur', function() {
-                    if (!saved) saveSelect();
                 });
             }
         });

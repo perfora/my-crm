@@ -461,6 +461,19 @@
         }
         
         $(document).ready(function() {
+            function getSelect2Config(placeholder, extra = {}) {
+                return Object.assign({
+                    placeholder: placeholder,
+                    allowClear: true,
+                    width: '100%',
+                    minimumResultsForSearch: 0,
+                    language: {
+                        noResults: function() { return 'Sonuç bulunamadı'; },
+                        searching: function() { return 'Aranıyor...'; }
+                    }
+                }, extra);
+            }
+
             // Sayfa yüklendiğinde tüm turu badge'lerine renk uygula
             $('[data-turu-badge]').each(function() {
                 const turu = $(this).data('turu-badge');
@@ -469,18 +482,7 @@
             });
             
             // Select2 başlat
-            $('#derece-select, #turu-select, .select2-filter').select2({
-                placeholder: 'Seçiniz...',
-                allowClear: true,
-                language: {
-                    noResults: function() {
-                        return 'Sonuç bulunamadı';
-                    },
-                    searching: function() {
-                        return 'Aranıyor...';
-                    }
-                }
-            });
+            $('#derece-select, #turu-select, .select2-filter').select2(getSelect2Config('Seçiniz...'));
 
             // Scroll senkronizasyonu
             const scrollTop = document.getElementById('scroll-top');
@@ -744,13 +746,22 @@
             cell.html(`<select class="inline-edit-select w-full px-2 py-1 border rounded">${options}</select>`);
             const select = cell.find('select');
             
+            function getInlineSelect2Config(extra = {}) {
+                return Object.assign({
+                    dropdownParent: $('body'),
+                    width: '100%',
+                    minimumResultsForSearch: 0,
+                    allowClear: true,
+                    dropdownCssClass: 'select2-dropdown-inline-edit',
+                    language: {
+                        noResults: function() { return 'Sonuç bulunamadı'; },
+                        searching: function() { return 'Aranıyor...'; }
+                    }
+                }, extra);
+            }
+
             // Initialize Select2 with tags support for Türü field
-            const select2Config = {
-                dropdownParent: $('body'),
-                width: '100%',
-                minimumResultsForSearch: 0,
-                dropdownCssClass: 'select2-dropdown-inline-edit'
-            };
+            const select2Config = getInlineSelect2Config();
             
             // Enable custom value creation for Türü field only
             if (field === 'turu') {
@@ -766,14 +777,6 @@
                         text: term,
                         newTag: true
                     };
-                };
-                select2Config.language = {
-                    noResults: function () {
-                        return "Sonuç bulunamadı";
-                    },
-                    searching: function () {
-                        return "Aranıyor...";
-                    }
                 };
             }
             

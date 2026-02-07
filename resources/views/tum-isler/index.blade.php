@@ -1014,42 +1014,25 @@
 
     <script>
         $(document).ready(function() {
+            function getSelect2Config(placeholder, extra = {}) {
+                return Object.assign({
+                    placeholder: placeholder,
+                    allowClear: true,
+                    width: '100%',
+                    minimumResultsForSearch: 0,
+                    language: {
+                        noResults: function() { return 'Sonuç bulunamadı'; },
+                        searching: function() { return 'Aranıyor...'; }
+                    }
+                }, extra);
+            }
+
             // Select2 başlat
-            $('#musteri-select, #filter-musteri-select').select2({
-                placeholder: 'Müşteri ara...',
-                allowClear: true,
-                language: {
-                    noResults: function() {
-                        return 'Sonuç bulunamadı';
-                    },
-                    searching: function() {
-                        return 'Aranıyor...';
-                    }
-                }
-            });
+            $('#musteri-select, #filter-musteri-select').select2(getSelect2Config('Müşteri ara...'));
             
-            $('#marka-select, #filter-marka-select').select2({
-                placeholder: 'Marka ara...',
-                allowClear: true,
-                language: {
-                    noResults: function() {
-                        return 'Sonuç bulunamadı';
-                    },
-                    searching: function() {
-                        return 'Aranıyor...';
-                    }
-                }
-            });
+            $('#marka-select, #filter-marka-select').select2(getSelect2Config('Marka ara...'));
             
-            $('#turu-select, #oncelik-select, #register-durum-select').select2({
-                placeholder: 'Seçiniz...',
-                allowClear: true,
-                language: {
-                    noResults: function() {
-                        return 'Sonuç bulunamadı';
-                    }
-                }
-            });
+            $('#turu-select, #oncelik-select, #register-durum-select').select2(getSelect2Config('Seçiniz...'));
 
             // Scroll senkronizasyonu
             const scrollTop = document.getElementById('scroll-top');

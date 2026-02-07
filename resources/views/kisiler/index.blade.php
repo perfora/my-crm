@@ -390,19 +390,21 @@
         }
 
         $(document).ready(function() {
-            // Select2 başlat
-            $('#firma-select, #filter-firma-select').select2({
-                placeholder: 'Firma ara...',
-                allowClear: true,
-                language: {
-                    noResults: function() {
-                        return 'Sonuç bulunamadı';
-                    },
-                    searching: function() {
-                        return 'Aranıyor...';
+            function getSelect2Config(placeholder, extra = {}) {
+                return Object.assign({
+                    placeholder: placeholder,
+                    allowClear: true,
+                    width: '100%',
+                    minimumResultsForSearch: 0,
+                    language: {
+                        noResults: function() { return 'Sonuç bulunamadı'; },
+                        searching: function() { return 'Aranıyor...'; }
                     }
-                }
-            });
+                }, extra);
+            }
+
+            // Select2 başlat
+            $('#firma-select, #filter-firma-select').select2(getSelect2Config('Firma ara...'));
 
             // Scroll senkronizasyonu
             const scrollTop = document.getElementById('scroll-top');
@@ -778,13 +780,23 @@
             cell.html(`<select class="inline-edit-select w-full px-2 py-1 border rounded">${options}</select>`);
             const select = cell.find('select');
             
+            function getInlineSelect2Config(placeholder, extra = {}) {
+                return Object.assign({
+                    dropdownParent: $('body'),
+                    width: '100%',
+                    minimumResultsForSearch: 0,
+                    allowClear: true,
+                    placeholder: placeholder,
+                    dropdownCssClass: 'select2-dropdown-inline-edit',
+                    language: {
+                        noResults: function() { return 'Sonuç bulunamadı'; },
+                        searching: function() { return 'Aranıyor...'; }
+                    }
+                }, extra);
+            }
+
             // Initialize Select2
-            select.select2({
-                dropdownParent: $('body'),
-                width: '100%',
-                minimumResultsForSearch: 0,
-                dropdownCssClass: 'select2-dropdown-inline-edit'
-            });
+            select.select2(getInlineSelect2Config('Firma ara...'));
             
             select.select2('open');
             
