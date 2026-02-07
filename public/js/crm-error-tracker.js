@@ -55,6 +55,17 @@
     }
   }
 
+  // Manual test helper from browser console
+  window.crmSendClientError = function (message) {
+    send({
+      level: 'error',
+      source: 'manual-test',
+      message: message || 'crm-manual-client-error',
+      url: window.location.href,
+      user_agent: navigator.userAgent
+    });
+  };
+
   window.addEventListener('error', function (event) {
     send({
       level: 'error',
@@ -67,7 +78,7 @@
       url: window.location.href,
       user_agent: navigator.userAgent
     });
-  });
+  }, true);
 
   window.addEventListener('unhandledrejection', function (event) {
     var reason = event.reason;
