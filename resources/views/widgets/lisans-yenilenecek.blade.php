@@ -194,23 +194,30 @@ function yenilemeAc(isId, button) {
     
     button.disabled = true;
     button.innerHTML = '...';
-    
-    $.ajax({
-        url: '/api/yenileme-ac',
+
+    fetch('/api/yenileme-ac', {
         method: 'POST',
         headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
         },
-        data: { is_id: isId },
-        success: function(response) {
-            removeLisansRow(button);
-        },
-        error: function(xhr) {
-            const error = xhr.responseJSON?.message || 'Hata oluştu!';
-            alert('❌ ' + error);
-            button.disabled = false;
-            button.innerHTML = '+';
+        body: JSON.stringify({ is_id: isId })
+    })
+    .then(async (response) => {
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(payload.message || 'Hata oluştu!');
         }
+        return payload;
+    })
+    .then(() => {
+        removeLisansRow(button);
+    })
+    .catch((error) => {
+        alert('❌ ' + error.message);
+        button.disabled = false;
+        button.innerHTML = '+';
     });
 }
 
@@ -218,22 +225,29 @@ function yenilemeIsaretle(isId, button) {
     button.disabled = true;
     button.innerHTML = '...';
 
-    $.ajax({
-        url: '/api/yenileme-isaretle',
+    fetch('/api/yenileme-isaretle', {
         method: 'POST',
         headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
         },
-        data: { is_id: isId },
-        success: function(response) {
-            removeLisansRow(button);
-        },
-        error: function(xhr) {
-            const error = xhr.responseJSON?.message || 'Hata oluştu!';
-            alert('❌ ' + error);
-            button.disabled = false;
-            button.innerHTML = '✓';
+        body: JSON.stringify({ is_id: isId })
+    })
+    .then(async (response) => {
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(payload.message || 'Hata oluştu!');
         }
+        return payload;
+    })
+    .then(() => {
+        removeLisansRow(button);
+    })
+    .catch((error) => {
+        alert('❌ ' + error.message);
+        button.disabled = false;
+        button.innerHTML = '✓';
     });
 }
 </script>
