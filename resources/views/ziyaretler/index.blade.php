@@ -154,6 +154,34 @@
                         </button>
                         <span id="selection-count" class="text-sm text-gray-600"></span>
                     </div>
+                    <div class="relative inline-block">
+                        <button id="column-toggle-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded flex items-center gap-2">
+                            <span>📊 Sütunlar</span>
+                            <span id="column-arrow">▼</span>
+                        </button>
+                        <div id="column-menu" class="hidden absolute right-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-50 p-3 max-h-96 overflow-y-auto">
+                            <div class="space-y-2">
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="ziyaret_ismi" checked> Ziyaret
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="musteri" checked> Müşteri
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="ziyaret_tarihi" checked> Ziyaret Tarihi
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="tur" checked> Tür
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="durumu" checked> Durum
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="ziyaret_notlari" checked> Notlar
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -169,12 +197,12 @@
                             <th class="px-3 py-3 text-center">
                                 <input type="checkbox" id="select-all" class="cursor-pointer">
                             </th>
-                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="ziyaret_ismi">Ziyaret <span class="sort-icon"></span></th>
-                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="musteri">Müşteri <span class="sort-icon"></span></th>
-                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="ziyaret_tarihi">Ziyaret Tarihi <span class="sort-icon"></span></th>
-                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="tur">Tür <span class="sort-icon"></span></th>
-                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="durumu">Durum <span class="sort-icon"></span></th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notlar</th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase col-ziyaret_ismi" data-column="ziyaret_ismi">Ziyaret <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase col-musteri" data-column="musteri">Müşteri <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase col-ziyaret_tarihi" data-column="ziyaret_tarihi">Ziyaret Tarihi <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase col-tur" data-column="tur">Tür <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase col-durumu" data-column="durumu">Durum <span class="sort-icon"></span></th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase col-ziyaret_notlari">Notlar</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -222,10 +250,10 @@
                                 <td class="px-3 py-4 text-center">
                                     <input type="checkbox" class="row-checkbox cursor-pointer" data-id="{{ $ziyaret->id }}">
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap font-medium editable-cell" data-field="ziyaret_ismi" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->ziyaret_ismi }}">
+                                <td class="px-6 py-4 whitespace-nowrap font-medium editable-cell col-ziyaret_ismi" data-field="ziyaret_ismi" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->ziyaret_ismi }}">
                                     {{ $ziyaret->ziyaret_ismi }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="musteri_id" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->musteri_id ?? '' }}">
+                                <td class="px-6 py-4 whitespace-nowrap editable-select col-musteri" data-field="musteri_id" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->musteri_id ?? '' }}">
                                     @if($ziyaret->musteri)
                                         <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
                                             {{ $ziyaret->musteri->sirket }}
@@ -234,7 +262,7 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap editable-date" data-field="tarih" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->tur == 'Telefon' ? $ziyaret->arama_tarihi : $ziyaret->ziyaret_tarihi }}">
+                                <td class="px-6 py-4 whitespace-nowrap editable-date col-ziyaret_tarihi" data-field="tarih" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->tur == 'Telefon' ? $ziyaret->arama_tarihi : $ziyaret->ziyaret_tarihi }}">
                                     @if($ziyaret->tur == 'Telefon' && $ziyaret->arama_tarihi)
                                         {{ \Carbon\Carbon::parse($ziyaret->arama_tarihi)->format('d.m.Y') }}
                                     @elseif($ziyaret->ziyaret_tarihi)
@@ -243,7 +271,7 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="tur" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->tur ?? '' }}">
+                                <td class="px-6 py-4 whitespace-nowrap editable-select col-tur" data-field="tur" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->tur ?? '' }}">
                                     @if($ziyaret->tur)
                                         <span class="px-2 py-1 text-xs rounded-full 
                                             {{ $ziyaret->tur == 'Ziyaret' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800' }}">
@@ -253,7 +281,7 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="durumu" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->durumu ?? '' }}">
+                                <td class="px-6 py-4 whitespace-nowrap editable-select col-durumu" data-field="durumu" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->durumu ?? '' }}">
                                     @if($ziyaret->durumu)
                                         <span class="px-2 py-1 text-xs rounded-full 
                                             @if($ziyaret->durumu == 'Beklemede') bg-yellow-100 text-yellow-800
@@ -266,7 +294,7 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 text-sm editable-cell" data-field="ziyaret_notlari" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->ziyaret_notlari ?? '' }}">
+                                <td class="px-6 py-4 text-sm editable-cell col-ziyaret_notlari" data-field="ziyaret_notlari" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->ziyaret_notlari ?? '' }}">
                                     <div class="flex items-center gap-2">
                                         <div class="max-w-xs truncate">
                                             {{ $ziyaret->ziyaret_notlari ?? '-' }}
@@ -316,6 +344,37 @@
         }
 
         let selectedIds = [];
+        const columnStorageKey = 'ziyaretler_column_preferences_v1';
+
+        function toggleColumn(columnName, isVisible) {
+            document.querySelectorAll('.col-' + columnName).forEach(el => {
+                el.style.display = isVisible ? '' : 'none';
+            });
+        }
+
+        function saveColumnPreferences() {
+            const prefs = {};
+            document.querySelectorAll('.column-toggle').forEach(cb => {
+                prefs[cb.dataset.column] = cb.checked;
+            });
+            localStorage.setItem(columnStorageKey, JSON.stringify(prefs));
+        }
+
+        function loadColumnPreferences() {
+            const raw = localStorage.getItem(columnStorageKey);
+            if (!raw) return;
+            try {
+                const prefs = JSON.parse(raw);
+                document.querySelectorAll('.column-toggle').forEach(cb => {
+                    if (Object.prototype.hasOwnProperty.call(prefs, cb.dataset.column)) {
+                        cb.checked = !!prefs[cb.dataset.column];
+                        toggleColumn(cb.dataset.column, cb.checked);
+                    }
+                });
+            } catch (e) {
+                console.warn('Sütun tercihleri okunamadı:', e);
+            }
+        }
 
         $(document).ready(function() {
             // Select2 başlat
@@ -399,6 +458,26 @@
                 document.getElementById('scroll-content-top').style.width = table.offsetWidth + 'px';
             });
 
+            // Sütun menüsü
+            const columnBtn = document.getElementById('column-toggle-btn');
+            const columnMenu = document.getElementById('column-menu');
+            columnBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                columnMenu.classList.toggle('hidden');
+            });
+            document.addEventListener('click', function(e) {
+                if (!columnMenu.contains(e.target) && !columnBtn.contains(e.target)) {
+                    columnMenu.classList.add('hidden');
+                }
+            });
+            document.querySelectorAll('.column-toggle').forEach(cb => {
+                cb.addEventListener('change', function() {
+                    toggleColumn(this.dataset.column, this.checked);
+                    saveColumnPreferences();
+                });
+            });
+            loadColumnPreferences();
+
             function updateSelection() {
                 selectedIds = [];
                 $('.row-checkbox:checked').each(function() {
@@ -461,25 +540,24 @@
                     <td class="px-3 py-4 text-center">
                         <input type="checkbox" disabled class="opacity-50">
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap font-medium editable-cell" data-field="ziyaret_ismi" data-id="new" data-value="">
+                    <td class="px-6 py-4 whitespace-nowrap font-medium editable-cell col-ziyaret_ismi" data-field="ziyaret_ismi" data-id="new" data-value="">
                         <span class="text-gray-400">Ziyaret ismi...</span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="musteri_id" data-id="new" data-value="">
+                    <td class="px-6 py-4 whitespace-nowrap editable-select col-musteri" data-field="musteri_id" data-id="new" data-value="">
                         <span class="text-gray-400">Müşteri seçiniz...</span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap editable-date" data-field="tarih" data-id="new" data-value="">
+                    <td class="px-6 py-4 whitespace-nowrap editable-date col-ziyaret_tarihi" data-field="tarih" data-id="new" data-value="">
                         <span class="text-gray-400">Tarih seçiniz...</span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="tur" data-id="new" data-value="">
+                    <td class="px-6 py-4 whitespace-nowrap editable-select col-tur" data-field="tur" data-id="new" data-value="">
                         <span class="text-gray-400">Tür seçiniz...</span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="durumu" data-id="new" data-value="">
+                    <td class="px-6 py-4 whitespace-nowrap editable-select col-durumu" data-field="durumu" data-id="new" data-value="">
                         <span class="text-gray-400">Durum seçiniz...</span>
                     </td>
-                    <td class="px-6 py-4 text-sm editable-cell" data-field="ziyaret_notlari" data-id="new" data-value="">
+                    <td class="px-6 py-4 text-sm editable-cell col-ziyaret_notlari" data-field="ziyaret_notlari" data-id="new" data-value="">
                         <span class="text-gray-400">Not...</span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">-</td>
                 </tr>
             `;
         }

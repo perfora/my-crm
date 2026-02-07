@@ -9,6 +9,10 @@ use App\Models\Ziyaret;
 use App\Models\TumIsler;
 
 // Login/Logout Routes (no auth middleware)
+Route::get('/finans', function () {
+    return view('finans');
+})->name('finans');
+
 Route::get('/login', function() {
     return view('auth.login');
 })->name('login')->middleware('guest');
@@ -481,12 +485,20 @@ Route::put('/markalar/{id}', function ($id) {
     ]);
     
     $marka->update($validated);
+
+    if (request()->ajax() || request()->wantsJson()) {
+        return response()->json(['success' => true, 'data' => $marka]);
+    }
     
     return redirect('/markalar')->with('message', 'Marka güncellendi.');
 });
 Route::delete('/markalar/{id}', function ($id) {
     $marka = \App\Models\Marka::findOrFail($id);
     $marka->delete();
+
+    if (request()->ajax() || request()->wantsJson()) {
+        return response()->json(['success' => true]);
+    }
     
     return redirect('/markalar')->with('message', 'Marka silindi.');
 });
