@@ -638,6 +638,22 @@
             document.querySelector('.text-3xl.font-bold').nextElementSibling.textContent = 'Toplam: ' + totalCount;
         }
 
+        const columnStorageKey = 'musteriler_column_preferences_v1';
+
+        function focusNextEditableCell(currentCell) {
+            const row = currentCell.closest('tr');
+            const cells = row.find('.editable-cell, .editable-select');
+            const index = cells.index(currentCell);
+            let next = cells.eq(index + 1);
+            if (!next.length) {
+                const nextRow = row.nextAll('tr').find('.editable-cell, .editable-select').first();
+                if (nextRow.length) next = nextRow;
+            }
+            if (next && next.length) {
+                setTimeout(() => next.click(), 0);
+            }
+        }
+
         // Inline editing - Text fields (Sehir, Telefon)
         $(document).on('click', '.editable-cell:not(.editing)', function() {
             const cell = $(this);
@@ -688,6 +704,11 @@
                 if (e.which === 27) { // Escape
                     cell.html(originalContent);
                     cell.removeClass('editing');
+                }
+                if (e.which === 9) { // Tab
+                    e.preventDefault();
+                    saveEdit();
+                    focusNextEditableCell(cell);
                 }
             });
         });
@@ -957,6 +978,12 @@
             setTimeout(() => {
                 document.getElementById('scroll-content-top').style.width = document.getElementById('musteriler-table').offsetWidth + 'px';
             }, 100);
+
+            const prefs = {};
+            $('.column-toggle').each(function() {
+                prefs[$(this).data('column')] = $(this).is(':checked');
+            });
+            localStorage.setItem(columnStorageKey, JSON.stringify(prefs));
         });
         
         function getColumnIndex(columnName) {
@@ -966,6 +993,21 @@
         
         // Initialize column visibility on page load
         $(document).ready(function() {
+            const savedPrefsRaw = localStorage.getItem(columnStorageKey);
+            if (savedPrefsRaw) {
+                try {
+                    const savedPrefs = JSON.parse(savedPrefsRaw);
+                    $('.column-toggle').each(function() {
+                        const column = $(this).data('column');
+                        if (Object.prototype.hasOwnProperty.call(savedPrefs, column)) {
+                            $(this).prop('checked', !!savedPrefs[column]);
+                        }
+                    });
+                } catch (e) {
+                    console.warn('Musteriler sütun tercihleri okunamadı:', e);
+                }
+            }
+
             $('.column-toggle').each(function() {
                 const column = $(this).data('column');
                 const isChecked = $(this).is(':checked');
