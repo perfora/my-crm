@@ -1012,6 +1012,7 @@
         
     </div> <!-- max-w-7xl bitiş -->
 
+    <script src="{{ asset('js/crm-toolbar.js') }}"></script>
     <script>
         $(document).ready(function() {
             function getSelect2Config(placeholder, extra = {}) {
@@ -1146,43 +1147,23 @@
             // CHECKBOX SEÇİM YÖNETİMİ
             // ============================================
             let selectedIds = [];
-            
-            // Tümünü seç/bırak
-            $('#select-all').on('change', function() {
-                const isChecked = $(this).is(':checked');
-                $('.row-checkbox').prop('checked', isChecked);
-                updateSelection();
-            });
-            
-            // Tek checkbox değişikliği
-            $(document).on('change', '.row-checkbox', function() {
-                updateSelection();
-                
-                // Tümünü seç checkbox'ını güncelle
-                const totalCheckboxes = $('.row-checkbox').length;
-                const checkedCheckboxes = $('.row-checkbox:checked').length;
-                $('#select-all').prop('checked', totalCheckboxes === checkedCheckboxes);
-            });
-            
-            // Seçimleri güncelle
-            function updateSelection() {
-                selectedIds = [];
-                $('.row-checkbox:checked').each(function() {
-                    selectedIds.push($(this).data('id'));
-                });
-                
-                // Buton durumlarını güncelle
-                const hasSelection = selectedIds.length > 0;
-                $('#btn-duplicate').prop('disabled', !hasSelection);
-                $('#btn-delete').prop('disabled', !hasSelection);
-                
-                // Seçim sayısını göster
-                if (hasSelection) {
-                    $('#selection-count').text(selectedIds.length + ' kayıt seçili');
-                } else {
-                    $('#selection-count').text('');
+            const columnStorageKey = 'tumIslerColumnPreferences';
+
+            window.CrmToolbar.init({
+                storageKey: columnStorageKey,
+                onColumnToggle: function(column, isVisible) {
+                    const columnIndex = $('th[data-column="' + column + '"]').index();
+                    if (columnIndex >= 0) {
+                        $('thead th').eq(columnIndex).toggle(isVisible);
+                        $('tbody tr').each(function() {
+                            $(this).find('td').eq(columnIndex).toggle(isVisible);
+                        });
+                    }
+                },
+                onSelectionChange: function(ids) {
+                    selectedIds = ids;
                 }
-            }
+            });
             
             // ============================================
             // BULK İŞLEMLER
@@ -1293,82 +1274,7 @@
                 }
             });
             
-            // Sütun seçici toggle
-            $('#column-toggle-btn').on('click', function(e) {
-                e.stopPropagation();
-                $('#column-menu').toggleClass('hidden');
-                $('#column-arrow').text($('#column-menu').hasClass('hidden') ? '▼' : '▲');
-            });
-            
-            // Dışarı tıklayınca kapat
-            $(document).on('click', function(e) {
-                if (!$(e.target).closest('#column-toggle-btn, #column-menu').length) {
-                    $('#column-menu').addClass('hidden');
-                    $('#column-arrow').text('▼');
-                }
-            });
-            
-            // Sütun göster/gizle
-            $('.column-toggle').on('change', function() {
-                const column = $(this).data('column');
-                const isChecked = $(this).is(':checked');
-                const columnIndex = $('th[data-column="' + column + '"]').index();
-                
-                if (columnIndex >= 0) {
-                    // Başlık hücresini göster/gizle
-                    $('thead th').eq(columnIndex).toggle(isChecked);
-                    // Tüm satırlarda o sütunu göster/gizle
-                    $('tbody tr').each(function() {
-                        $(this).find('td').eq(columnIndex).toggle(isChecked);
-                    });
-                }
-                
-                // localStorage'a kaydet
-                saveColumnPreferences();
-            });
-            
-            // Sayfa yüklendiğinde kaydedilmiş sütun tercihlerini yükle
-            loadColumnPreferences();
         });
-        
-        // Sütun tercihlerini localStorage'a kaydet
-        function saveColumnPreferences() {
-            const preferences = {};
-            $('.column-toggle').each(function() {
-                const column = $(this).data('column');
-                const isChecked = $(this).is(':checked');
-                preferences[column] = isChecked;
-            });
-            localStorage.setItem('tumIslerColumnPreferences', JSON.stringify(preferences));
-        }
-        
-        // Sütun tercihlerini localStorage'dan yükle
-        function loadColumnPreferences() {
-            const saved = localStorage.getItem('tumIslerColumnPreferences');
-            if (!saved) {
-                // İlk yükleme - checked olmayanları gizle
-                $('.column-toggle').each(function() {
-                    if (!$(this).is(':checked')) {
-                        $(this).trigger('change');
-                    }
-                });
-                return;
-            }
-            
-            const preferences = JSON.parse(saved);
-            $('.column-toggle').each(function() {
-                const column = $(this).data('column');
-                if (preferences.hasOwnProperty(column)) {
-                    const shouldBeChecked = preferences[column];
-                    $(this).prop('checked', shouldBeChecked);
-                    
-                    // Sütunu göster/gizle
-                    if (!shouldBeChecked) {
-                        $(this).trigger('change');
-                    }
-                }
-            });
-        }
         
         // Filtre Kaydetme ve Yükleme Sistemi (Database-backed)
         async function saveCurrentFilter() {
