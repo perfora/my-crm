@@ -113,6 +113,10 @@ Route::middleware(['auth'])->group(function () {
         ]);
     })->name('system-logs.index');
 
+    // System export
+    Route::get('/sistem/disa-aktar', [App\Http\Controllers\SystemExportController::class, 'index'])->name('system-export.index');
+    Route::post('/sistem/disa-aktar', [App\Http\Controllers\SystemExportController::class, 'export'])->name('system-export.download');
+
     // Takvim
     Route::get('/takvim', [App\Http\Controllers\CalendarController::class, 'index'])->name('calendar.index');
     Route::get('/takvim/sync', [App\Http\Controllers\CalendarController::class, 'sync'])->name('calendar.sync');

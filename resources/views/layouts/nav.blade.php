@@ -49,12 +49,23 @@
                     <a href="/raporlar" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('raporlar*') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
                         📊 Raporlar
                     </a>
-                    <a href="/sistem-loglari" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('sistem-loglari*') ? 'bg-red-500 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
-                        🛠️ Loglar
-                    </a>
-                    <a href="/notion-settings" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('notion-settings*') ? 'bg-purple-500 text-white' : 'text-purple-700 hover:bg-purple-100' }}">
-                        🔗 Notion
-                    </a>
+                    <div class="relative group">
+                        <button class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('sistem-loglari*') || request()->is('notion-settings*') || request()->is('sistem/disa-aktar*') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100' }} inline-flex items-center gap-1">
+                            ⚙️ Sistem
+                            <span class="text-xs">▼</span>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-56 bg-white border rounded-lg shadow-lg py-2 hidden group-hover:block z-50">
+                            <a href="/sistem-loglari" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                🛠️ Loglar
+                            </a>
+                            <a href="/notion-settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                🔗 Notion
+                            </a>
+                            <a href="/sistem/disa-aktar" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                📤 Dışa Aktar
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
             
