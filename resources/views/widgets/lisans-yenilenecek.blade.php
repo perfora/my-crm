@@ -56,7 +56,7 @@
 </div>
 @endif
 
-<div class="bg-white rounded-lg shadow">
+<div class="bg-white rounded-lg shadow border-t-4 border-orange-500">
     <div class="p-6 border-b">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-bold">🔄 Lisans Yenilenecek İşler</h2>
