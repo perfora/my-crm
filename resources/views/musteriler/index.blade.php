@@ -425,6 +425,7 @@
         </div>
     </div>
 
+    <script src="{{ asset('js/crm-toolbar.js') }}"></script>
     <script>
         // Global değişkenler
         let existingTuruValues = @json($existingTuruValues);
@@ -767,6 +768,7 @@
         }
 
         const columnStorageKey = 'musteriler_column_preferences_v1';
+        let selectedIds = [];
 
         function focusNextEditableCell(currentCell) {
             const row = currentCell.closest('tr');
@@ -1000,36 +1002,6 @@
 
         // ==================== TOOLBAR İŞLEVLERİ ====================
         
-        // Checkbox selection management
-        let selectedIds = [];
-        
-        $('#select-all').on('change', function() {
-            const isChecked = $(this).is(':checked');
-            $('.row-checkbox').prop('checked', isChecked);
-            updateSelection();
-        });
-        
-        $(document).on('change', '.row-checkbox', function() {
-            updateSelection();
-        });
-        
-        function updateSelection() {
-            selectedIds = $('.row-checkbox:checked').map(function() {
-                return $(this).data('id');
-            }).get();
-            
-            // Update button states
-            $('#btn-duplicate, #btn-delete').prop('disabled', selectedIds.length === 0);
-            
-            // Update counter
-            if (selectedIds.length > 0) {
-                $('#selection-count').text(selectedIds.length + ' kayıt seçili');
-            } else {
-                $('#selection-count').text('');
-                $('#select-all').prop('checked', false);
-            }
-        }
-        
         // Bulk delete
         window.deleteSelected = function() {
             if (selectedIds.length === 0) return;
@@ -1071,84 +1043,30 @@
             }, 100);
         };
         
-        // ==================== SÜTUN GÖRÜNÜRLÜKcontrôlÜ ====================
-        
-        // Column toggle button
-        $('#column-toggle-btn').on('click', function(e) {
-            e.stopPropagation();
-            $('#column-menu').toggleClass('hidden');
-            $('#column-arrow').text($('#column-menu').hasClass('hidden') ? '▼' : '▲');
-        });
-        
-        // Close column menu when clicking outside
-        $(document).on('click', function(e) {
-            if (!$(e.target).closest('#column-toggle-btn, #column-menu').length) {
-                $('#column-menu').addClass('hidden');
-                $('#column-arrow').text('▼');
-            }
-        });
-        
-        // Column visibility toggle
-        $('.column-toggle').on('change', function() {
-            const column = $(this).data('column');
-            const isVisible = $(this).is(':checked');
-            const columnIndex = getColumnIndex(column);
-            
-            if (columnIndex !== -1) {
-                // Toggle header
-                $(`#musteriler-table thead tr th:eq(${columnIndex})`).toggle(isVisible);
-                // Toggle all cells in that column
-                $(`#musteriler-table tbody tr`).each(function() {
-                    $(this).find(`td:eq(${columnIndex})`).toggle(isVisible);
-                });
-            }
-            
-            // Update scroll bar width
-            setTimeout(() => {
-                document.getElementById('scroll-content-top').style.width = document.getElementById('musteriler-table').offsetWidth + 'px';
-            }, 100);
+        // ==================== SÜTUN GÖRÜNÜRLÜKcontroLÜ ====================
 
-            const prefs = {};
-            $('.column-toggle').each(function() {
-                prefs[$(this).data('column')] = $(this).is(':checked');
-            });
-            localStorage.setItem(columnStorageKey, JSON.stringify(prefs));
-        });
-        
         function getColumnIndex(columnName) {
             const columns = ['checkbox', 'sirket', 'sehir', 'telefon', 'derece', 'turu', 'adres', 'notlar', 'en_son_ziyaret', 'ziyaret_gun', 'ziyaret_adeti', 'toplam_teklif', 'kazanildi_toplami'];
             return columns.indexOf(columnName);
         }
-        
-        // Initialize column visibility on page load
-        $(document).ready(function() {
-            const savedPrefsRaw = localStorage.getItem(columnStorageKey);
-            if (savedPrefsRaw) {
-                try {
-                    const savedPrefs = JSON.parse(savedPrefsRaw);
-                    $('.column-toggle').each(function() {
-                        const column = $(this).data('column');
-                        if (Object.prototype.hasOwnProperty.call(savedPrefs, column)) {
-                            $(this).prop('checked', !!savedPrefs[column]);
-                        }
-                    });
-                } catch (e) {
-                    console.warn('Musteriler sütun tercihleri okunamadı:', e);
-                }
-            }
 
-            $('.column-toggle').each(function() {
-                const column = $(this).data('column');
-                const isChecked = $(this).is(':checked');
+        const toolbar = window.CrmToolbar.init({
+            storageKey: columnStorageKey,
+            onColumnToggle: function(column, isVisible) {
                 const columnIndex = getColumnIndex(column);
-                
-                if (columnIndex !== -1 && !isChecked) {
-                    $(`#musteriler-table thead tr th:eq(${columnIndex})`).hide();
+                if (columnIndex !== -1) {
+                    $(`#musteriler-table thead tr th:eq(${columnIndex})`).toggle(isVisible);
                     $(`#musteriler-table tbody tr`).each(function() {
-                        $(this).find(`td:eq(${columnIndex})`).hide();
+                        $(this).find(`td:eq(${columnIndex})`).toggle(isVisible);
                     });
                 }
-            });
+                setTimeout(() => {
+                    document.getElementById('scroll-content-top').style.width = document.getElementById('musteriler-table').offsetWidth + 'px';
+                }, 100);
+            },
+            onSelectionChange: function(ids) {
+                selectedIds = ids;
+            }
         });
     </script>
     
