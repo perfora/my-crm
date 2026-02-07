@@ -337,6 +337,7 @@
         </div>
     </div>
 
+    <script src="{{ asset('js/crm-toolbar.js') }}"></script>
     <script>
         // Form ve filtre toggle fonksiyonları
         function toggleForm() {
@@ -514,6 +515,9 @@
             container.innerHTML = html;
         }
 
+        const columnStorageKey = 'kisiler_column_preferences_v1';
+        let selectedIds = [];
+
         $(document).ready(function() {
             function getSelect2Config(placeholder, extra = {}) {
                 return Object.assign({
@@ -599,34 +603,6 @@
             });
 
             // ==================== TOOLBAR İŞLEVLERİ ====================
-            
-            // Checkbox selection management
-            let selectedIds = [];
-            
-            $('#select-all').on('change', function() {
-                const isChecked = $(this).is(':checked');
-                $('.row-checkbox').prop('checked', isChecked);
-                updateSelection();
-            });
-            
-            $(document).on('change', '.row-checkbox', function() {
-                updateSelection();
-            });
-        
-        function updateSelection() {
-            selectedIds = $('.row-checkbox:checked').map(function() {
-                return $(this).data('id');
-            }).get();
-            
-            $('#btn-duplicate, #btn-delete').prop('disabled', selectedIds.length === 0);
-            
-            if (selectedIds.length > 0) {
-                $('#selection-count').text(selectedIds.length + ' kayıt seçili');
-            } else {
-                $('#selection-count').text('');
-                $('#select-all').prop('checked', false);
-            }
-        }
         
         // Bulk delete
         window.deleteSelected = function() {
@@ -699,65 +675,31 @@
             }, 100);
         };
         
-        // ==================== SÜTUN GÖRÜNÜRLÜKcontrôlÜ ====================
-        
-        $('#column-toggle-btn').on('click', function(e) {
-            e.stopPropagation();
-            $('#column-menu').toggleClass('hidden');
-            $('#column-arrow').text($('#column-menu').hasClass('hidden') ? '▼' : '▲');
-        });
-        
-        $(document).on('click', function(e) {
-            if (!$(e.target).closest('#column-toggle-btn, #column-menu').length) {
-                $('#column-menu').addClass('hidden');
-                $('#column-arrow').text('▼');
-            }
-        });
-        
-        $('.column-toggle').on('change', function() {
-            const column = $(this).data('column');
-            const isVisible = $(this).is(':checked');
-            const columnIndex = getColumnIndex(column);
-            
-            if (columnIndex !== -1) {
-                $(`#kisiler-table thead tr th:eq(${columnIndex})`).toggle(isVisible);
-                $(`#kisiler-table tbody tr`).each(function() {
-                    $(this).find(`td:eq(${columnIndex})`).toggle(isVisible);
-                });
-            }
-            
-            setTimeout(() => {
-                document.getElementById('scroll-content-top').style.width = document.getElementById('kisiler-table').offsetWidth + 'px';
-            }, 100);
-
-            const prefs = {};
-            $('.column-toggle').each(function() {
-                prefs[$(this).data('column')] = $(this).is(':checked');
-            });
-            localStorage.setItem(columnStorageKey, JSON.stringify(prefs));
-        });
+        // ==================== SÜTUN GÖRÜNÜRLÜKcontroLÜ ====================
         
         function getColumnIndex(columnName) {
             const columns = ['checkbox', 'ad_soyad', 'firma', 'telefon', 'email', 'bolum', 'gorev', 'url'];
             return columns.indexOf(columnName);
         }
 
-        const columnStorageKey = 'kisiler_column_preferences_v1';
-
-        const savedPrefsRaw = localStorage.getItem(columnStorageKey);
-        if (savedPrefsRaw) {
-            try {
-                const savedPrefs = JSON.parse(savedPrefsRaw);
-                $('.column-toggle').each(function() {
-                    const column = $(this).data('column');
-                    if (Object.prototype.hasOwnProperty.call(savedPrefs, column)) {
-                        $(this).prop('checked', !!savedPrefs[column]);
-                    }
-                });
-            } catch (e) {
-                console.warn('Kisiler sütun tercihleri okunamadı:', e);
+        const toolbar = window.CrmToolbar.init({
+            storageKey: columnStorageKey,
+            onColumnToggle: function(column, isVisible) {
+                const columnIndex = getColumnIndex(column);
+                if (columnIndex !== -1) {
+                    $(`#kisiler-table thead tr th:eq(${columnIndex})`).toggle(isVisible);
+                    $(`#kisiler-table tbody tr`).each(function() {
+                        $(this).find(`td:eq(${columnIndex})`).toggle(isVisible);
+                    });
+                }
+                setTimeout(() => {
+                    document.getElementById('scroll-content-top').style.width = document.getElementById('kisiler-table').offsetWidth + 'px';
+                }, 100);
+            },
+            onSelectionChange: function(ids) {
+                selectedIds = ids;
             }
-        }
+        });
 
         function focusNextEditableCell(currentCell) {
             const row = currentCell.closest('tr');
