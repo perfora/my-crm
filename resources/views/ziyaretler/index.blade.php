@@ -726,6 +726,16 @@
             row.attr('data-' + key.replace(/_/g, '-'), value ?? '');
         }
 
+        function parseAjaxError(xhr, fallback = 'İşlem başarısız') {
+            if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+                return xhr.responseJSON.message;
+            }
+            if (xhr && xhr.responseText) {
+                return xhr.responseText;
+            }
+            return fallback;
+        }
+
         function buildUpdatePayload(row, overrides = {}) {
             const normalize = (val) => (val === '' ? null : val);
             const payload = {
@@ -799,8 +809,11 @@
             if (row.data('saving') || row.data('created')) return;
             row.data('saving', true);
             const payload = buildUpdatePayload(row, {});
-            if (!payload.ziyaret_ismi) {
+            const hasName = payload.ziyaret_ismi && String(payload.ziyaret_ismi).trim().length > 0;
+            const hasDate = !!(payload.ziyaret_tarihi || payload.arama_tarihi);
+            if (!hasName || !hasDate) {
                 row.data('saving', false);
+                if (onError) onError('Yeni kayıt için Ziyaret ve Ziyaret Tarihi zorunlu.');
                 return;
             }
             $.ajax({
@@ -818,9 +831,9 @@
                         location.reload();
                     }
                 },
-                error: function() {
+                error: function(xhr) {
                     row.data('saving', false);
-                    if (onError) onError();
+                    if (onError) onError(parseAjaxError(xhr, 'Kayıt oluşturulamadı!'));
                 }
             });
         }
@@ -889,8 +902,8 @@
                         createRow(row, function(newId) {
                             cell.data('id', newId);
                             row.data('id', newId);
-                        }, function() {
-                            alert('Kayıt oluşturulamadı!');
+                        }, function(message) {
+                            alert(message || 'Kayıt oluşturulamadı!');
                             cell.html(originalContent);
                             cell.removeClass('editing');
                         });
@@ -1017,8 +1030,8 @@
                         createRow(row, function(newId) {
                             cell.data('id', newId);
                             row.data('id', newId);
-                        }, function() {
-                            alert('Kayıt oluşturulamadı!');
+                        }, function(message) {
+                            alert(message || 'Kayıt oluşturulamadı!');
                             cell.html(originalContent);
                             cell.removeClass('editing');
                         });
@@ -1187,8 +1200,8 @@
                         createRow(row, function(newId) {
                             cell.data('id', newId);
                             row.data('id', newId);
-                        }, function() {
-                            alert('Kayıt oluşturulamadı!');
+                        }, function(message) {
+                            alert(message || 'Kayıt oluşturulamadı!');
                             cell.html(originalContent);
                             cell.removeClass('editing');
                         });
