@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Firmalar - CRM</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -73,6 +74,20 @@
                 {{ session('message') }}
             </div>
         @endif
+
+        <!-- Kayıtlı Filtreler -->
+        <div class="bg-white rounded-lg shadow mb-6 p-4">
+            <div class="flex flex-wrap items-center gap-3">
+                <label class="text-sm font-medium text-gray-600">Kayıtlı Filtreler:</label>
+                <div id="savedFiltersButtons" class="flex gap-1.5 flex-wrap flex-1">
+                    <p class="text-sm text-gray-500">Henüz kayıtlı filtre yok</p>
+                </div>
+                <input type="text" id="filterName" class="border border-gray-200 rounded px-2 py-1.5 text-sm w-48" placeholder="Filtre adı">
+                <button type="button" onclick="saveCurrentFilter()" class="bg-green-500 text-white px-3 py-1.5 rounded text-sm hover:bg-green-600">
+                    + Kaydet
+                </button>
+            </div>
+        </div>
 
         <!-- Form -->
         <div class="bg-white rounded-lg shadow mb-6">
@@ -483,6 +498,7 @@
             
             // Select2 başlat
             $('#derece-select, #turu-select, .select2-filter').select2(getSelect2Config('Seçiniz...'));
+            updateFilterButtons();
 
             // Scroll senkronizasyonu
             const scrollTop = document.getElementById('scroll-top');
@@ -638,6 +654,116 @@
             // Toplam sayıyı geri yükle
             const totalCount = rows.length - 1; // Empty row hariç
             document.querySelector('.text-3xl.font-bold').nextElementSibling.textContent = 'Toplam: ' + totalCount;
+        }
+
+        async function saveCurrentFilter() {
+            const filterName = (document.getElementById('filterName').value || '').trim();
+            if (!filterName) {
+                alert('Lütfen filtre adı girin!');
+                return;
+            }
+
+            const formData = {};
+            const form = document.getElementById('filterForm');
+            form.querySelectorAll('input, select').forEach(input => {
+                if (input.name && input.value) {
+                    formData[input.name] = input.value;
+                }
+            });
+
+            const response = await fetch('/api/saved-filters', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    name: filterName,
+                    page: 'musteriler',
+                    filter_data: formData
+                })
+            });
+
+            if (!response.ok) {
+                alert('Filtre kaydedilemedi!');
+                return;
+            }
+
+            document.getElementById('filterName').value = '';
+            await updateFilterButtons();
+        }
+
+        async function loadFilter(filterName) {
+            const response = await fetch('/api/saved-filters?page=musteriler');
+            const filters = await response.json();
+            const filter = filters.find(f => f.name === filterName);
+            if (!filter) return;
+
+            const form = document.getElementById('filterForm');
+            form.querySelectorAll('input, select').forEach(input => {
+                if (!input.name) return;
+                input.value = '';
+                if ($(input).hasClass('select2-hidden-accessible')) {
+                    $(input).val('').trigger('change');
+                }
+            });
+
+            Object.keys(filter.filter_data || {}).forEach(key => {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (!input) return;
+                input.value = filter.filter_data[key];
+                if ($(input).hasClass('select2-hidden-accessible')) {
+                    $(input).val(filter.filter_data[key]).trigger('change');
+                }
+            });
+
+            applyFilters();
+        }
+
+        async function deleteFilter(filterName) {
+            if (!confirm('Bu filtre silinsin mi?\n\n' + filterName)) return;
+
+            const response = await fetch('/api/saved-filters/' + encodeURIComponent(filterName) + '?page=musteriler', {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+
+            if (!response.ok) {
+                alert('Filtre silinemedi!');
+                return;
+            }
+
+            await updateFilterButtons();
+        }
+
+        async function updateFilterButtons() {
+            const response = await fetch('/api/saved-filters?page=musteriler');
+            const filters = await response.json();
+            const container = document.getElementById('savedFiltersButtons');
+
+            if (!filters.length) {
+                container.innerHTML = '<p class="text-sm text-gray-500">Henüz kayıtlı filtre yok</p>';
+                return;
+            }
+
+            let html = '';
+            filters.forEach(filter => {
+                const safeName = String(filter.name).replace(/'/g, "\\'");
+                html += `
+                    <div class="inline-flex items-center gap-0.5 bg-blue-50 hover:bg-blue-100 rounded border border-blue-200 transition-colors">
+                        <button type="button" onclick="loadFilter('${safeName}'); return false;" class="px-2 py-0.5 text-xs font-medium text-blue-700">
+                            ${filter.name}
+                        </button>
+                        <button type="button" onclick="deleteFilter('${safeName}'); return false;" class="px-1.5 py-0.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-r text-xs">
+                            ×
+                        </button>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
         }
 
         const columnStorageKey = 'musteriler_column_preferences_v1';
