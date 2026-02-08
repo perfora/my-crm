@@ -615,6 +615,16 @@
             return `<span class="inline-block max-w-[180px] truncate align-middle px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800" title="${safeFull}">${safeShort}</span>`;
         }
 
+        function renderNoteCellHtml(value) {
+            const safe = escapeHtml(value || '-');
+            return `
+                <div class="flex items-center gap-2">
+                    <div class="max-w-xs truncate">${safe}</div>
+                    <button type="button" class="notes-edit-btn text-xs text-blue-600 hover:underline">Düzenle</button>
+                </div>
+            `;
+        }
+
         function formatDateDisplay(value, isTelefon) {
             if (!value) return '-';
             const date = new Date(value);
@@ -896,7 +906,11 @@
                 saved = true;
                 if (id === 'new') {
                     setRowValue(row, field, newValue);
-                    cell.html(newValue || '-');
+                    if (field === 'ziyaret_notlari') {
+                        cell.html(renderNoteCellHtml(newValue));
+                    } else {
+                        cell.html(newValue || '-');
+                    }
                     cell.removeClass('editing');
                     if (isRowReady(row)) {
                         createRow(row, function(newId) {
@@ -919,7 +933,11 @@
                         success: function() {
                             cell.data('value', newValue);
                             setRowValue(row, field, newValue);
-                            cell.html(newValue || '-');
+                            if (field === 'ziyaret_notlari') {
+                                cell.html(renderNoteCellHtml(newValue));
+                            } else {
+                                cell.html(newValue || '-');
+                            }
                             cell.removeClass('editing');
                         },
                         error: function(xhr) {
