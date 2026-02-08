@@ -181,8 +181,7 @@
                         
                         <div>
                             <label class="block text-sm font-medium mb-1">Derece</label>
-                            <select name="derece" id="filter-derece" class="w-full border rounded px-3 py-2 select2-filter">
-                                <option value="">Tümü</option>
+                            <select name="derece[]" id="filter-derece" class="w-full border rounded px-3 py-2 select2-filter" multiple>
                                 <option value="1 -Sık">1 - Sık</option>
                                 <option value="2 - Orta">2 - Orta</option>
                                 <option value="3- Düşük">3 - Düşük</option>
@@ -192,8 +191,7 @@
                         
                         <div>
                             <label class="block text-sm font-medium mb-1">Türü</label>
-                            <select name="turu" id="filter-turu" class="w-full border rounded px-3 py-2 select2-filter">
-                                <option value="">Tümü</option>
+                            <select name="turu[]" id="filter-turu" class="w-full border rounded px-3 py-2 select2-filter" multiple>
                                 <option value="Netcom">Netcom</option>
                                 <option value="Bayi">Bayi</option>
                                 <option value="Resmi Kurum">Resmi Kurum</option>
@@ -498,7 +496,11 @@
             });
             
             // Select2 başlat
-            $('#derece-select, #turu-select, .select2-filter').select2(getSelect2Config('Seçiniz...'));
+            $('#derece-select, #turu-select').select2(getSelect2Config('Seçiniz...'));
+            $('#filter-derece, #filter-turu').select2(getSelect2Config('Bir veya daha fazla seçin...', {
+                closeOnSelect: false,
+                placeholder: 'Seçiniz'
+            }));
             updateFilterButtons();
 
             // Scroll senkronizasyonu
@@ -608,8 +610,8 @@
         function applyFilters() {
             const sirket = document.getElementById('filter-sirket').value.toLowerCase();
             const sehir = document.getElementById('filter-sehir').value.toLowerCase();
-            const derece = document.getElementById('filter-derece').value;
-            const turu = document.getElementById('filter-turu').value;
+            const derece = ($('#filter-derece').val() || []).filter(Boolean);
+            const turu = ($('#filter-turu').val() || []).filter(Boolean);
             
             const tbody = document.querySelector('#musteriler-table tbody');
             const rows = tbody.querySelectorAll('tr');
@@ -628,8 +630,8 @@
                 
                 if (sirket && !rowSirket.includes(sirket)) show = false;
                 if (sehir && !rowSehir.includes(sehir)) show = false;
-                if (derece && rowDerece !== derece) show = false;
-                if (turu && rowTuru !== turu) show = false;
+                if (derece.length && !derece.includes(rowDerece)) show = false;
+                if (turu.length && !turu.includes(rowTuru)) show = false;
                 
                 row.style.display = show ? '' : 'none';
                 if (show) visibleCount++;
@@ -667,7 +669,15 @@
             const formData = {};
             const form = document.getElementById('filterForm');
             form.querySelectorAll('input, select').forEach(input => {
-                if (input.name && input.value) {
+                if (!input.name) return;
+                if (input.multiple) {
+                    const selected = Array.from(input.selectedOptions).map(o => o.value).filter(Boolean);
+                    if (selected.length) {
+                        formData[input.name] = selected;
+                    }
+                    return;
+                }
+                if (input.value) {
                     formData[input.name] = input.value;
                 }
             });
@@ -710,11 +720,19 @@
             });
 
             Object.keys(filter.filter_data || {}).forEach(key => {
-                const input = form.querySelector(`[name="${key}"]`);
+                let input = form.querySelector(`[name="${key}"]`);
+                if (!input && !key.endsWith('[]')) {
+                    input = form.querySelector(`[name="${key}[]"]`);
+                }
                 if (!input) return;
-                input.value = filter.filter_data[key];
+                const value = filter.filter_data[key];
+                if (input.multiple) {
+                    $(input).val(Array.isArray(value) ? value : [value]).trigger('change');
+                    return;
+                }
+                input.value = value;
                 if ($(input).hasClass('select2-hidden-accessible')) {
-                    $(input).val(filter.filter_data[key]).trigger('change');
+                    $(input).val(value).trigger('change');
                 }
             });
 
