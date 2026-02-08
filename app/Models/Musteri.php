@@ -36,15 +36,61 @@ class Musteri extends Model
         return $this->hasMany(Ziyaret::class);
     }
 
-    // En Son Ziyaret (rollup)
-    public function getEnSonZiyaretAttribute()
+    // En son baglanti tarihi (ziyaret veya telefon)
+    public function getSonBaglantiTarihiAttribute()
     {
         $sonZiyaret = $this->ziyaretler()
             ->whereNotNull('ziyaret_tarihi')
-            ->orderBy('ziyaret_tarihi', 'desc')
+            ->max('ziyaret_tarihi');
+
+        $sonArama = $this->ziyaretler()
+            ->whereNotNull('arama_tarihi')
+            ->max('arama_tarihi');
+
+        if (!$sonZiyaret && !$sonArama) {
+            return null;
+        }
+
+        if ($sonZiyaret && !$sonArama) {
+            return \Carbon\Carbon::parse($sonZiyaret);
+        }
+
+        if (!$sonZiyaret && $sonArama) {
+            return \Carbon\Carbon::parse($sonArama);
+        }
+
+        $ziyaretTarih = \Carbon\Carbon::parse($sonZiyaret);
+        $aramaTarih = \Carbon\Carbon::parse($sonArama);
+        return $ziyaretTarih->greaterThanOrEqualTo($aramaTarih) ? $ziyaretTarih : $aramaTarih;
+    }
+
+    // En son baglanti tipi (Ziyaret / Telefon)
+    public function getSonBaglantiTuruAttribute()
+    {
+        $tarih = $this->son_baglanti_tarihi;
+        if (!$tarih) {
+            return null;
+        }
+
+        $record = $this->ziyaretler()
+            ->where(function ($q) use ($tarih) {
+                $q->where('ziyaret_tarihi', $tarih)
+                  ->orWhere('arama_tarihi', $tarih);
+            })
+            ->orderByDesc('id')
             ->first();
-        
-        return $sonZiyaret ? $sonZiyaret->ziyaret_tarihi : null;
+
+        if (!$record) {
+            return null;
+        }
+
+        return $record->tur ?: ($record->arama_tarihi ? 'Telefon' : 'Ziyaret');
+    }
+
+    // Geriye uyumluluk: "En Son Ziyaret" accessor'u artik son baglanti tarihini doner
+    public function getEnSonZiyaretAttribute()
+    {
+        return $this->son_baglanti_tarihi;
     }
 
     // Ziyaret Adeti (rollup)
@@ -53,12 +99,11 @@ class Musteri extends Model
         return $this->ziyaretler()->count();
     }
 
-    // Ziyaret Gün (formula - son ziyaretten bugüne kaç gün)
+    // Baglanti gunu (son baglantidan bugune kac gun)
     public function getZiyaretGunAttribute()
     {
-        if ($this->en_son_ziyaret) {
-            // Bugünden son ziyaret tarihini çıkar (pozitif = geçmiş, negatif = gelecek)
-            return (int) \Carbon\Carbon::parse($this->en_son_ziyaret)->diffInDays(now(), false);
+        if ($this->son_baglanti_tarihi) {
+            return (int) \Carbon\Carbon::parse($this->son_baglanti_tarihi)->diffInDays(now(), false);
         }
         return null;
     }

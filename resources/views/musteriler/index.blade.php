@@ -266,10 +266,13 @@
                                     <input type="checkbox" class="column-toggle" data-column="notlar"> Notlar
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" class="column-toggle" data-column="en_son_ziyaret" checked> Son Ziyaret
+                                    <input type="checkbox" class="column-toggle" data-column="en_son_ziyaret" checked> Son Bağlantı
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" class="column-toggle" data-column="ziyaret_gun" checked> Ziyaret Gün
+                                    <input type="checkbox" class="column-toggle" data-column="son_baglanti_turu" checked> Bağlantı Türü
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="ziyaret_gun" checked> Bağlantı Gün
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
                                     <input type="checkbox" class="column-toggle" data-column="ziyaret_adeti" checked> Ziyaret Adeti
@@ -322,8 +325,9 @@
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="turu">Türü <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="adres">Adres <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="notlar">Notlar <span class="sort-icon"></span></th>
-                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="en_son_ziyaret">Son Ziyaret <span class="sort-icon"></span></th>
-                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="ziyaret_gun">Ziyaret Gün <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="en_son_ziyaret">Son Bağlantı <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="son_baglanti_turu">Bağlantı Türü <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="ziyaret_gun">Bağlantı Gün <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="ziyaret_adeti">Ziyaret Adeti <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="toplam_teklif">Toplam Teklif <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="kazanildi_toplami">Kazanıldı <span class="sort-icon"></span></th>
@@ -343,6 +347,7 @@
                                 data-derece="{{ $musteri->derece ?? '' }}" 
                                 data-turu="{{ $musteri->turu ?? '' }}" 
                                 data-en_son_ziyaret="{{ $musteri->en_son_ziyaret ?? '' }}" 
+                                data-son_baglanti_turu="{{ $musteri->son_baglanti_turu ?? '' }}"
                                 data-ziyaret_gun="{{ (int)($musteri->ziyaret_gun ?? 0) }}" 
                                 data-ziyaret_adeti="{{ $musteri->ziyaret_adeti }}" 
                                 data-toplam_teklif="{{ $musteri->toplam_teklif }}" 
@@ -385,6 +390,15 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $musteri->en_son_ziyaret ? $musteri->en_son_ziyaret->format('d.m.Y') : '-' }}
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    @if($musteri->son_baglanti_turu)
+                                        <span class="px-2 py-1 text-xs rounded-full {{ $musteri->son_baglanti_turu === 'Telefon' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800' }}">
+                                            {{ $musteri->son_baglanti_turu }}
+                                        </span>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($musteri->ziyaret_gun !== null)
                                         <span class="px-2 py-1 text-xs rounded-full 
@@ -412,7 +426,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="13" class="px-6 py-4 text-center text-gray-500">
+                                <td colspan="14" class="px-6 py-4 text-center text-gray-500">
                                     Henüz müşteri kaydı yok.
                                 </td>
                             </tr>
@@ -1064,7 +1078,7 @@
         // ==================== SÜTUN GÖRÜNÜRLÜKcontroLÜ ====================
 
         function getColumnIndex(columnName) {
-            const columns = ['checkbox', 'sirket', 'sehir', 'telefon', 'derece', 'turu', 'adres', 'notlar', 'en_son_ziyaret', 'ziyaret_gun', 'ziyaret_adeti', 'toplam_teklif', 'kazanildi_toplami'];
+            const columns = ['checkbox', 'sirket', 'sehir', 'telefon', 'derece', 'turu', 'adres', 'notlar', 'en_son_ziyaret', 'son_baglanti_turu', 'ziyaret_gun', 'ziyaret_adeti', 'toplam_teklif', 'kazanildi_toplami'];
             return columns.indexOf(columnName);
         }
 
