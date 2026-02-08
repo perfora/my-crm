@@ -869,7 +869,9 @@
             const currentValue = cell.data('value') || '';
             const row = cell.closest('tr');
 
-            if (field === 'ziyaret_notlari' && !cell.data('forceEdit')) {
+            // Notlar modalini sadece mevcut kayitlarda goster.
+            // Yeni satirda not hucresi dogrudan duzenlenebilir olmali.
+            if (field === 'ziyaret_notlari' && id !== 'new' && !cell.data('forceEdit')) {
                 const text = currentValue || '';
                 openNoteModal(text);
                 return;
