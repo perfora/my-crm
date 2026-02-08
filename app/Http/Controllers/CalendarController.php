@@ -126,7 +126,10 @@ class CalendarController extends Controller
             $subject = $ziyaret->ziyaret_ismi ?: 'Ziyaret';
             $startAt = $ziyaret->ziyaret_tarihi ? \Carbon\Carbon::parse($ziyaret->ziyaret_tarihi) : null;
             if (!$startAt && $ziyaret->arama_tarihi) {
-                $startAt = \Carbon\Carbon::parse($ziyaret->arama_tarihi)->setTime(9, 0);
+                $startAt = \Carbon\Carbon::parse($ziyaret->arama_tarihi);
+                if ((int) $startAt->format('H') === 0 && (int) $startAt->format('i') === 0) {
+                    $startAt->setTime(9, 0);
+                }
             }
             if (!$startAt) {
                 $skipped++;

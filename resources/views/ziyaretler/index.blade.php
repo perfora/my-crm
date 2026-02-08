@@ -282,7 +282,8 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap editable-date col-ziyaret_tarihi" data-field="tarih" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->tur == 'Telefon' ? $ziyaret->arama_tarihi : $ziyaret->ziyaret_tarihi }}">
                                     @if($ziyaret->tur == 'Telefon' && $ziyaret->arama_tarihi)
-                                        {{ \Carbon\Carbon::parse($ziyaret->arama_tarihi)->format('d.m.Y') }}
+                                        @php($arama = \Carbon\Carbon::parse($ziyaret->arama_tarihi))
+                                        {{ ($arama->hour || $arama->minute) ? $arama->format('d.m.Y H:i') : $arama->format('d.m.Y') }}
                                     @elseif($ziyaret->ziyaret_tarihi)
                                         {{ $ziyaret->ziyaret_tarihi->format('d.m.Y H:i') }}
                                     @else
@@ -618,9 +619,6 @@
             if (!value) return '-';
             const date = new Date(value);
             if (Number.isNaN(date.getTime())) return value;
-            if (isTelefon) {
-                return date.toLocaleDateString('tr-TR');
-            }
             // Saat varsa (00:00'dan farklıysa) saat ile göster
             if (date.getHours() !== 0 || date.getMinutes() !== 0) {
                 return date.toLocaleString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });

@@ -49,8 +49,8 @@
                     
                     <div>
                         <label class="block text-sm font-medium mb-1">Arama Tarihi</label>
-                        <input type="date" name="arama_tarihi" 
-                               value="{{ $ziyaret->arama_tarihi ? $ziyaret->arama_tarihi->format('Y-m-d') : '' }}" 
+                        <input type="datetime-local" name="arama_tarihi" 
+                               value="{{ $ziyaret->arama_tarihi ? $ziyaret->arama_tarihi->format('Y-m-d\TH:i') : '' }}" 
                                class="w-full border rounded px-3 py-2">
                     </div>
                     

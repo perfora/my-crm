@@ -22,7 +22,7 @@ class Ziyaret extends Model
 
     protected $casts = [
         'ziyaret_tarihi' => 'datetime',
-        'arama_tarihi' => 'date',
+        'arama_tarihi' => 'datetime',
     ];
 
     // İlişki
@@ -55,7 +55,7 @@ class Ziyaret extends Model
         }
         
         if ($this->arama_tarihi) {
-            return $this->arama_tarihi->format('d.m.Y');
+            return $this->arama_tarihi->format('d.m.Y H:i');
         }
         
         return null;
