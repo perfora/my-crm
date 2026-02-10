@@ -909,7 +909,9 @@
                     };
                 };
                 select2Config.templateResult = function(data) {
-                    if (!data.id) return data.text;
+                    if (!data || typeof data.id === 'undefined' || data.id === null) {
+                        return data && data.text ? data.text : '';
+                    }
                     const canDelete = !defaultTuruValues.includes(data.id) && data.id !== '__new__';
                     const deleteBtn = canDelete
                         ? `<button type="button" class="js-turu-delete ml-2 text-red-500 hover:text-red-700 font-bold" data-value="${escapeHtml(data.id)}" data-select-id="${escapeHtml(selectId)}">×</button>`
