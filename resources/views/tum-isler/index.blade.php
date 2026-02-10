@@ -717,6 +717,12 @@
                                 <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
                                     <input type="checkbox" class="column-toggle" data-column="updated_at"> Güncelleme
                                 </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="notlar"> Notlar
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="gecmis_notlar"> Geçmiş Notlar
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -749,6 +755,8 @@
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="kar_tutari">Kar <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="is_guncellenme_tarihi">Açılış <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="updated_at">Güncelleme <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="notlar">Notlar <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="gecmis_notlar">Geçmiş Notlar <span class="sort-icon"></span></th>
                             <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase">Yenileme</th>
                         </tr>
                     </thead>
@@ -861,7 +869,9 @@
                                 data-teklif_tutari="{{ $is->teklif_tutari ?? 0 }}" 
                                 data-alis_tutari="{{ $is->alis_tutari ?? 0 }}" 
                                 data-kar_tutari="{{ $is->kar_tutari ?? 0 }}" 
-                                data-is_guncellenme_tarihi="{{ $is->is_guncellenme_tarihi }}">
+                                data-is_guncellenme_tarihi="{{ $is->is_guncellenme_tarihi }}"
+                                data-notlar="{{ $is->notlar ?? '' }}"
+                                data-gecmis_notlar="{{ $is->gecmis_notlar ?? '' }}">
                                 <td class="px-3 py-3 text-center">
                                     <input type="checkbox" class="row-checkbox cursor-pointer" data-id="{{ $is->id }}">
                                 </td>
@@ -973,6 +983,12 @@
                                 <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
                                     {{ $is->updated_at->format('d.m.Y H:i') }}
                                 </td>
+                                <td class="px-3 py-3 text-sm editable-cell max-w-xs truncate" data-field="notlar" data-id="{{ $is->id }}" data-value="{{ $is->notlar ?? '' }}" title="{{ $is->notlar ?? '' }}">
+                                    {{ $is->notlar ?: '-' }}
+                                </td>
+                                <td class="px-3 py-3 text-sm editable-cell max-w-xs truncate" data-field="gecmis_notlar" data-id="{{ $is->id }}" data-value="{{ $is->gecmis_notlar ?? '' }}" title="{{ $is->gecmis_notlar ?? '' }}">
+                                    {{ $is->gecmis_notlar ?: '-' }}
+                                </td>
                                 <td class="px-3 py-3 whitespace-nowrap text-center">
                                     @if($is->tipi === 'Kazanıldı' && $is->lisans_bitis)
                                         @php
@@ -1000,7 +1016,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="16" class="px-3 py-3 text-center text-gray-500">
+                                <td colspan="18" class="px-3 py-3 text-center text-gray-500">
                                     Henüz iş kaydı yok.
                                 </td>
                             </tr>
@@ -1261,6 +1277,12 @@
                         <td class="px-3 py-3 whitespace-nowrap">-</td>
                         <td class="px-3 py-3 whitespace-nowrap editable-date" data-field="is_guncellenme_tarihi" data-id="new" data-value="">-</td>
                         <td class="px-3 py-3 whitespace-nowrap">-</td>
+                        <td class="px-3 py-3 editable-cell" data-field="notlar" data-id="new" data-value="">
+                            <span class="text-gray-400">Not...</span>
+                        </td>
+                        <td class="px-3 py-3 editable-cell" data-field="gecmis_notlar" data-id="new" data-value="">
+                            <span class="text-gray-400">Geçmiş not...</span>
+                        </td>
                         <td class="px-3 py-3 whitespace-nowrap text-center">-</td>
                     </tr>
                 `;
