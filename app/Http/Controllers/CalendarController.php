@@ -124,9 +124,11 @@ class CalendarController extends Controller
 
         foreach ($ziyaretler as $ziyaret) {
             $subject = $ziyaret->ziyaret_ismi ?: 'Ziyaret';
-            $startAt = $ziyaret->ziyaret_tarihi ? \Carbon\Carbon::parse($ziyaret->ziyaret_tarihi) : null;
+            $startAt = $ziyaret->ziyaret_tarihi
+                ? \Carbon\Carbon::parse($ziyaret->ziyaret_tarihi, 'Europe/Istanbul')
+                : null;
             if (!$startAt && $ziyaret->arama_tarihi) {
-                $startAt = \Carbon\Carbon::parse($ziyaret->arama_tarihi);
+                $startAt = \Carbon\Carbon::parse($ziyaret->arama_tarihi, 'Europe/Istanbul');
                 if ((int) $startAt->format('H') === 0 && (int) $startAt->format('i') === 0) {
                     $startAt->setTime(9, 0);
                 }

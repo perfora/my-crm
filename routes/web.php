@@ -12,6 +12,17 @@ use App\Models\SystemLog;
 use App\Models\ChangeJournal;
 use App\Support\LogSanitizer;
 
+if (!function_exists('crmToIstanbulCarbon')) {
+    function crmToIstanbulCarbon($value): \Carbon\Carbon
+    {
+        if ($value instanceof \Carbon\Carbon) {
+            return $value->copy()->setTimezone('Europe/Istanbul');
+        }
+
+        return \Carbon\Carbon::parse($value, 'Europe/Istanbul');
+    }
+}
+
 // Login/Logout Routes (no auth middleware)
 Route::get('/finans', function () {
     return view('finans');
@@ -817,7 +828,7 @@ Route::put('/ziyaretler/{id}', function ($id) {
     // Outlook senkron - Beklemede/Planlandı ise yaz
     if (in_array($ziyaret->durumu, ['Beklemede', 'Planlandı']) && $ziyaret->ziyaret_tarihi) {
         $subject = $ziyaret->ziyaret_ismi ?: 'Ziyaret';
-        $start = \Carbon\Carbon::parse($ziyaret->ziyaret_tarihi);
+        $start = crmToIstanbulCarbon($ziyaret->ziyaret_tarihi);
         $end = $start->copy()->addMinutes(30);
         $body = $ziyaret->ziyaret_notlari ?? '';
         $ews = app(\App\Services\ExchangeEwsService::class);
@@ -903,7 +914,7 @@ Route::post('/ziyaretler', function () {
     // Outlook senkron - Beklemede/Planlandı ise yaz
     if (in_array($ziyaret->durumu, ['Beklemede', 'Planlandı']) && $ziyaret->ziyaret_tarihi) {
         $subject = $ziyaret->ziyaret_ismi ?: 'Ziyaret';
-        $start = \Carbon\Carbon::parse($ziyaret->ziyaret_tarihi);
+        $start = crmToIstanbulCarbon($ziyaret->ziyaret_tarihi);
         $end = $start->copy()->addMinutes(30);
         $body = $ziyaret->ziyaret_notlari ?? '';
         $ews = app(\App\Services\ExchangeEwsService::class);
