@@ -963,6 +963,7 @@ Route::post('/tum-isler', function () {
         'kur' => 'nullable|numeric',
         'kapanis_tarihi' => 'nullable|date',
         'lisans_bitis' => 'nullable|date',
+        'is_guncellenme_tarihi' => 'nullable|date',
         'notlar' => 'nullable|string',
         'gecmis_notlar' => 'nullable|string',
         'aciklama' => 'nullable|string',
@@ -979,14 +980,14 @@ Route::post('/tum-isler', function () {
     // AJAX inline editing için yeni kayıt
     if (request()->ajax() || request()->wantsJson()) {
         $is = \App\Models\TumIsler::create(array_merge($validated, [
-            'is_guncellenme_tarihi' => now()
+            'is_guncellenme_tarihi' => $validated['is_guncellenme_tarihi'] ?? now()
         ]));
         $is->load(['musteri', 'marka']);
         return response()->json(['success' => true, 'data' => $is]);
     }
     
     \App\Models\TumIsler::create(array_merge($validated, [
-        'is_guncellenme_tarihi' => now()
+        'is_guncellenme_tarihi' => $validated['is_guncellenme_tarihi'] ?? now()
     ]));
     
     // Mobil'den geliyorsa mobil'e yönlendir
@@ -1036,6 +1037,7 @@ Route::put('/tum-isler/{id}', function ($id) {
             'kur' => 'nullable|numeric',
             'kapanis_tarihi' => 'nullable|date',
             'lisans_bitis' => 'nullable|date',
+            'is_guncellenme_tarihi' => 'nullable|date',
             'notlar' => 'nullable|string',
             'gecmis_notlar' => 'nullable|string',
             'aciklama' => 'nullable|string',
@@ -1078,6 +1080,7 @@ Route::put('/tum-isler/{id}', function ($id) {
         'kur' => 'nullable|numeric',
         'kapanis_tarihi' => 'nullable|date',
         'lisans_bitis' => 'nullable|date',
+        'is_guncellenme_tarihi' => 'nullable|date',
         'notlar' => 'nullable|string',
         'gecmis_notlar' => 'nullable|string',
         'aciklama' => 'nullable|string',
