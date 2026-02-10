@@ -861,6 +861,7 @@
                     const selected = currentValue === value ? 'selected' : '';
                     options += `<option value="${value}" ${selected}>${value}</option>`;
                 });
+                options += '<option value="__new__">+ Yeni Tür Ekle</option>';
             }
             
             cell.html(`<select class="inline-edit-select w-full px-2 py-1 border rounded">${options}</select>`);
@@ -882,23 +883,6 @@
 
             // Initialize Select2 with tags support for Türü field
             const select2Config = getInlineSelect2Config();
-            
-            // Enable custom value creation for Türü field only
-            if (field === 'turu') {
-                select2Config.tags = true;
-                select2Config.selectOnClose = true;
-                select2Config.createTag = function (params) {
-                    const term = $.trim(params.term);
-                    if (term === '') {
-                        return null;
-                    }
-                    return {
-                        id: term,
-                        text: term,
-                        newTag: true
-                    };
-                };
-            }
             
             select.select2(select2Config);
             select.select2('open');
@@ -931,6 +915,33 @@
                 isSaving = true;
                 
                 const newValue = select.val();
+
+                if (field === 'turu' && newValue === '__new__') {
+                    isSaving = false;
+                    const entered = prompt('Yeni tür adını yazın:');
+                    if (!entered || !entered.trim()) {
+                        select.val(currentValue || '').trigger('change.select2');
+                        return;
+                    }
+
+                    const newType = entered.trim();
+                    if (!existingTuruValues.includes(newType)) {
+                        existingTuruValues.push(newType);
+                        existingTuruValues.sort();
+                        if ($('#filter-turu option').filter(function() { return $(this).val() === newType; }).length === 0) {
+                            $('#filter-turu').append(new Option(newType, newType, false, false));
+                        }
+                    }
+
+                    if (select.find('option').filter(function() { return $(this).val() === newType; }).length === 0) {
+                        select.find('option[value="__new__"]').before(new Option(newType, newType, true, true));
+                    } else {
+                        select.val(newType).trigger('change.select2');
+                    }
+
+                    setTimeout(saveSelect, 0);
+                    return;
+                }
                 
                 if (!newValue) {
                     isSaving = false;
