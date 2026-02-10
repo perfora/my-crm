@@ -82,68 +82,6 @@
             </div>
         </div>
 
-        <!-- Form -->
-        <div class="bg-white rounded-lg shadow mb-6">
-            <div class="p-6 flex justify-between items-center cursor-pointer" onclick="toggleForm()">
-                <h2 class="text-xl font-bold">Yeni Kişi Ekle</h2>
-                <span id="form-toggle-icon" class="text-2xl transform transition-transform">▼</span>
-            </div>
-            <div id="kisi-ekle-form" style="display: none;">
-                <form method="POST" action="/kisiler" class="space-y-4 px-6 pb-6">
-                @csrf
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Ad Soyad *</label>
-                        <input type="text" name="ad_soyad" required class="w-full border rounded px-3 py-2">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Firma</label>
-                        <select name="musteri_id" id="firma-select" class="w-full border rounded px-3 py-2">
-                            <option value="">Seçiniz</option>
-                            @php
-                                $musteriler = \App\Models\Musteri::orderBy('sirket')->get();
-                            @endphp
-                            @foreach($musteriler as $musteri)
-                                <option value="{{ $musteri->id }}">{{ $musteri->sirket }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Telefon</label>
-                        <input type="text" name="telefon_numarasi" class="w-full border rounded px-3 py-2">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Email</label>
-                        <input type="email" name="email_adresi" class="w-full border rounded px-3 py-2">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Bölüm</label>
-                        <input type="text" name="bolum" class="w-full border rounded px-3 py-2">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Görev</label>
-                        <input type="text" name="gorev" class="w-full border rounded px-3 py-2">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">URL</label>
-                        <input type="url" name="url" class="w-full border rounded px-3 py-2" placeholder="https://...">
-                    </div>
-                </div>
-                
-                <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
-                    Kişi Ekle
-                </button>
-            </form>
-            </div>
-        </div>
-
         <!-- Filtreler -->
         <div class="bg-white rounded-lg shadow mb-6">
             <div class="p-6 flex justify-between items-center cursor-pointer" onclick="toggleFilters()">
@@ -339,22 +277,7 @@
 
     <script src="{{ asset('public/js/crm-toolbar.js') }}"></script>
     <script>
-        // Form ve filtre toggle fonksiyonları
-        function toggleForm() {
-            const form = document.getElementById('kisi-ekle-form');
-            const icon = document.getElementById('form-toggle-icon');
-            
-            if (form && icon) {
-                if (form.style.display === 'none') {
-                    form.style.display = 'block';
-                    icon.style.transform = 'rotate(180deg)';
-                } else {
-                    form.style.display = 'none';
-                    icon.style.transform = 'rotate(0deg)';
-                }
-            }
-        }
-        
+        // Filtre toggle fonksiyonu
         function toggleFilters() {
             const filters = document.getElementById('filters-form');
             const icon = document.getElementById('filter-toggle-icon');
@@ -533,7 +456,7 @@
             }
 
             // Select2 başlat
-            $('#firma-select, #filter-firma_id').select2(getSelect2Config('Firma ara...'));
+            $('#filter-firma_id').select2(getSelect2Config('Firma ara...'));
             updateFilterButtons();
 
             // Scroll senkronizasyonu
