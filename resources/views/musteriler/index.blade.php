@@ -857,6 +857,7 @@
             } else if (field === 'turu') {
                 // Global listeyi kullan
                 options = '<option value="">Seçiniz</option>';
+                options += '<option value="__delete__">🗑 Seçili Türü Sil</option>';
                 existingTuruValues.forEach(function(value) {
                     const selected = currentValue === value ? 'selected' : '';
                     options += `<option value="${value}" ${selected}>${value}</option>`;
@@ -887,24 +888,6 @@
             select.select2(select2Config);
             select.select2('open');
 
-            if (field === 'turu') {
-                cell.append('<div class="mt-1 text-right"><button type="button" class="js-inline-delete-turu text-xs text-red-600 hover:text-red-800">× Seçili türü sil</button></div>');
-                cell.find('.js-inline-delete-turu').on('click', function(ev) {
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    const turu = select.val();
-                    if (!turu) {
-                        alert('Önce silinecek türü seçin.');
-                        return;
-                    }
-                    if (defaultTuruValues.includes(turu)) {
-                        alert('Varsayılan türler silinemez.');
-                        return;
-                    }
-                    deleteTuruInline(turu);
-                });
-            }
-            
             let isSaving = false;
             
             function saveSelect() {
@@ -912,6 +895,22 @@
                 isSaving = true;
                 
                 const newValue = select.val();
+
+                if (field === 'turu' && newValue === '__delete__') {
+                    isSaving = false;
+                    if (!currentValue) {
+                        alert('Silinecek bir tür seçili değil.');
+                        select.val('').trigger('change.select2');
+                        return;
+                    }
+                    if (defaultTuruValues.includes(currentValue)) {
+                        alert('Varsayılan türler silinemez.');
+                        select.val(currentValue);
+                        return;
+                    }
+                    deleteTuruInline(currentValue);
+                    return;
+                }
 
                 if (field === 'turu' && newValue === '__new__') {
                     isSaving = false;
