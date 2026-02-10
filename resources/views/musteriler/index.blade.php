@@ -89,77 +89,6 @@
             </div>
         </div>
 
-        <!-- Form -->
-        <div class="bg-white rounded-lg shadow mb-6">
-            <div class="p-6 flex justify-between items-center cursor-pointer" onclick="toggleForm()">
-                <h2 class="text-xl font-bold">Yeni Müşteri Ekle</h2>
-                <span id="form-toggle-icon" class="text-2xl transform transition-transform">▼</span>
-            </div>
-            <div id="musteri-ekle-form" style="display: none;">
-                <form method="POST" action="/musteriler" class="space-y-4 px-6 pb-6">
-                @csrf
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Şirket Adı *</label>
-                        <input type="text" name="sirket" required class="w-full border rounded px-3 py-2">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Şehir</label>
-                        <input type="text" name="sehir" class="w-full border rounded px-3 py-2">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Telefon</label>
-                        <input type="text" name="telefon" class="w-full border rounded px-3 py-2">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Derece</label>
-                        <select name="derece" id="derece-select" class="w-full border rounded px-3 py-2">
-                            <option value="">Seçiniz</option>
-                            <option value="1 -Sık">1 - Sık</option>
-                            <option value="2 - Orta">2 - Orta</option>
-                            <option value="3- Düşük">3 - Düşük</option>
-                            <option value="4 - Hiç">4 - Hiç</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Türü</label>
-                        <select name="turu" id="turu-select" class="w-full border rounded px-3 py-2">
-                            <option value="">Seçiniz</option>
-                            <option value="Netcom">Netcom</option>
-                            <option value="Bayi">Bayi</option>
-                            <option value="Resmi Kurum">Resmi Kurum</option>
-                            <option value="Üniversite">Üniversite</option>
-                            <option value="Belediye">Belediye</option>
-                            <option value="Hastane">Hastane</option>
-                            <option value="Özel Sektör">Özel Sektör</option>
-                            <option value="Tedarikçi">Tedarikçi</option>
-                            <option value="Üretici">Üretici</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium mb-1">Adres</label>
-                    <textarea name="adres" rows="2" class="w-full border rounded px-3 py-2"></textarea>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium mb-1">Notlar</label>
-                    <textarea name="notlar" rows="3" class="w-full border rounded px-3 py-2"></textarea>
-                </div>
-                
-                <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
-                    Müşteri Ekle
-                </button>
-            </form>
-            </div>
-        </div>
-
         <!-- Filtreler -->
         <div class="bg-white rounded-lg shadow mb-6">
             <div class="p-6 flex justify-between items-center cursor-pointer" onclick="toggleFilters()">
@@ -510,7 +439,6 @@
             });
             
             // Select2 başlat
-            $('#derece-select, #turu-select').select2(getSelect2Config('Seçiniz...'));
             $('#filter-derece, #filter-turu').select2(getSelect2Config('Bir veya daha fazla seçin...', {
                 closeOnSelect: false,
                 placeholder: 'Seçiniz'
@@ -591,20 +519,6 @@
                 document.getElementById('scroll-content-top').style.width = table.offsetWidth + 'px';
             });
         });
-
-        // Form toggle fonksiyonu
-        function toggleForm() {
-            const form = document.getElementById('musteri-ekle-form');
-            const icon = document.getElementById('form-toggle-icon');
-            
-            if (form.style.display === 'none') {
-                form.style.display = 'block';
-                icon.style.transform = 'rotate(180deg)';
-            } else {
-                form.style.display = 'none';
-                icon.style.transform = 'rotate(0deg)';
-            }
-        }
 
         // Filtre toggle fonksiyonu
         function toggleFilters() {
@@ -833,27 +747,59 @@
             function saveEdit() {
                 const newValue = input.val();
                 
-                $.ajax({
-                    url: '/musteriler/' + id,
-                    method: 'PUT',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        [field]: newValue
-                    },
-                    success: function(response) {
-                        cell.data('value', newValue);
-                        cell.html(newValue || '-');
-                        cell.removeClass('editing');
-                        
-                        // Update data attribute for filtering
-                        cell.closest('tr').attr('data-' + field, newValue);
-                    },
-                    error: function() {
-                        alert('Kaydedilemedi!');
+                if (id === 'new') {
+                    if (field !== 'sirket' && !cell.closest('tr').find('[data-field="sirket"]').data('value')) {
+                        alert('Önce şirket adını girin.');
                         cell.html(originalContent);
                         cell.removeClass('editing');
+                        return;
                     }
-                });
+
+                    const payload = {
+                        _token: '{{ csrf_token() }}',
+                        sirket: field === 'sirket' ? newValue : (cell.closest('tr').find('[data-field="sirket"]').data('value') || ''),
+                        sehir: field === 'sehir' ? newValue : (cell.closest('tr').find('[data-field="sehir"]').data('value') || ''),
+                        telefon: field === 'telefon' ? newValue : (cell.closest('tr').find('[data-field="telefon"]').data('value') || ''),
+                        adres: field === 'adres' ? newValue : (cell.closest('tr').find('[data-field="adres"]').data('value') || ''),
+                        notlar: field === 'notlar' ? newValue : (cell.closest('tr').find('[data-field="notlar"]').data('value') || '')
+                    };
+
+                    $.ajax({
+                        url: '/musteriler',
+                        method: 'POST',
+                        data: payload,
+                        success: function() {
+                            location.reload();
+                        },
+                        error: function(xhr) {
+                            alert('Kayıt oluşturulamadı! ' + (xhr.responseJSON?.message || ''));
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
+                        }
+                    });
+                } else {
+                    $.ajax({
+                        url: '/musteriler/' + id,
+                        method: 'PUT',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            [field]: newValue
+                        },
+                        success: function(response) {
+                            cell.data('value', newValue);
+                            cell.html(newValue || '-');
+                            cell.removeClass('editing');
+                            
+                            // Update data attribute for filtering
+                            cell.closest('tr').attr('data-' + field, newValue);
+                        },
+                        error: function() {
+                            alert('Kaydedilemedi!');
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
+                        }
+                    });
+                }
             }
             
             input.on('blur', saveEdit);
@@ -960,56 +906,92 @@
                 // Destroy Select2
                 select.select2('destroy');
                 
-                $.ajax({
-                    url: '/musteriler/' + id,
-                    method: 'PUT',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        [field]: newValue
-                    },
-                    success: function(response) {
-                        cell.data('value', newValue);
-                        
-                        // Eğer turu alanı için yeni bir değer eklendiyse, global listeye ekle
-                        if (field === 'turu' && newValue && !existingTuruValues.includes(newValue)) {
-                            existingTuruValues.push(newValue);
-                            existingTuruValues.sort();
-                        }
-                        
-                        // Rebuild the badge/display
-                        if (newValue) {
-                            let badgeClass = 'bg-gray-100 text-gray-800';
-                            if (field === 'derece') {
-                                if (newValue === '1 -Sık') badgeClass = 'bg-red-100 text-red-800';
-                                else if (newValue === '2 - Orta') badgeClass = 'bg-yellow-100 text-yellow-800';
-                                else if (newValue === '3- Düşük') badgeClass = 'bg-green-100 text-green-800';
-                            } else if (field === 'turu') {
-                                // Renk paletinden al
-                                badgeClass = getColorForTuru(newValue);
-                            }
-                            cell.html(`<span class="px-2 py-1 text-xs rounded-full ${badgeClass}">${newValue}</span>`);
-                        } else {
-                            cell.html('-');
-                        }
-                        
-                        cell.removeClass('editing');
-                        
-                        // Update data attribute for filtering
-                        cell.closest('tr').attr('data-' + field, newValue);
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('AJAX Error:', {
-                            status: xhr.status,
-                            statusText: xhr.statusText,
-                            responseText: xhr.responseText,
-                            error: error
-                        });
-                        alert('Kaydedilemedi! Hata: ' + (xhr.responseJSON?.message || xhr.statusText));
+                if (id === 'new') {
+                    const companyName = cell.closest('tr').find('[data-field="sirket"]').data('value');
+                    if (!companyName) {
+                        alert('Önce şirket adını girin.');
                         cell.html(originalContent);
                         cell.removeClass('editing');
                         isSaving = false;
+                        return;
                     }
-                });
+
+                    const payload = {
+                        _token: '{{ csrf_token() }}',
+                        sirket: companyName,
+                        sehir: cell.closest('tr').find('[data-field="sehir"]').data('value') || '',
+                        telefon: cell.closest('tr').find('[data-field="telefon"]').data('value') || '',
+                        adres: cell.closest('tr').find('[data-field="adres"]').data('value') || '',
+                        notlar: cell.closest('tr').find('[data-field="notlar"]').data('value') || '',
+                        [field]: newValue
+                    };
+
+                    $.ajax({
+                        url: '/musteriler',
+                        method: 'POST',
+                        data: payload,
+                        success: function() {
+                            location.reload();
+                        },
+                        error: function(xhr) {
+                            alert('Kayıt oluşturulamadı! ' + (xhr.responseJSON?.message || xhr.statusText));
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
+                            isSaving = false;
+                        }
+                    });
+                } else {
+                    $.ajax({
+                        url: '/musteriler/' + id,
+                        method: 'PUT',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            [field]: newValue
+                        },
+                        success: function(response) {
+                            cell.data('value', newValue);
+                            
+                            // Eğer turu alanı için yeni bir değer eklendiyse, global listeye ekle
+                            if (field === 'turu' && newValue && !existingTuruValues.includes(newValue)) {
+                                existingTuruValues.push(newValue);
+                                existingTuruValues.sort();
+                            }
+                            
+                            // Rebuild the badge/display
+                            if (newValue) {
+                                let badgeClass = 'bg-gray-100 text-gray-800';
+                                if (field === 'derece') {
+                                    if (newValue === '1 -Sık') badgeClass = 'bg-red-100 text-red-800';
+                                    else if (newValue === '2 - Orta') badgeClass = 'bg-yellow-100 text-yellow-800';
+                                    else if (newValue === '3- Düşük') badgeClass = 'bg-green-100 text-green-800';
+                                } else if (field === 'turu') {
+                                    // Renk paletinden al
+                                    badgeClass = getColorForTuru(newValue);
+                                }
+                                cell.html(`<span class="px-2 py-1 text-xs rounded-full ${badgeClass}">${newValue}</span>`);
+                            } else {
+                                cell.html('-');
+                            }
+                            
+                            cell.removeClass('editing');
+                            
+                            // Update data attribute for filtering
+                            cell.closest('tr').attr('data-' + field, newValue);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('AJAX Error:', {
+                                status: xhr.status,
+                                statusText: xhr.statusText,
+                                responseText: xhr.responseText,
+                                error: error
+                            });
+                            alert('Kaydedilemedi! Hata: ' + (xhr.responseJSON?.message || xhr.statusText));
+                            cell.html(originalContent);
+                            cell.removeClass('editing');
+                            isSaving = false;
+                        }
+                    });
+                }
             }
             
             // Handle both select from list and new tag creation
@@ -1064,15 +1046,36 @@
         
         // Add new row
         window.addNewRow = function() {
-            // Form alanını aç ve focus yap
-            const form = document.getElementById('musteri-ekle-form');
-            if (form.style.display === 'none') {
-                toggleForm();
+            if ($('#musteriler-table tbody tr.new-row').length) {
+                $('#musteriler-table tbody tr.new-row td.editable-cell[data-field="sirket"]').first().click();
+                return;
             }
-            // İlk input'a focus yap
+
+            const newRowHtml = `
+                <tr class="new-row bg-yellow-50">
+                    <td class="px-3 py-4 whitespace-nowrap text-center">
+                        <input type="checkbox" disabled class="opacity-50">
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap font-medium editable-cell" data-field="sirket" data-id="new" data-value=""><span class="text-gray-400">Şirket giriniz...</span></td>
+                    <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="sehir" data-id="new" data-value=""><span class="text-gray-400">Şehir...</span></td>
+                    <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="telefon" data-id="new" data-value=""><span class="text-gray-400">Telefon...</span></td>
+                    <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="derece" data-id="new" data-value="">-</td>
+                    <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="turu" data-id="new" data-value="">-</td>
+                    <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="adres" data-id="new" data-value=""><span class="text-gray-400">Adres...</span></td>
+                    <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="notlar" data-id="new" data-value=""><span class="text-gray-400">Not...</span></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">-</td>
+                    <td class="px-6 py-4 whitespace-nowrap">-</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">-</td>
+                    <td class="px-6 py-4 whitespace-nowrap font-semibold">-</td>
+                    <td class="px-6 py-4 whitespace-nowrap font-semibold text-green-600">-</td>
+                </tr>
+            `;
+
+            $('#musteriler-table tbody').prepend(newRowHtml);
             setTimeout(() => {
-                document.querySelector('#musteri-ekle-form input[name="sirket"]').focus();
-            }, 100);
+                $('#musteriler-table tbody tr.new-row td.editable-cell[data-field="sirket"]').first().click();
+            }, 80);
         };
         
         // ==================== SÜTUN GÖRÜNÜRLÜKcontroLÜ ====================
