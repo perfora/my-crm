@@ -422,9 +422,11 @@
                     $('#filter-turu').trigger('change.select2');
 
                     if (typeof afterDelete === 'function') afterDelete();
+                    // Satır içi edit eski badge'i geri çizebildiği için kesin görünüm için yenile
+                    location.reload();
                 },
-                error: function() {
-                    alert('Tür silinemedi!');
+                error: function(xhr) {
+                    alert('Tür silinemedi! ' + (xhr.responseJSON?.message || xhr.statusText || ''));
                 }
             });
         }
