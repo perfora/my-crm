@@ -67,7 +67,13 @@
     @include('layouts.nav')
     
     <div class="container mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold mb-6">Ziyaret Takip</h1>
+        @php
+            $toplamZiyaret = \App\Models\Ziyaret::count();
+        @endphp
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">Ziyaret Takip</h1>
+            <span class="text-lg font-semibold text-gray-600">Toplam: {{ $toplamZiyaret }}</span>
+        </div>
         
         @if(session('message'))
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
