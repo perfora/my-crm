@@ -1863,7 +1863,22 @@
             
             cell.html(`<select class="w-full px-2 py-1 border rounded text-sm">${options}</select>`);
             const select = cell.find('select');
-            select.focus();
+            const useSearchableSelect = ['musteri_id', 'marka_id', 'tipi'].includes(field);
+            if (useSearchableSelect && $.fn.select2) {
+                select.select2({
+                    width: '100%',
+                    dropdownAutoWidth: true,
+                    placeholder: 'Ara veya seç...',
+                    minimumResultsForSearch: 0,
+                    language: {
+                        noResults: function() { return 'Sonuç bulunamadı'; },
+                        searching: function() { return 'Aranıyor...'; }
+                    }
+                });
+                setTimeout(() => select.select2('open'), 0);
+            } else {
+                select.focus();
+            }
             
             // Yeni kayıt ekleme kontrolü
             select.on('change', function() {
@@ -2111,13 +2126,24 @@
                 }
             }
             
-            select.on('change', saveSelect);
-            select.on('blur', function() {
-                cell.html(originalContent);
-                cell.removeClass('editing');
-            });
+            if (useSearchableSelect) {
+                select.on('select2:close', function() {
+                    if (cell.hasClass('editing')) {
+                        cell.html(originalContent);
+                        cell.removeClass('editing');
+                    }
+                });
+            } else {
+                select.on('blur', function() {
+                    cell.html(originalContent);
+                    cell.removeClass('editing');
+                });
+            }
             select.on('keydown', function(e) {
                 if (e.which === 27) { // Escape
+                    if (useSearchableSelect && $.fn.select2) {
+                        select.select2('destroy');
+                    }
                     cell.html(originalContent);
                     cell.removeClass('editing');
                 }
