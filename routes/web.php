@@ -16,7 +16,8 @@ if (!function_exists('crmToIstanbulCarbon')) {
     function crmToIstanbulCarbon($value): \Carbon\Carbon
     {
         if ($value instanceof \Carbon\Carbon) {
-            return $value->copy()->setTimezone('Europe/Istanbul');
+            // DB'de timezone'suz saklanan tarihleri "yerel saat" olarak yorumla.
+            return \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $value->format('Y-m-d H:i:s'), 'Europe/Istanbul');
         }
 
         return \Carbon\Carbon::parse($value, 'Europe/Istanbul');
