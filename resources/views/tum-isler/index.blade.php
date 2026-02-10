@@ -718,10 +718,10 @@
                                     <input type="checkbox" class="column-toggle" data-column="updated_at"> Güncelleme
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" class="column-toggle" data-column="notlar"> Notlar
+                                    <input type="checkbox" class="column-toggle" data-column="notlar" checked> Notlar
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" class="column-toggle" data-column="gecmis_notlar"> Geçmiş Notlar
+                                    <input type="checkbox" class="column-toggle" data-column="gecmis_notlar" checked> Geçmiş Notlar
                                 </label>
                             </div>
                         </div>
