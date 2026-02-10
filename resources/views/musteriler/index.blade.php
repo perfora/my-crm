@@ -401,15 +401,6 @@
             return color;
         }
 
-        function escapeHtml(text) {
-            return String(text ?? '')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
-        }
-
         function deleteTuruInline(turu, afterDelete) {
             if (!turu || defaultTuruValues.includes(turu)) return;
             if (!confirm('"' + turu + '" türü silinsin mi? Bu türe sahip müşterilerde tür bilgisi boşaltılacak.')) return;
@@ -872,8 +863,6 @@
             
             cell.html(`<select class="inline-edit-select w-full px-2 py-1 border rounded">${options}</select>`);
             const select = cell.find('select');
-            const selectId = `inline-turu-${id}-${Date.now()}`;
-            select.attr('id', selectId);
             
             function getInlineSelect2Config(extra = {}) {
                 return Object.assign({
@@ -896,7 +885,6 @@
             if (field === 'turu') {
                 select2Config.tags = true;
                 select2Config.selectOnClose = true;
-                select2Config.escapeMarkup = function(markup) { return markup; };
                 select2Config.createTag = function (params) {
                     const term = $.trim(params.term);
                     if (term === '') {
@@ -908,20 +896,31 @@
                         newTag: true
                     };
                 };
-                select2Config.templateResult = function(data) {
-                    if (!data || typeof data.id === 'undefined' || data.id === null) {
-                        return data && data.text ? data.text : '';
-                    }
-                    const canDelete = !defaultTuruValues.includes(data.id) && data.id !== '__new__';
-                    const deleteBtn = canDelete
-                        ? `<button type="button" class="js-turu-delete ml-2 text-red-500 hover:text-red-700 font-bold" data-value="${escapeHtml(data.id)}" data-select-id="${escapeHtml(selectId)}">×</button>`
-                        : '';
-                    return `<div class="flex items-center justify-between"><span>${escapeHtml(data.text)}</span>${deleteBtn}</div>`;
-                };
             }
             
             select.select2(select2Config);
             select.select2('open');
+
+            if (field === 'turu') {
+                const selectedTuru = select.val();
+                const canDeleteSelected = selectedTuru && !defaultTuruValues.includes(selectedTuru);
+                if (canDeleteSelected) {
+                    cell.append('<div class="mt-1 text-right"><button type="button" class="js-inline-delete-turu text-xs text-red-600 hover:text-red-800">× Seçili türü sil</button></div>');
+                    cell.find('.js-inline-delete-turu').on('click', function(ev) {
+                        ev.preventDefault();
+                        ev.stopPropagation();
+                        const turu = select.val();
+                        deleteTuruInline(turu, function() {
+                            select.find('option').filter(function() { return $(this).val() === turu; }).remove();
+                            if (select.val() === turu) {
+                                select.val('').trigger('change');
+                            } else {
+                                select.trigger('change.select2');
+                            }
+                        });
+                    });
+                }
+            }
             
             let isSaving = false;
             
@@ -1034,19 +1033,6 @@
             select.on('select2:select', function(e) {
                 setTimeout(saveSelect, 100);
             });
-            select.on('select2:selecting', function(e) {
-                const originalEvent = e.params?.args?.originalEvent;
-                const target = originalEvent ? $(originalEvent.target).closest('.js-turu-delete') : null;
-                if (target && target.length) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const turu = target.data('value');
-                    deleteTuruInline(turu, function() {
-                        select.find('option').filter(function() { return $(this).val() === turu; }).remove();
-                        select.trigger('change.select2');
-                    });
-                }
-            });
             select.on('select2:close', function() {
                 setTimeout(function() {
                     if (cell.hasClass('editing') && !isSaving) {
@@ -1055,27 +1041,6 @@
                         cell.removeClass('editing');
                     }
                 }, 200);
-            });
-        });
-
-        $(document).off('click.crmTuruDelete').on('click.crmTuruDelete', '.js-turu-delete', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const turu = $(this).data('value');
-            const selectId = $(this).data('select-id');
-            const select = $('#' + selectId);
-            if (!select.length) return;
-
-            deleteTuruInline(turu, function() {
-                select.find('option').filter(function() {
-                    return $(this).val() === turu;
-                }).remove();
-                if (select.val() === turu) {
-                    select.val('').trigger('change');
-                } else {
-                    select.trigger('change.select2');
-                }
             });
         });
 
