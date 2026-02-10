@@ -123,6 +123,31 @@
             ->orderBy('ziyaret_tarihi', 'asc')
             ->limit(8)
             ->get();
+
+        // 2026 yılında kapanışı olan işler
+        $kapanisi2026OlanIsler = \App\Models\TumIsler::with('musteri')
+            ->whereNotNull('kapanis_tarihi')
+            ->whereYear('kapanis_tarihi', 2026)
+            ->orderBy('kapanis_tarihi', 'asc')
+            ->limit(12)
+            ->get();
+
+        // Kapanışı girilmemiş Register işleri (2026 açılışlı)
+        $registerKapanisEksikIsler = \App\Models\TumIsler::with('musteri')
+            ->where('tipi', 'Register')
+            ->whereNull('kapanis_tarihi')
+            ->whereYear('is_guncellenme_tarihi', 2026)
+            ->orderByDesc('is_guncellenme_tarihi')
+            ->limit(12)
+            ->get();
+
+        // Takip Edilecek işleri (2026 açılışlı)
+        $takipEdilecekIsler = \App\Models\TumIsler::with('musteri')
+            ->where('tipi', 'Takip Edilecek')
+            ->whereYear('is_guncellenme_tarihi', 2026)
+            ->orderByDesc('is_guncellenme_tarihi')
+            ->limit(12)
+            ->get();
     @endphp
 
     <div class="container mx-auto px-6 py-8 max-w-screen-2xl">
@@ -397,6 +422,119 @@
                 </div>
             </div>
             @endif
+        </div>
+    </div>
+
+    <!-- 2026 Kapanış / Register / Takip Edilecek -->
+    <div class="container mx-auto px-6 py-8 max-w-screen-2xl">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="bg-white rounded-lg shadow-lg border-t-4 border-sky-500">
+                <div class="p-4 border-b bg-sky-50">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-xl font-bold text-sky-800">📆 2026 Kapanışı Olan İşler</h3>
+                            <p class="text-sm text-gray-600">Kapanış tarihi 2026 olan kayıtlar</p>
+                        </div>
+                        <span class="text-sm text-gray-600 font-semibold">{{ $kapanisi2026OlanIsler->count() }} kayıt</span>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 border-b">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">İş</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Müşteri</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Kapanış</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($kapanisi2026OlanIsler as $is)
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-4 py-3">{{ $is->name }}</td>
+                                <td class="px-4 py-3">{{ $is->musteri->sirket ?? '-' }}</td>
+                                <td class="px-4 py-3">{{ \Carbon\Carbon::parse($is->kapanis_tarihi)->format('d.m.Y') }}</td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="3" class="px-4 py-8 text-center text-gray-500">Kayıt yok</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg border-t-4 border-amber-500">
+                <div class="p-4 border-b bg-amber-50">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-xl font-bold text-amber-800">🧩 Register (Kapanış Eksik)</h3>
+                            <p class="text-sm text-gray-600">Tipi Register + kapanış tarihi boş</p>
+                        </div>
+                        <span class="text-sm text-gray-600 font-semibold">{{ $registerKapanisEksikIsler->count() }} kayıt</span>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 border-b">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">İş</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Müşteri</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Açılış</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($registerKapanisEksikIsler as $is)
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-4 py-3">{{ $is->name }}</td>
+                                <td class="px-4 py-3">{{ $is->musteri->sirket ?? '-' }}</td>
+                                <td class="px-4 py-3">{{ $is->is_guncellenme_tarihi ? \Carbon\Carbon::parse($is->is_guncellenme_tarihi)->format('d.m.Y') : '-' }}</td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="3" class="px-4 py-8 text-center text-gray-500">Kayıt yok</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg border-t-4 border-indigo-500">
+                <div class="p-4 border-b bg-indigo-50">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-xl font-bold text-indigo-800">📌 Takip Edilecek İşler</h3>
+                            <p class="text-sm text-gray-600">Tipi Takip Edilecek kayıtlar</p>
+                        </div>
+                        <span class="text-sm text-gray-600 font-semibold">{{ $takipEdilecekIsler->count() }} kayıt</span>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 border-b">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">İş</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Müşteri</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Açılış</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($takipEdilecekIsler as $is)
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-4 py-3">{{ $is->name }}</td>
+                                <td class="px-4 py-3">{{ $is->musteri->sirket ?? '-' }}</td>
+                                <td class="px-4 py-3">{{ $is->is_guncellenme_tarihi ? \Carbon\Carbon::parse($is->is_guncellenme_tarihi)->format('d.m.Y') : '-' }}</td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="3" class="px-4 py-8 text-center text-gray-500">Kayıt yok</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
