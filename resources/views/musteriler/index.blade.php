@@ -216,22 +216,6 @@
                         </div>
                     </div>
                     
-                    <button type="button" onclick="openTuruManager()" class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition">
-                        🏷️ Türleri Yönet
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Türü Yönetimi Modal -->
-            <div id="turu-manager-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-                <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-bold">Türleri Yönet</h3>
-                        <button onclick="closeTuruManager()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-                    </div>
-                    <div id="turu-list" class="space-y-2 max-h-96 overflow-y-auto">
-                        <!-- Türler buraya yüklenecek -->
-                    </div>
                 </div>
             </div>
             
@@ -415,6 +399,43 @@
             const color = colorPalette[Object.keys(turuColors).filter(k => !defaultTuruValues.includes(k)).length % colorPalette.length];
             turuColors[turu] = color;
             return color;
+        }
+
+        function escapeHtml(text) {
+            return String(text ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function deleteTuruInline(turu, afterDelete) {
+            if (!turu || defaultTuruValues.includes(turu)) return;
+            if (!confirm('"' + turu + '" türü silinsin mi? Bu türe sahip müşterilerde tür bilgisi boşaltılacak.')) return;
+
+            $.ajax({
+                url: '/musteriler/delete-turu',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    turu: turu
+                },
+                success: function() {
+                    existingTuruValues = existingTuruValues.filter(t => t !== turu);
+                    delete turuColors[turu];
+
+                    $('#filter-turu option').filter(function() {
+                        return $(this).val() === turu;
+                    }).remove();
+                    $('#filter-turu').trigger('change.select2');
+
+                    if (typeof afterDelete === 'function') afterDelete();
+                },
+                error: function() {
+                    alert('Tür silinemedi!');
+                }
+            });
         }
         
         $(document).ready(function() {
@@ -851,6 +872,8 @@
             
             cell.html(`<select class="inline-edit-select w-full px-2 py-1 border rounded">${options}</select>`);
             const select = cell.find('select');
+            const selectId = `inline-turu-${id}-${Date.now()}`;
+            select.attr('id', selectId);
             
             function getInlineSelect2Config(extra = {}) {
                 return Object.assign({
@@ -873,6 +896,7 @@
             if (field === 'turu') {
                 select2Config.tags = true;
                 select2Config.selectOnClose = true;
+                select2Config.escapeMarkup = function(markup) { return markup; };
                 select2Config.createTag = function (params) {
                     const term = $.trim(params.term);
                     if (term === '') {
@@ -883,6 +907,14 @@
                         text: term,
                         newTag: true
                     };
+                };
+                select2Config.templateResult = function(data) {
+                    if (!data.id) return data.text;
+                    const canDelete = !defaultTuruValues.includes(data.id) && data.id !== '__new__';
+                    const deleteBtn = canDelete
+                        ? `<button type="button" class="js-turu-delete ml-2 text-red-500 hover:text-red-700 font-bold" data-value="${escapeHtml(data.id)}" data-select-id="${escapeHtml(selectId)}">×</button>`
+                        : '';
+                    return `<div class="flex items-center justify-between"><span>${escapeHtml(data.text)}</span>${deleteBtn}</div>`;
                 };
             }
             
@@ -955,6 +987,9 @@
                             if (field === 'turu' && newValue && !existingTuruValues.includes(newValue)) {
                                 existingTuruValues.push(newValue);
                                 existingTuruValues.sort();
+                                if ($('#filter-turu option').filter(function() { return $(this).val() === newValue; }).length === 0) {
+                                    $('#filter-turu').append(new Option(newValue, newValue, false, false));
+                                }
                             }
                             
                             // Rebuild the badge/display
@@ -1011,6 +1046,27 @@
                         cell.removeClass('editing');
                     }
                 }, 200);
+            });
+        });
+
+        $(document).off('mousedown.crmTuruDelete').on('mousedown.crmTuruDelete', '.js-turu-delete', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const turu = $(this).data('value');
+            const selectId = $(this).data('select-id');
+            const select = $('#' + selectId);
+            if (!select.length) return;
+
+            deleteTuruInline(turu, function() {
+                select.find('option').filter(function() {
+                    return $(this).val() === turu;
+                }).remove();
+                if (select.val() === turu) {
+                    select.val('').trigger('change');
+                } else {
+                    select.trigger('change.select2');
+                }
             });
         });
 
@@ -1105,63 +1161,5 @@
         });
     </script>
     
-    <script>
-        // Tür yönetimi fonksiyonları
-        function openTuruManager() {
-            // Modal'ı aç
-            $('#turu-manager-modal').removeClass('hidden');
-            
-            // Listeyi doldur
-            const turuList = $('#turu-list');
-            turuList.html('');
-            
-            existingTuruValues.forEach(function(turu) {
-                const color = getColorForTuru(turu);
-                const isDefault = defaultTuruValues.includes(turu);
-                const deleteBtn = isDefault ? '' : `<button onclick="deleteTuru('${turu}')" class="text-red-500 hover:text-red-700 font-bold">✕</button>`;
-                
-                turuList.append(`
-                    <div class="flex items-center justify-between p-2 border rounded hover:bg-gray-50">
-                        <span class="px-2 py-1 text-xs rounded-full ${color}">${turu}</span>
-                        ${deleteBtn}
-                    </div>
-                `);
-            });
-        }
-        
-        function closeTuruManager() {
-            $('#turu-manager-modal').addClass('hidden');
-        }
-        
-        function deleteTuru(turu) {
-            if (!confirm(`"${turu}" türünü silmek istediğinize emin misiniz? Bu türe sahip müşterilerde tür bilgisi silinecek.`)) {
-                return;
-            }
-            
-            // Veritabanında bu türe sahip müşterileri güncelle
-            $.ajax({
-                url: '/musteriler/delete-turu',
-                method: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    turu: turu
-                },
-                success: function() {
-                    // Listeden kaldır
-                    existingTuruValues = existingTuruValues.filter(t => t !== turu);
-                    delete turuColors[turu];
-                    
-                    // Modal'ı güncelle
-                    openTuruManager();
-                    
-                    // Sayfayı yenile
-                    location.reload();
-                },
-                error: function() {
-                    alert('Silme işlemi başarısız oldu!');
-                }
-            });
-        }
-    </script>
 </body>
 </html>
