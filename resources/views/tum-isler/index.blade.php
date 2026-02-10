@@ -64,170 +64,6 @@
                 {{ session('message') }}
             </div>
         @endif
-        <!-- Form -->
-        <div class="bg-white rounded-lg shadow mb-6">
-            <div class="p-6 flex justify-between items-center cursor-pointer" onclick="toggleForm()">
-                <h2 class="text-xl font-bold">Yeni İş Ekle</h2>
-                <span id="form-toggle-icon" class="text-2xl transform transition-transform">▼</span>
-            </div>
-            <div id="is-ekle-form" style="display: none;">
-                <form method="POST" action="/tum-isler" class="space-y-4 px-6 pb-6">
-                @csrf
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">İş Adı *</label>
-                        <input type="text" name="name" required class="w-full border rounded px-3 py-2">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Müşteri</label>
-                        <select name="musteri_id" id="musteri-select" class="w-full border rounded px-3 py-2">
-                            <option value="">Seçiniz</option>
-                            @php
-                                $musteriler = \App\Models\Musteri::orderBy('sirket')->get();
-                            @endphp
-                            @foreach($musteriler as $musteri)
-                                <option value="{{ $musteri->id }}">{{ $musteri->sirket }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Marka</label>
-                        <select name="marka_id" id="marka-select" class="w-full border rounded px-3 py-2">
-                            <option value="">Seçiniz</option>
-                            @php
-                                $markalar = \App\Models\Marka::orderBy('name')->get();
-                            @endphp
-                            @foreach($markalar as $marka)
-                                <option value="{{ $marka->id }}">{{ $marka->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Tipi</label>
-                        <select name="tipi" id="tipi" class="w-full border rounded px-3 py-2">
-                            <option value="">Seçiniz</option>
-                            <option value="Verilecek">Verilecek</option>
-                            <option value="Verildi">Verildi</option>
-                            <option value="Takip Edilecek">Takip Edilecek</option>
-                            <option value="Kazanıldı">Kazanıldı</option>
-                            <option value="Kaybedildi">Kaybedildi</option>
-                            <option value="Vazgeçildi">Vazgeçildi</option>
-                            <option value="Tamamlandı">Tamamlandı</option>
-                            <option value="Askıda">Askıda</option>
-                            <option value="Register">Register</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Türü</label>
-                        <select name="turu" id="turu-select" class="w-full border rounded px-3 py-2">
-                            <option value="">Seçiniz</option>
-                            <option value="Cihaz">Cihaz</option>
-                            <option value="Yazılım ve Lisans">Yazılım ve Lisans</option>
-                            <option value="Cihaz ve Lisans">Cihaz ve Lisans</option>
-                            <option value="Yenileme">Yenileme</option>
-                            <option value="Destek">Destek</option>
-                            <option value="Hizmet Alımı">Hizmet Alımı</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Öncelik</label>
-                        <select name="oncelik" id="oncelik-select" class="w-full border rounded px-3 py-2">
-                            <option value="">Seçiniz</option>
-                            <option value="1">1 (Yüksek)</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4 (Düşük)</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Teklif Tutarı</label>
-                        <input type="number" step="0.01" name="teklif_tutari" class="w-full border rounded px-3 py-2">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Alış Tutarı</label>
-                        <input type="number" step="0.01" name="alis_tutari" class="w-full border rounded px-3 py-2">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Kur</label>
-                        <input type="number" step="0.0001" name="kur" class="w-full border rounded px-3 py-2">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Açılış Tarihi</label>
-                        <input type="date" name="is_guncellenme_tarihi" value="{{ date('Y-m-d') }}" class="w-full border rounded px-3 py-2">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Kapanış Tarihi</label>
-                        <input type="date" name="kapanis_tarihi" id="kapanis_tarihi" class="w-full border rounded px-3 py-2">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Lisans Bitiş</label>
-                        <input type="date" name="lisans_bitis" class="w-full border rounded px-3 py-2">
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium mb-1">Açıklama</label>
-                    <textarea name="aciklama" rows="2" class="w-full border rounded px-3 py-2"></textarea>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Kaybedilme Nedeni</label>
-                        <select name="kaybedilme_nedeni" class="w-full border rounded px-3 py-2">
-                            <option value="">Seçiniz</option>
-                            <option value="Diğer">Diğer</option>
-                            <option value="Bütçe Yok">Bütçe Yok</option>
-                            <option value="Kendileri Kurdu">Kendileri Kurdu</option>
-                            <option value="Müşteri Vazgeçti">Müşteri Vazgeçti</option>
-                            <option value="Yerli Ürün Tercihi">Yerli Ürün Tercihi</option>
-                            <option value="Vade/Ödeme Koşulu">Vade/Ödeme Koşulu</option>
-                            <option value="Stok Yok">Stok Yok</option>
-                            <option value="Rakip Daha Ucuz">Rakip Daha Ucuz</option>
-                            <option value="Fiyat Yüksek">Fiyat Yüksek</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Register Durum</label>
-                        <select name="register_durum" id="register-durum-select" class="w-full border rounded px-3 py-2">
-                            <option value="">Seçiniz</option>
-                            <option value="Açık">Açık</option>
-                            <option value="Uzatım İstendi">Uzatım İstendi</option>
-                            <option value="Uzatıldı">Uzatıldı</option>
-                            <option value="Kapatıldı">Kapatıldı</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium mb-1">Notlar</label>
-                    <textarea name="notlar" rows="3" class="w-full border rounded px-3 py-2"></textarea>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium mb-1">Geçmiş Notlar</label>
-                    <textarea name="gecmis_notlar" rows="3" class="w-full border rounded px-3 py-2"></textarea>
-                </div>
-                
-                <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
-                    İş Ekle
-                </button>
-            </form>
-            </div>
-        </div>
-
         <!-- Kayıtlı Filtreler - Her zaman görünür -->
         <div class="bg-white rounded-lg shadow mb-4 p-4">
             <div class="flex items-center gap-3">
@@ -1048,7 +884,6 @@
             
             $('#marka-select, #filter-marka-select').select2(getSelect2Config('Marka ara...'));
             
-            $('#turu-select, #oncelik-select, #register-durum-select').select2(getSelect2Config('Seçiniz...'));
 
             // Scroll senkronizasyonu
             const scrollTop = document.getElementById('scroll-top');
@@ -1126,21 +961,6 @@
         });
 
         // Form ve filtre toggle fonksiyonları
-        function toggleForm() {
-            const form = document.getElementById('is-ekle-form');
-            const icon = document.getElementById('form-toggle-icon');
-            
-            if (form && icon) {
-                if (form.style.display === 'none') {
-                    form.style.display = 'block';
-                    icon.style.transform = 'rotate(180deg)';
-                } else {
-                    form.style.display = 'none';
-                    icon.style.transform = 'rotate(0deg)';
-                }
-            }
-        }
-        
         function toggleFilters() {
             const filters = document.getElementById('filters-form');
             const icon = document.getElementById('filter-toggle-icon');
