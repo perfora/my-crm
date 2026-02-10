@@ -872,7 +872,7 @@
                     dropdownParent: $('body'),
                     width: '100%',
                     minimumResultsForSearch: 0,
-                    allowClear: true,
+                    allowClear: false,
                     dropdownCssClass: 'select2-dropdown-inline-edit',
                     language: {
                         noResults: function() { return 'Sonuç bulunamadı'; },
@@ -896,14 +896,7 @@
                         ev.preventDefault();
                         ev.stopPropagation();
                         const turu = select.val();
-                        deleteTuruInline(turu, function() {
-                            select.find('option').filter(function() { return $(this).val() === turu; }).remove();
-                            if (select.val() === turu) {
-                                select.val('').trigger('change');
-                            } else {
-                                select.trigger('change.select2');
-                            }
-                        });
+                        deleteTuruInline(turu);
                     });
                 }
             }
@@ -920,7 +913,7 @@
                     isSaving = false;
                     const entered = prompt('Yeni tür adını yazın:');
                     if (!entered || !entered.trim()) {
-                        select.val(currentValue || '').trigger('change.select2');
+                        select.val(currentValue || '');
                         return;
                     }
 
@@ -936,7 +929,7 @@
                     if (select.find('option').filter(function() { return $(this).val() === newType; }).length === 0) {
                         select.find('option[value="__new__"]').before(new Option(newType, newType, true, true));
                     } else {
-                        select.val(newType).trigger('change.select2');
+                        select.val(newType);
                     }
 
                     setTimeout(saveSelect, 0);
