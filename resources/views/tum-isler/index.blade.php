@@ -50,13 +50,17 @@
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold">Tüm İşler</h1>
             @php
+                $toplamIs = \App\Models\TumIsler::count();
                 $notionCount = \App\Models\TumIsler::whereNotNull('notion_id')->count();
             @endphp
-            @if($notionCount > 0)
+            <div class="flex items-center gap-3">
+                <span class="text-lg font-semibold text-gray-600">Toplam: {{ $toplamIs }}</span>
+                @if($notionCount > 0)
                 <div class="bg-purple-100 text-purple-800 px-4 py-2 rounded-lg text-sm">
                     🔗 <strong>{{ $notionCount }}</strong> kayıt Notion'dan senkronize
                 </div>
-            @endif
+                @endif
+            </div>
         </div>
         
         @if(session('message'))
