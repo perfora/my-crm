@@ -928,7 +928,6 @@
                 isSaving = true;
                 
                 const newValue = select.val();
-                console.log('Saving value:', newValue);
                 
                 if (!newValue) {
                     isSaving = false;
@@ -1031,14 +1030,22 @@
             
             // Handle both select from list and new tag creation
             select.on('select2:select', function(e) {
-                console.log('select2:select triggered', e.params.data);
                 setTimeout(saveSelect, 100);
             });
             select.on('select2:selecting', function(e) {
-                console.log('select2:selecting triggered', e.params.args.data);
+                const originalEvent = e.params?.args?.originalEvent;
+                const target = originalEvent ? $(originalEvent.target).closest('.js-turu-delete') : null;
+                if (target && target.length) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const turu = target.data('value');
+                    deleteTuruInline(turu, function() {
+                        select.find('option').filter(function() { return $(this).val() === turu; }).remove();
+                        select.trigger('change.select2');
+                    });
+                }
             });
             select.on('select2:close', function() {
-                console.log('select2:close triggered, isSaving:', isSaving);
                 setTimeout(function() {
                     if (cell.hasClass('editing') && !isSaving) {
                         select.select2('destroy');
@@ -1049,7 +1056,7 @@
             });
         });
 
-        $(document).off('mousedown.crmTuruDelete').on('mousedown.crmTuruDelete', '.js-turu-delete', function(e) {
+        $(document).off('click.crmTuruDelete').on('click.crmTuruDelete', '.js-turu-delete', function(e) {
             e.preventDefault();
             e.stopPropagation();
 
