@@ -1707,14 +1707,20 @@
             const field = cell.data('field');
             const id = cell.data('id');
             const currentValue = cell.data('value') || '';
+            const isLongTextField = field === 'notlar' || field === 'gecmis_notlar';
             
             console.log('Editable cell clicked:', field, id, currentValue);
             
             cell.addClass('editing');
             const originalContent = cell.html();
-            
-            cell.html(`<input type="text" class="w-full px-2 py-1 border rounded text-sm" value="${currentValue}" />`);
-            const input = cell.find('input');
+
+            const escapedValue = $('<div>').text(currentValue).html();
+            if (isLongTextField) {
+                cell.html(`<textarea class="w-full min-w-[460px] min-h-[140px] px-2 py-1 border rounded text-sm resize-y">${escapedValue}</textarea>`);
+            } else {
+                cell.html(`<input type="text" class="w-full px-2 py-1 border rounded text-sm" value="${escapedValue}" />`);
+            }
+            const input = cell.find('input, textarea');
             input.focus();
             
             function saveEdit() {
@@ -1760,6 +1766,9 @@
                                 cell.html(`<div class="flex items-center gap-2"><span>${newValue}</span>${notionBadge}</div>`);
                             } else {
                                 cell.html(newValue || '-');
+                                if (isLongTextField) {
+                                    cell.attr('title', newValue || '');
+                                }
                             }
                             
                             cell.removeClass('editing');
@@ -1775,11 +1784,15 @@
             
             input.on('blur', saveEdit);
             input.on('keypress', function(e) {
-                if (e.which === 13) { // Enter
+                if (!isLongTextField && e.which === 13) { // Enter
                     saveEdit();
                 }
             });
             input.on('keydown', function(e) {
+                if (isLongTextField && e.which === 13 && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    saveEdit();
+                }
                 if (e.which === 27) { // Escape
                     cell.html(originalContent);
                     cell.removeClass('editing');
