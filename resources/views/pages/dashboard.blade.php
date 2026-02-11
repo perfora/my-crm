@@ -140,6 +140,75 @@
             ->orderByDesc('is_guncellenme_tarihi')
             ->limit(12)
             ->get();
+
+        // Temas takip widget verileri (periyot farkı > 0 olanlar)
+        $temasTakipRaw = \App\Models\Musteri::with(['ziyaretler'])
+            ->where(function ($q) {
+                $q->whereNotNull('temas_kurali')
+                    ->orWhereNotNull('arama_periyodu_gun')
+                    ->orWhereNotNull('ziyaret_periyodu_gun');
+            })
+            ->get()
+            ->map(function ($musteri) {
+                $lastVisit = $musteri->ziyaretler
+                    ->whereNotNull('ziyaret_tarihi')
+                    ->max('ziyaret_tarihi');
+                $lastCall = $musteri->ziyaretler
+                    ->whereNotNull('arama_tarihi')
+                    ->max('arama_tarihi');
+
+                $lastVisit = $lastVisit ? \Carbon\Carbon::parse($lastVisit)->timezone(config('crm.timezone')) : null;
+                $lastCall = $lastCall ? \Carbon\Carbon::parse($lastCall)->timezone(config('crm.timezone')) : null;
+
+                $visitDays = $lastVisit ? (int) $lastVisit->diffInDays(now()) : null;
+                $callDays = $lastCall ? (int) $lastCall->diffInDays(now()) : null;
+
+                $visitPeriyot = $musteri->ziyaret_periyodu_gun ? (int) $musteri->ziyaret_periyodu_gun : null;
+                $callPeriyot = $musteri->arama_periyodu_gun ? (int) $musteri->arama_periyodu_gun : null;
+
+                // Hiç kayıt yoksa "bugün yapılmalı" kabul et ve +1 fark ile göster
+                $visitOverdue = $visitPeriyot ? (($visitDays === null ? $visitPeriyot + 1 : $visitDays) - $visitPeriyot) : null;
+                $callOverdue = $callPeriyot ? (($callDays === null ? $callPeriyot + 1 : $callDays) - $callPeriyot) : null;
+
+                $musteri->tt_last_visit = $lastVisit;
+                $musteri->tt_last_call = $lastCall;
+                $musteri->tt_visit_overdue = $visitOverdue;
+                $musteri->tt_call_overdue = $callOverdue;
+                return $musteri;
+            });
+
+        $ziyaretGerekliList = $temasTakipRaw
+            ->filter(function ($m) {
+                return $m->temas_kurali === 'Ziyaret Öncelikli' && (($m->tt_visit_overdue ?? 0) > 0);
+            })
+            ->sortBy(function ($m) {
+                return (int) ($m->tt_visit_overdue ?? PHP_INT_MAX);
+            })
+            ->take(10);
+
+        $ikisiGerekliList = $temasTakipRaw
+            ->filter(function ($m) {
+                if ($m->temas_kurali !== 'Her İkisi Zorunlu') {
+                    return false;
+                }
+                return (($m->tt_visit_overdue ?? 0) > 0) || (($m->tt_call_overdue ?? 0) > 0);
+            })
+            ->sortBy(function ($m) {
+                $visit = (int) max(0, (int) ($m->tt_visit_overdue ?? 0));
+                $call = (int) max(0, (int) ($m->tt_call_overdue ?? 0));
+                return max($visit, $call);
+            })
+            ->take(10);
+
+        $aramaGerekliList = $temasTakipRaw
+            ->filter(function ($m) {
+                return in_array($m->temas_kurali, ['Arama Yeterli', 'Şehir Dışı (Arama Öncelikli)'], true)
+                    && (($m->tt_call_overdue ?? 0) > 0);
+            })
+            ->sortBy(function ($m) {
+                return (int) ($m->tt_call_overdue ?? PHP_INT_MAX);
+            })
+            ->take(10);
     @endphp
 
     <div class="container mx-auto px-6 py-8 max-w-screen-2xl">
@@ -497,6 +566,143 @@
     </div>
 
     <!-- Yan Yana Widget'lar: Ziyaretler & Lisans -->
+    <div class="container mx-auto px-6 py-8 max-w-screen-2xl">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="bg-white rounded-lg shadow-lg border-t-4 border-purple-500">
+                <div class="p-4 border-b bg-purple-50 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-purple-800">👥 Ziyaret Gerekli</h3>
+                    <span class="text-sm text-gray-600 font-semibold">{{ $ziyaretGerekliList->count() }} kayıt</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 border-b">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Müşteri</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Ziyaret</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Arama</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($ziyaretGerekliList as $m)
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-4 py-3">
+                                    <a href="/musteriler/{{ $m->id }}" class="text-blue-600 hover:underline font-semibold">{{ $m->sirket }}</a>
+                                </td>
+                                <td class="px-4 py-3">
+                                    @if($m->tt_last_visit)
+                                        {{ $m->tt_last_visit->format(config('crm.date_format')) }} <span class="text-red-600 font-semibold">(+{{ $m->tt_visit_overdue }}g)</span>
+                                    @else
+                                        <span class="text-gray-500">Yok</span> <span class="text-red-600 font-semibold">(+{{ (int)($m->tt_visit_overdue ?? 0) }}g)</span>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-3">
+                                    @if($m->tt_last_call)
+                                        {{ $m->tt_last_call->format(config('crm.date_format')) }}
+                                    @else
+                                        <span class="text-gray-500">Yok</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="3" class="px-4 py-8 text-center text-gray-500">Kayıt yok</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg border-t-4 border-amber-500">
+                <div class="p-4 border-b bg-amber-50 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-amber-800">🔁 İkisi Gerekli</h3>
+                    <span class="text-sm text-gray-600 font-semibold">{{ $ikisiGerekliList->count() }} kayıt</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 border-b">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Müşteri</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Ziyaret</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Arama</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($ikisiGerekliList as $m)
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-4 py-3">
+                                    <a href="/musteriler/{{ $m->id }}" class="text-blue-600 hover:underline font-semibold">{{ $m->sirket }}</a>
+                                </td>
+                                <td class="px-4 py-3">
+                                    @if($m->tt_last_visit)
+                                        {{ $m->tt_last_visit->format(config('crm.date_format')) }}
+                                        @if(($m->tt_visit_overdue ?? 0) > 0)<span class="text-red-600 font-semibold">(+{{ $m->tt_visit_overdue }}g)</span>@endif
+                                    @else
+                                        <span class="text-gray-500">Yok</span>
+                                        @if(($m->tt_visit_overdue ?? 0) > 0)<span class="text-red-600 font-semibold">(+{{ (int)$m->tt_visit_overdue }}g)</span>@endif
+                                    @endif
+                                </td>
+                                <td class="px-4 py-3">
+                                    @if($m->tt_last_call)
+                                        {{ $m->tt_last_call->format(config('crm.date_format')) }}
+                                        @if(($m->tt_call_overdue ?? 0) > 0)<span class="text-red-600 font-semibold">(+{{ $m->tt_call_overdue }}g)</span>@endif
+                                    @else
+                                        <span class="text-gray-500">Yok</span>
+                                        @if(($m->tt_call_overdue ?? 0) > 0)<span class="text-red-600 font-semibold">(+{{ (int)$m->tt_call_overdue }}g)</span>@endif
+                                    @endif
+                                </td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="3" class="px-4 py-8 text-center text-gray-500">Kayıt yok</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg border-t-4 border-green-500">
+                <div class="p-4 border-b bg-green-50 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-green-800">📞 Arama Gerekli</h3>
+                    <span class="text-sm text-gray-600 font-semibold">{{ $aramaGerekliList->count() }} kayıt</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 border-b">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Müşteri</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Ziyaret</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Arama</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($aramaGerekliList as $m)
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-4 py-3">
+                                    <a href="/musteriler/{{ $m->id }}" class="text-blue-600 hover:underline font-semibold">{{ $m->sirket }}</a>
+                                </td>
+                                <td class="px-4 py-3">
+                                    @if($m->tt_last_visit)
+                                        {{ $m->tt_last_visit->format(config('crm.date_format')) }}
+                                    @else
+                                        <span class="text-gray-500">Yok</span>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-3">
+                                    @if($m->tt_last_call)
+                                        {{ $m->tt_last_call->format(config('crm.date_format')) }} <span class="text-red-600 font-semibold">(+{{ $m->tt_call_overdue }}g)</span>
+                                    @else
+                                        <span class="text-gray-500">Yok</span> <span class="text-red-600 font-semibold">(+{{ (int)($m->tt_call_overdue ?? 0) }}g)</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="3" class="px-4 py-8 text-center text-gray-500">Kayıt yok</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container mx-auto px-6 py-8 max-w-screen-2xl">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <!-- Sol: Yaklaşan Ziyaretler -->
