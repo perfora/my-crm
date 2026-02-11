@@ -110,9 +110,6 @@
                 $musteri->kazanilan_tutar = $musteri->tumIsler->where('tipi', 'Kazanıldı')->sum('teklif_tutari');
                 return $musteri;
             })
-            ->filter(function($musteri) {
-                return $musteri->toplam_teklif > 0; // Teklifi olan müşteriler
-            })
             ->sortBy(function($musteri) {
                 // En yakın son bağlantı üstte (geçen gün küçükten büyüğe)
                 return (int) ($musteri->gecen_gun ?? PHP_INT_MAX);
