@@ -53,11 +53,11 @@ class Ziyaret extends Model
     public function getTakvimTarihiAttribute()
     {
         if ($this->ziyaret_tarihi) {
-            return $this->ziyaret_tarihi->format('d.m.Y H:i');
+            return $this->ziyaret_tarihi->timezone(config('crm.timezone'))->format(config('crm.datetime_format'));
         }
         
         if ($this->arama_tarihi) {
-            return $this->arama_tarihi->format('d.m.Y H:i');
+            return $this->arama_tarihi->timezone(config('crm.timezone'))->format(config('crm.datetime_format'));
         }
         
         return null;

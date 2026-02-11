@@ -334,7 +334,7 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $musteri->en_son_ziyaret ? $musteri->en_son_ziyaret->format('d.m.Y H:i') : '-' }}
+                                    {{ $musteri->en_son_ziyaret ? $musteri->en_son_ziyaret->timezone(config('crm.timezone'))->format(config('crm.datetime_format')) : '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                                     @if($musteri->son_baglanti_turu)

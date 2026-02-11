@@ -46,7 +46,7 @@
                             <div class="font-bold text-gray-800">{{ $kayit->ziyaret_ismi ?: ($kayit->musteri->sirket ?? 'Kayıt') }}</div>
                             <div class="text-sm text-gray-600 mt-1">{{ $kayit->musteri->sirket ?? '-' }}</div>
                             <div class="text-xs text-gray-500 mt-1">
-                                Planlanan: {{ $planTarihi ? $planTarihi->format('d.m.Y H:i') : '-' }}
+                                Planlanan: {{ $planTarihi ? $planTarihi->timezone(config('crm.timezone'))->format(config('crm.datetime_format')) : '-' }}
                             </div>
                         </div>
                         <span class="text-xs px-2 py-1 rounded-full {{ $isTelefon ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800' }}">
@@ -71,4 +71,3 @@
     </div>
 </body>
 </html>
-

@@ -298,9 +298,11 @@
                                 <td class="px-6 py-4 whitespace-nowrap editable-date col-ziyaret_tarihi" data-field="tarih" data-id="{{ $ziyaret->id }}" data-value="{{ $ziyaret->tur == 'Telefon' ? $ziyaret->arama_tarihi : $ziyaret->ziyaret_tarihi }}">
                                     @if($ziyaret->tur == 'Telefon' && $ziyaret->arama_tarihi)
                                         @php($arama = \Carbon\Carbon::parse($ziyaret->arama_tarihi))
-                                        {{ ($arama->hour || $arama->minute) ? $arama->format('d.m.Y H:i') : $arama->format('d.m.Y') }}
+                                        {{ ($arama->hour || $arama->minute)
+                                            ? $arama->timezone(config('crm.timezone'))->format(config('crm.datetime_format'))
+                                            : $arama->timezone(config('crm.timezone'))->format(config('crm.date_format')) }}
                                     @elseif($ziyaret->ziyaret_tarihi)
-                                        {{ $ziyaret->ziyaret_tarihi->format('d.m.Y H:i') }}
+                                        {{ $ziyaret->ziyaret_tarihi->timezone(config('crm.timezone'))->format(config('crm.datetime_format')) }}
                                     @else
                                         -
                                     @endif
