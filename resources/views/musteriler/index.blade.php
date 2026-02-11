@@ -123,7 +123,8 @@
                                 <option value="1 -Sık">1 - Sık</option>
                                 <option value="2 - Orta">2 - Orta</option>
                                 <option value="3- Düşük">3 - Düşük</option>
-                                <option value="4 - Hiç">4 - Hiç</option>
+                                <option value="4 - Potansiyel">4 - Potansiyel</option>
+                                <option value="5 - İş Ortağı">5 - İş Ortağı</option>
                             </select>
                         </div>
                         
@@ -309,6 +310,8 @@
                                             @if($musteri->derece == '1 -Sık') bg-red-100 text-red-800
                                             @elseif($musteri->derece == '2 - Orta') bg-yellow-100 text-yellow-800
                                             @elseif($musteri->derece == '3- Düşük') bg-green-100 text-green-800
+                                            @elseif($musteri->derece == '4 - Potansiyel') bg-blue-100 text-blue-800
+                                            @elseif($musteri->derece == '5 - İş Ortağı') bg-slate-100 text-slate-800
                                             @else bg-gray-100 text-gray-800
                                             @endif">
                                             {{ $musteri->derece }}
@@ -935,7 +938,8 @@
                     <option value="1 -Sık" ${currentValue === '1 -Sık' ? 'selected' : ''}>1 - Sık</option>
                     <option value="2 - Orta" ${currentValue === '2 - Orta' ? 'selected' : ''}>2 - Orta</option>
                     <option value="3- Düşük" ${currentValue === '3- Düşük' ? 'selected' : ''}>3 - Düşük</option>
-                    <option value="4 - Hiç" ${currentValue === '4 - Hiç' ? 'selected' : ''}>4 - Hiç</option>
+                    <option value="4 - Potansiyel" ${currentValue === '4 - Potansiyel' ? 'selected' : ''}>4 - Potansiyel</option>
+                    <option value="5 - İş Ortağı" ${currentValue === '5 - İş Ortağı' ? 'selected' : ''}>5 - İş Ortağı</option>
                 `;
             } else if (field === 'turu') {
                 // Global listeyi kullan
@@ -1101,6 +1105,8 @@
                                     if (newValue === '1 -Sık') badgeClass = 'bg-red-100 text-red-800';
                                     else if (newValue === '2 - Orta') badgeClass = 'bg-yellow-100 text-yellow-800';
                                     else if (newValue === '3- Düşük') badgeClass = 'bg-green-100 text-green-800';
+                                    else if (newValue === '4 - Potansiyel') badgeClass = 'bg-blue-100 text-blue-800';
+                                    else if (newValue === '5 - İş Ortağı') badgeClass = 'bg-slate-100 text-slate-800';
                                 } else if (field === 'turu') {
                                     // Renk paletinden al
                                     badgeClass = getColorForTuru(newValue);

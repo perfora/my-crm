@@ -42,7 +42,8 @@
                             <option value="1 -Sık" {{ $musteri->derece == '1 -Sık' ? 'selected' : '' }}>1 - Sık</option>
                             <option value="2 - Orta" {{ $musteri->derece == '2 - Orta' ? 'selected' : '' }}>2 - Orta</option>
                             <option value="3- Düşük" {{ $musteri->derece == '3- Düşük' ? 'selected' : '' }}>3 - Düşük</option>
-                            <option value="4 - Hiç" {{ $musteri->derece == '4 - Hiç' ? 'selected' : '' }}>4 - Hiç</option>
+                            <option value="4 - Potansiyel" {{ $musteri->derece == '4 - Potansiyel' ? 'selected' : '' }}>4 - Potansiyel</option>
+                            <option value="5 - İş Ortağı" {{ $musteri->derece == '5 - İş Ortağı' ? 'selected' : '' }}>5 - İş Ortağı</option>
                         </select>
                     </div>
                     
