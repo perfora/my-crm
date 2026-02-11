@@ -666,6 +666,9 @@ Route::post('/musteriler', function () {
         'notlar' => 'nullable|string',
         'derece' => 'nullable|string',
         'turu' => 'nullable|string',
+        'arama_periyodu_gun' => 'nullable|integer|min:1|max:3650',
+        'ziyaret_periyodu_gun' => 'nullable|integer|min:1|max:3650',
+        'temas_kurali' => 'nullable|string|max:50',
     ]);
     
     $musteri = \App\Models\Musteri::create($validated);
@@ -756,6 +759,9 @@ Route::put('/musteriler/{id}', function ($id) {
             'notlar' => 'nullable|string',
             'derece' => 'nullable|string',
             'turu' => 'nullable|string',
+            'arama_periyodu_gun' => 'nullable|integer|min:1|max:3650',
+            'ziyaret_periyodu_gun' => 'nullable|integer|min:1|max:3650',
+            'temas_kurali' => 'nullable|string|max:50',
         ]);
         
         $musteri->update($validated);
@@ -776,6 +782,9 @@ Route::put('/musteriler/{id}', function ($id) {
         'notlar' => 'nullable|string',
         'derece' => 'nullable|string',
         'turu' => 'nullable|string',
+        'arama_periyodu_gun' => 'nullable|integer|min:1|max:3650',
+        'ziyaret_periyodu_gun' => 'nullable|integer|min:1|max:3650',
+        'temas_kurali' => 'nullable|string|max:50',
     ]);
     
     $musteri->update($validated);

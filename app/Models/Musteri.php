@@ -16,6 +16,9 @@ class Musteri extends Model
         'notlar',
         'derece',
         'turu',
+        'arama_periyodu_gun',
+        'ziyaret_periyodu_gun',
+        'temas_kurali',
         'notion_id',
         'notion_url',
     ];

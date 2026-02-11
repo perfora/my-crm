@@ -198,6 +198,15 @@
                                     <input type="checkbox" class="column-toggle" data-column="turu" checked> Türü
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="arama_periyodu_gun" checked> Arama Periyodu
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="ziyaret_periyodu_gun" checked> Ziyaret Periyodu
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="temas_kurali" checked> Temas Kuralı
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
                                     <input type="checkbox" class="column-toggle" data-column="adres"> Adres
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
@@ -248,6 +257,9 @@
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="telefon">Telefon <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="derece">Derece <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="turu">Türü <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="arama_periyodu_gun">Arama Periyodu <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="ziyaret_periyodu_gun">Ziyaret Periyodu <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="temas_kurali">Temas Kuralı <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="adres">Adres <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="notlar">Notlar <span class="sort-icon"></span></th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hızlı</th>
@@ -272,6 +284,9 @@
                                 data-notlar="{{ $musteri->notlar ?? '' }}"
                                 data-derece="{{ $musteri->derece ?? '' }}" 
                                 data-turu="{{ $musteri->turu ?? '' }}" 
+                                data-arama_periyodu_gun="{{ (int)($musteri->arama_periyodu_gun ?? 0) }}"
+                                data-ziyaret_periyodu_gun="{{ (int)($musteri->ziyaret_periyodu_gun ?? 0) }}"
+                                data-temas_kurali="{{ $musteri->temas_kurali ?? '' }}"
                                 data-en_son_ziyaret="{{ $musteri->en_son_ziyaret ?? '' }}" 
                                 data-son_baglanti_turu="{{ $musteri->son_baglanti_turu ?? '' }}"
                                 data-ziyaret_gun="{{ (int)($musteri->ziyaret_gun ?? 0) }}" 
@@ -307,6 +322,19 @@
                                         <span class="px-2 py-1 text-xs rounded-full" data-turu-badge="{{ $musteri->turu }}">
                                             {{ $musteri->turu }}
                                         </span>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="arama_periyodu_gun" data-id="{{ $musteri->id }}" data-value="{{ $musteri->arama_periyodu_gun }}">
+                                    {{ $musteri->arama_periyodu_gun ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="ziyaret_periyodu_gun" data-id="{{ $musteri->id }}" data-value="{{ $musteri->ziyaret_periyodu_gun }}">
+                                    {{ $musteri->ziyaret_periyodu_gun ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="temas_kurali" data-id="{{ $musteri->id }}" data-value="{{ $musteri->temas_kurali }}">
+                                    @if($musteri->temas_kurali)
+                                        <span class="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800">{{ $musteri->temas_kurali }}</span>
                                     @else
                                         -
                                     @endif
@@ -372,7 +400,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="15" class="px-6 py-4 text-center text-gray-500">
+                                <td colspan="18" class="px-6 py-4 text-center text-gray-500">
                                     Henüz müşteri kaydı yok.
                                 </td>
                             </tr>
@@ -555,7 +583,7 @@
                         let bVal = b.getAttribute('data-' + column) || '';
                         
                         // Sayısal sütunlar için
-                        if (['ziyaret_gun', 'ziyaret_adeti', 'toplam_teklif', 'kazanildi_toplami'].includes(column)) {
+                        if (['arama_periyodu_gun', 'ziyaret_periyodu_gun', 'ziyaret_gun', 'ziyaret_adeti', 'toplam_teklif', 'kazanildi_toplami'].includes(column)) {
                             aVal = parseFloat(aVal) || 0;
                             bVal = parseFloat(bVal) || 0;
                             return isAsc ? aVal - bVal : bVal - aVal;
@@ -827,6 +855,8 @@
                         sirket: field === 'sirket' ? newValue : (cell.closest('tr').find('[data-field="sirket"]').data('value') || ''),
                         sehir: field === 'sehir' ? newValue : (cell.closest('tr').find('[data-field="sehir"]').data('value') || ''),
                         telefon: field === 'telefon' ? newValue : (cell.closest('tr').find('[data-field="telefon"]').data('value') || ''),
+                        arama_periyodu_gun: field === 'arama_periyodu_gun' ? newValue : (cell.closest('tr').find('[data-field="arama_periyodu_gun"]').data('value') || ''),
+                        ziyaret_periyodu_gun: field === 'ziyaret_periyodu_gun' ? newValue : (cell.closest('tr').find('[data-field="ziyaret_periyodu_gun"]').data('value') || ''),
                         adres: field === 'adres' ? newValue : (cell.closest('tr').find('[data-field="adres"]').data('value') || ''),
                         notlar: field === 'notlar' ? newValue : (cell.closest('tr').find('[data-field="notlar"]').data('value') || '')
                     };
@@ -888,7 +918,7 @@
             });
         });
 
-        // Inline editing - Select fields (Derece, Turu)
+        // Inline editing - Select fields (Derece, Turu, Temas Kurali)
         $(document).on('click', '.editable-select:not(.editing)', function() {
             const cell = $(this);
             const field = cell.data('field');
@@ -916,6 +946,14 @@
                     options += `<option value="${value}" ${selected}>${value}</option>`;
                 });
                 options += '<option value="__new__">+ Yeni Tür Ekle</option>';
+            } else if (field === 'temas_kurali') {
+                options = `
+                    <option value="">Seçiniz</option>
+                    <option value="Arama Yeterli" ${currentValue === 'Arama Yeterli' ? 'selected' : ''}>Arama Yeterli</option>
+                    <option value="Ziyaret Öncelikli" ${currentValue === 'Ziyaret Öncelikli' ? 'selected' : ''}>Ziyaret Öncelikli</option>
+                    <option value="Her İkisi Zorunlu" ${currentValue === 'Her İkisi Zorunlu' ? 'selected' : ''}>Her İkisi Zorunlu</option>
+                    <option value="Şehir Dışı (Arama Öncelikli)" ${currentValue === 'Şehir Dışı (Arama Öncelikli)' ? 'selected' : ''}>Şehir Dışı (Arama Öncelikli)</option>
+                `;
             }
             
             cell.html(`<select class="inline-edit-select w-full px-2 py-1 border rounded">${options}</select>`);
@@ -1015,6 +1053,8 @@
                         sirket: companyName,
                         sehir: cell.closest('tr').find('[data-field="sehir"]').data('value') || '',
                         telefon: cell.closest('tr').find('[data-field="telefon"]').data('value') || '',
+                        arama_periyodu_gun: cell.closest('tr').find('[data-field="arama_periyodu_gun"]').data('value') || '',
+                        ziyaret_periyodu_gun: cell.closest('tr').find('[data-field="ziyaret_periyodu_gun"]').data('value') || '',
                         adres: cell.closest('tr').find('[data-field="adres"]').data('value') || '',
                         notlar: cell.closest('tr').find('[data-field="notlar"]').data('value') || '',
                         [field]: newValue
@@ -1064,6 +1104,8 @@
                                 } else if (field === 'turu') {
                                     // Renk paletinden al
                                     badgeClass = getColorForTuru(newValue);
+                                } else if (field === 'temas_kurali') {
+                                    badgeClass = 'bg-indigo-100 text-indigo-800';
                                 }
                                 cell.html(`<span class="px-2 py-1 text-xs rounded-full ${badgeClass}">${newValue}</span>`);
                             } else {
@@ -1153,6 +1195,9 @@
                     <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="telefon" data-id="new" data-value=""><span class="text-gray-400">Telefon...</span></td>
                     <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="derece" data-id="new" data-value="">-</td>
                     <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="turu" data-id="new" data-value="">-</td>
+                    <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="arama_periyodu_gun" data-id="new" data-value=""><span class="text-gray-400">Gün...</span></td>
+                    <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="ziyaret_periyodu_gun" data-id="new" data-value=""><span class="text-gray-400">Gün...</span></td>
+                    <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="temas_kurali" data-id="new" data-value="">-</td>
                     <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="adres" data-id="new" data-value=""><span class="text-gray-400">Adres...</span></td>
                     <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="notlar" data-id="new" data-value=""><span class="text-gray-400">Not...</span></td>
                     <td class="px-6 py-4 whitespace-nowrap">-</td>
@@ -1174,7 +1219,7 @@
         // ==================== SÜTUN GÖRÜNÜRLÜKcontroLÜ ====================
 
         function getColumnIndex(columnName) {
-            const columns = ['checkbox', 'sirket', 'sehir', 'telefon', 'derece', 'turu', 'adres', 'notlar', 'quick_actions', 'en_son_ziyaret', 'son_baglanti_turu', 'ziyaret_gun', 'ziyaret_adeti', 'toplam_teklif', 'kazanildi_toplami'];
+            const columns = ['checkbox', 'sirket', 'sehir', 'telefon', 'derece', 'turu', 'arama_periyodu_gun', 'ziyaret_periyodu_gun', 'temas_kurali', 'adres', 'notlar', 'quick_actions', 'en_son_ziyaret', 'son_baglanti_turu', 'ziyaret_gun', 'ziyaret_adeti', 'toplam_teklif', 'kazanildi_toplami'];
             return columns.indexOf(columnName);
         }
 
