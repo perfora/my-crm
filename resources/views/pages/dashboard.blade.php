@@ -113,9 +113,9 @@
             ->filter(function($musteri) {
                 return $musteri->toplam_teklif > 0; // Teklifi olan müşteriler
             })
-            ->sortByDesc(function($musteri) {
-                // Önce kazanılanları, sonra kazanamayanları - her ikisi de teklif tutarına göre
-                return [$musteri->kazanilan_tutar > 0 ? 1 : 0, $musteri->toplam_teklif];
+            ->sortBy(function($musteri) {
+                // En yakın son bağlantı üstte (geçen gün küçükten büyüğe)
+                return (int) ($musteri->gecen_gun ?? PHP_INT_MAX);
             })
             ->take(10);
             
