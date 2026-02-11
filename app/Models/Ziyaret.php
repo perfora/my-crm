@@ -13,6 +13,7 @@ class Ziyaret extends Model
         'musteri_id',
         'ziyaret_tarihi',
         'arama_tarihi',
+        'gerceklesen_tarih',
         'tur',
         'durumu',
         'ziyaret_notlari',
@@ -23,6 +24,7 @@ class Ziyaret extends Model
     protected $casts = [
         'ziyaret_tarihi' => 'datetime',
         'arama_tarihi' => 'datetime',
+        'gerceklesen_tarih' => 'datetime',
     ];
 
     // İlişki

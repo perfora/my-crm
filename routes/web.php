@@ -96,6 +96,53 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', fn () => view('mobile.index'))->name('mobile.index');
         Route::get('/yeni-is', fn () => view('mobile.yeni-is'))->name('mobile.yeni-is');
         Route::get('/yeni-ziyaret', fn () => view('mobile.yeni-ziyaret'))->name('mobile.yeni-ziyaret');
+        Route::get('/planli-kayitlar', fn () => view('mobile.planli-kayitlar'))->name('mobile.planli-kayitlar');
+        Route::get('/hizli-kayit', fn () => view('mobile.hizli-kayit'))->name('mobile.hizli-kayit');
+        Route::post('/hizli-kayit', function () {
+            $validated = request()->validate([
+                'musteri_id' => 'required|exists:musteriler,id',
+                'contact_type' => 'required|in:Telefon,Ziyaret',
+                'ziyaret_notlari' => 'nullable|string',
+            ]);
+
+            $musteri = \App\Models\Musteri::findOrFail($validated['musteri_id']);
+            $now = now();
+            $isTelefon = $validated['contact_type'] === 'Telefon';
+
+            \App\Models\Ziyaret::create([
+                'ziyaret_ismi' => $musteri->sirket . ' ' . ($isTelefon ? 'Arama' : 'Ziyaret'),
+                'musteri_id' => $musteri->id,
+                'ziyaret_tarihi' => $isTelefon ? null : $now,
+                'arama_tarihi' => $isTelefon ? $now : null,
+                'gerceklesen_tarih' => $now,
+                'tur' => $validated['contact_type'],
+                'durumu' => 'Tamamlandı',
+                'ziyaret_notlari' => $validated['ziyaret_notlari'] ?? null,
+            ]);
+
+            return redirect('/mobile/hizli-kayit')->with('message', 'Hızlı kayıt oluşturuldu.');
+        })->name('mobile.hizli-kayit.store');
+        Route::post('/ziyaretler/{id}/tamamla', function ($id) {
+            $ziyaret = \App\Models\Ziyaret::findOrFail($id);
+            $validated = request()->validate([
+                'ziyaret_notlari' => 'nullable|string',
+            ]);
+
+            $updateData = [
+                'durumu' => 'Tamamlandı',
+                'gerceklesen_tarih' => now(),
+            ];
+
+            $newNote = trim((string) ($validated['ziyaret_notlari'] ?? ''));
+            if ($newNote !== '') {
+                $oldNote = trim((string) ($ziyaret->ziyaret_notlari ?? ''));
+                $updateData['ziyaret_notlari'] = $oldNote === '' ? $newNote : $oldNote . "\n\n" . $newNote;
+            }
+
+            $ziyaret->update($updateData);
+
+            return redirect('/mobile/planli-kayitlar')->with('message', 'Kayıt tamamlandı.');
+        })->name('mobile.planli-kayitlar.tamamla');
         Route::get('/raporlar', fn () => view('mobile.raporlar'))->name('mobile.raporlar');
     });
     
@@ -645,6 +692,7 @@ Route::post('/musteriler/{id}/quick-contact', function ($id) {
         'musteri_id' => $musteri->id,
         'ziyaret_tarihi' => $isTelefon ? null : $now,
         'arama_tarihi' => $isTelefon ? $now : null,
+        'gerceklesen_tarih' => $now,
         'tur' => $validated['contact_type'],
         'durumu' => 'Tamamlandı',
         'ziyaret_notlari' => null,
@@ -874,6 +922,9 @@ Route::put('/ziyaretler/{id}', function ($id) {
     if (!empty($validated['arama_tarihi']) && empty($validated['durumu'])) {
         $validated['durumu'] = 'Planlandı';
     }
+    if (($validated['durumu'] ?? null) === 'Tamamlandı') {
+        $validated['gerceklesen_tarih'] = $ziyaret->gerceklesen_tarih ?? now();
+    }
 
     $ziyaret->update($validated);
 
@@ -948,6 +999,9 @@ Route::post('/ziyaretler', function () {
     }
     if (!empty($validated['arama_tarihi']) && empty($validated['durumu'])) {
         $validated['durumu'] = 'Planlandı';
+    }
+    if (($validated['durumu'] ?? null) === 'Tamamlandı' && empty($validated['gerceklesen_tarih'])) {
+        $validated['gerceklesen_tarih'] = now();
     }
     
     $ziyaret = \App\Models\Ziyaret::create($validated);

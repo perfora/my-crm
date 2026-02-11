@@ -28,6 +28,16 @@
 
         <!-- Ana Butonlar -->
         <div class="p-6 space-y-4">
+            <a href="/mobile/planli-kayitlar" class="mobile-btn block bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-3">
+                <span class="text-4xl">✅</span>
+                <span>Planlı Kayıtlarım</span>
+            </a>
+
+            <a href="/mobile/hizli-kayit" class="mobile-btn block bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-3">
+                <span class="text-4xl">⚡</span>
+                <span>Hızlı Arama/Ziyaret</span>
+            </a>
+
             <a href="/mobile/yeni-is" class="mobile-btn block bg-green-500 hover:bg-green-600 text-white rounded-xl shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-3">
                 <span class="text-4xl">➕</span>
                 <span>Yeni İş</span>
