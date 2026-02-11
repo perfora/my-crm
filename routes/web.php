@@ -106,7 +106,7 @@ Route::middleware(['auth'])->group(function () {
             ]);
 
             $musteri = \App\Models\Musteri::findOrFail($validated['musteri_id']);
-            $now = now();
+            $now = \Carbon\Carbon::now('Europe/Istanbul');
             $isTelefon = $validated['contact_type'] === 'Telefon';
 
             \App\Models\Ziyaret::create([
@@ -130,7 +130,7 @@ Route::middleware(['auth'])->group(function () {
 
             $updateData = [
                 'durumu' => 'Tamamlandı',
-                'gerceklesen_tarih' => now(),
+                'gerceklesen_tarih' => \Carbon\Carbon::now('Europe/Istanbul'),
             ];
 
             $newNote = trim((string) ($validated['ziyaret_notlari'] ?? ''));
@@ -684,7 +684,7 @@ Route::post('/musteriler/{id}/quick-contact', function ($id) {
         'contact_type' => 'required|in:Telefon,Ziyaret',
     ]);
 
-    $now = now();
+    $now = \Carbon\Carbon::now('Europe/Istanbul');
     $isTelefon = $validated['contact_type'] === 'Telefon';
 
     $ziyaret = \App\Models\Ziyaret::create([
@@ -923,7 +923,7 @@ Route::put('/ziyaretler/{id}', function ($id) {
         $validated['durumu'] = 'Planlandı';
     }
     if (($validated['durumu'] ?? null) === 'Tamamlandı') {
-        $validated['gerceklesen_tarih'] = $ziyaret->gerceklesen_tarih ?? now();
+        $validated['gerceklesen_tarih'] = $ziyaret->gerceklesen_tarih ?? \Carbon\Carbon::now('Europe/Istanbul');
     }
 
     $ziyaret->update($validated);
@@ -1001,7 +1001,7 @@ Route::post('/ziyaretler', function () {
         $validated['durumu'] = 'Planlandı';
     }
     if (($validated['durumu'] ?? null) === 'Tamamlandı' && empty($validated['gerceklesen_tarih'])) {
-        $validated['gerceklesen_tarih'] = now();
+        $validated['gerceklesen_tarih'] = \Carbon\Carbon::now('Europe/Istanbul');
     }
     
     $ziyaret = \App\Models\Ziyaret::create($validated);
