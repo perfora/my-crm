@@ -630,6 +630,57 @@ Route::post('/musteriler', function () {
     
     return redirect('/musteriler')->with('message', 'Müşteri başarıyla eklendi.');
 });
+Route::post('/musteriler/{id}/quick-contact', function ($id) {
+    $musteri = \App\Models\Musteri::findOrFail($id);
+
+    $validated = request()->validate([
+        'contact_type' => 'required|in:Telefon,Ziyaret',
+    ]);
+
+    $now = now();
+    $isTelefon = $validated['contact_type'] === 'Telefon';
+
+    $ziyaret = \App\Models\Ziyaret::create([
+        'ziyaret_ismi' => $musteri->sirket . ' ' . ($isTelefon ? 'Arama' : 'Ziyaret'),
+        'musteri_id' => $musteri->id,
+        'ziyaret_tarihi' => $isTelefon ? null : $now,
+        'arama_tarihi' => $isTelefon ? $now : null,
+        'tur' => $validated['contact_type'],
+        'durumu' => 'Tamamlandı',
+        'ziyaret_notlari' => null,
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Hızlı kayıt oluşturuldu.',
+        'data' => [
+            'id' => $ziyaret->id,
+            'musteri_id' => $musteri->id,
+            'musteri' => $musteri->sirket,
+            'contact_type' => $validated['contact_type'],
+            'created_at' => $now->toDateTimeString(),
+        ],
+    ]);
+});
+Route::post('/ziyaretler/{id}/quick-note', function ($id) {
+    $ziyaret = \App\Models\Ziyaret::findOrFail($id);
+    $validated = request()->validate([
+        'ziyaret_notlari' => 'required|string',
+    ]);
+
+    $ziyaret->update([
+        'ziyaret_notlari' => $validated['ziyaret_notlari'],
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Not kaydedildi.',
+        'data' => [
+            'id' => $ziyaret->id,
+            'ziyaret_notlari' => $ziyaret->ziyaret_notlari,
+        ],
+    ]);
+});
 Route::get('/musteriler/{id}', function ($id) {
     $musteri = \App\Models\Musteri::findOrFail($id);
     $kisiler = Kisi::where('musteri_id', $musteri->id)->get();

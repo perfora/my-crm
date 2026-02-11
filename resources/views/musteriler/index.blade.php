@@ -47,6 +47,15 @@
         .editing {
             padding: 0 !important;
         }
+        .quick-note-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(17, 24, 39, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -195,6 +204,9 @@
                                     <input type="checkbox" class="column-toggle" data-column="notlar"> Notlar
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="quick_actions" checked> Hızlı
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
                                     <input type="checkbox" class="column-toggle" data-column="en_son_ziyaret" checked> Son Bağlantı
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
@@ -238,6 +250,7 @@
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="turu">Türü <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="adres">Adres <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="notlar">Notlar <span class="sort-icon"></span></th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hızlı</th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="en_son_ziyaret">Son Bağlantı <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="son_baglanti_turu">Bağlantı Türü <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="ziyaret_gun">Bağlantı Gün <span class="sort-icon"></span></th>
@@ -300,6 +313,26 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="adres" data-id="{{ $musteri->id }}" data-value="{{ $musteri->adres }}">{{ $musteri->adres ?? '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="notlar" data-id="{{ $musteri->id }}" data-value="{{ $musteri->notlar }}">{{ $musteri->notlar ?? '-' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center gap-2">
+                                        <button type="button"
+                                                class="quick-contact-btn px-2 py-1 text-xs rounded bg-green-100 text-green-800 hover:bg-green-200"
+                                                data-musteri-id="{{ $musteri->id }}"
+                                                data-musteri-name="{{ $musteri->sirket }}"
+                                                data-contact-type="Telefon"
+                                                title="Hızlı Arama Kaydı">
+                                            📞
+                                        </button>
+                                        <button type="button"
+                                                class="quick-contact-btn px-2 py-1 text-xs rounded bg-purple-100 text-purple-800 hover:bg-purple-200"
+                                                data-musteri-id="{{ $musteri->id }}"
+                                                data-musteri-name="{{ $musteri->sirket }}"
+                                                data-contact-type="Ziyaret"
+                                                title="Hızlı Ziyaret Kaydı">
+                                            👥
+                                        </button>
+                                    </div>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $musteri->en_son_ziyaret ? $musteri->en_son_ziyaret->format('d.m.Y H:i') : '-' }}
                                 </td>
@@ -339,7 +372,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="14" class="px-6 py-4 text-center text-gray-500">
+                                <td colspan="15" class="px-6 py-4 text-center text-gray-500">
                                     Henüz müşteri kaydı yok.
                                 </td>
                             </tr>
@@ -350,10 +383,27 @@
         </div>
     </div>
 
+    <div id="quick-note-modal" class="quick-note-modal">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-5">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-lg font-semibold">Hızlı Kayıt Notu</h3>
+                <button type="button" id="quick-note-close" class="text-gray-500 hover:text-gray-800">✕</button>
+            </div>
+            <p class="text-sm text-gray-600 mb-3">Kayıt oluşturuldu. İstersen notu şimdi ekleyebilirsin.</p>
+            <textarea id="quick-note-text" class="w-full h-40 border rounded p-3 text-sm" placeholder="Not..."></textarea>
+            <div class="mt-4 flex justify-end gap-2">
+                <button type="button" id="quick-note-later" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Sonra</button>
+                <button type="button" id="quick-note-save" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Notu Kaydet</button>
+            </div>
+        </div>
+    </div>
+
     <script src="{{ asset('public/js/crm-toolbar.js') }}"></script>
     <script>
         // Global değişkenler
         let existingTuruValues = @json($existingTuruValues);
+        const quickContactLock = {};
+        let quickNoteVisitId = null;
         const defaultTuruValues = ['Netcom', 'Bayi', 'Resmi Kurum', 'Üniversite', 'Belediye', 'Hastane', 'Özel Sektör', 'Tedarikçi', 'Üretici', 'Diğer'];
         
         // Renk paleti - her yeni tür için farklı renk
@@ -1084,7 +1134,7 @@
         };
         
         // Add new row
-        window.addNewRow = function() {
+            window.addNewRow = function() {
             if ($('#musteriler-table tbody tr.new-row').length) {
                 $('#musteriler-table tbody tr.new-row td.editable-cell[data-field="sirket"]').first().click();
                 return;
@@ -1102,6 +1152,7 @@
                     <td class="px-6 py-4 whitespace-nowrap editable-select" data-field="turu" data-id="new" data-value="">-</td>
                     <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="adres" data-id="new" data-value=""><span class="text-gray-400">Adres...</span></td>
                     <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="notlar" data-id="new" data-value=""><span class="text-gray-400">Not...</span></td>
+                    <td class="px-6 py-4 whitespace-nowrap">-</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">-</td>
                     <td class="px-6 py-4 whitespace-nowrap">-</td>
@@ -1120,9 +1171,111 @@
         // ==================== SÜTUN GÖRÜNÜRLÜKcontroLÜ ====================
 
         function getColumnIndex(columnName) {
-            const columns = ['checkbox', 'sirket', 'sehir', 'telefon', 'derece', 'turu', 'adres', 'notlar', 'en_son_ziyaret', 'son_baglanti_turu', 'ziyaret_gun', 'ziyaret_adeti', 'toplam_teklif', 'kazanildi_toplami'];
+            const columns = ['checkbox', 'sirket', 'sehir', 'telefon', 'derece', 'turu', 'adres', 'notlar', 'quick_actions', 'en_son_ziyaret', 'son_baglanti_turu', 'ziyaret_gun', 'ziyaret_adeti', 'toplam_teklif', 'kazanildi_toplami'];
             return columns.indexOf(columnName);
         }
+
+        function openQuickNoteModal(visitId) {
+            quickNoteVisitId = visitId;
+            $('#quick-note-text').val('');
+            $('#quick-note-modal').css('display', 'flex');
+            setTimeout(() => $('#quick-note-text').trigger('focus'), 10);
+        }
+
+        function closeQuickNoteModal() {
+            quickNoteVisitId = null;
+            $('#quick-note-modal').hide();
+            $('#quick-note-text').val('');
+        }
+
+        function parseErrorMessage(xhr) {
+            const json = xhr && xhr.responseJSON ? xhr.responseJSON : null;
+            if (json && json.message) return json.message;
+            if (xhr && xhr.statusText) return xhr.statusText;
+            return 'Bilinmeyen hata';
+        }
+
+        $(document).on('click', '.quick-contact-btn', function () {
+            const $btn = $(this);
+            const musteriId = String($btn.data('musteri-id') || '').trim();
+            const musteriName = String($btn.data('musteri-name') || '').trim();
+            const contactType = String($btn.data('contact-type') || '').trim();
+
+            if (!musteriId || !contactType) return;
+
+            const lockKey = musteriId + '::' + contactType;
+            const nowMs = Date.now();
+            if (quickContactLock[lockKey] && nowMs - quickContactLock[lockKey] < 3000) {
+                return;
+            }
+            quickContactLock[lockKey] = nowMs;
+
+            const prevText = $btn.text();
+            $btn.prop('disabled', true).text('...');
+
+            $.ajax({
+                url: '/musteriler/' + musteriId + '/quick-contact',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    contact_type: contactType
+                },
+                success: function (res) {
+                    const id = res?.data?.id;
+                    alert((musteriName || 'Müşteri') + ' için ' + (contactType === 'Telefon' ? 'arama' : 'ziyaret') + ' kaydı oluşturuldu.');
+                    if (id) {
+                        openQuickNoteModal(id);
+                    }
+                },
+                error: function (xhr) {
+                    alert('Hızlı kayıt oluşturulamadı! ' + parseErrorMessage(xhr));
+                },
+                complete: function () {
+                    setTimeout(function () {
+                        delete quickContactLock[lockKey];
+                    }, 3200);
+                    $btn.prop('disabled', false).text(prevText);
+                }
+            });
+        });
+
+        $('#quick-note-close, #quick-note-later').on('click', function () {
+            closeQuickNoteModal();
+        });
+
+        $('#quick-note-save').on('click', function () {
+            const text = String($('#quick-note-text').val() || '').trim();
+            if (!quickNoteVisitId) {
+                closeQuickNoteModal();
+                return;
+            }
+            if (!text) {
+                alert('Not boş olamaz. Boş bırakacaksan Sonra seç.');
+                return;
+            }
+
+            const $btn = $(this);
+            $btn.prop('disabled', true).text('Kaydediliyor...');
+
+            $.ajax({
+                url: '/ziyaretler/' + quickNoteVisitId + '/quick-note',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    ziyaret_notlari: text
+                },
+                success: function () {
+                    alert('Not kaydedildi.');
+                    closeQuickNoteModal();
+                },
+                error: function (xhr) {
+                    alert('Not kaydedilemedi! ' + parseErrorMessage(xhr));
+                },
+                complete: function () {
+                    $btn.prop('disabled', false).text('Notu Kaydet');
+                }
+            });
+        });
 
         const toolbar = window.CrmToolbar.init({
             storageKey: columnStorageKey,
