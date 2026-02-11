@@ -533,7 +533,8 @@
                 header.addEventListener('click', function() {
                     const column = this.getAttribute('data-column');
                     const tbody = document.querySelector('#musteriler-table tbody');
-                    const rows = Array.from(tbody.querySelectorAll('tr:not(:last-child)'));
+                    // Sadece veri satırlarını al; boş mesaj satırını hariç tut
+                    const rows = Array.from(tbody.querySelectorAll('tr')).filter(row => !row.querySelector('td[colspan]'));
                     
                     // Sıralama yönünü belirle
                     if (!sortDirection[column]) {
@@ -568,9 +569,11 @@
                         }
                         
                         // Text sütunlar için
-                        return isAsc ? 
-                            aVal.localeCompare(bVal, 'tr') : 
-                            bVal.localeCompare(aVal, 'tr');
+                        aVal = String(aVal).trim();
+                        bVal = String(bVal).trim();
+                        return isAsc ?
+                            aVal.localeCompare(bVal, 'tr', { sensitivity: 'base' }) :
+                            bVal.localeCompare(aVal, 'tr', { sensitivity: 'base' });
                     });
                     
                     // Sıralanmış satırları tekrar ekle
