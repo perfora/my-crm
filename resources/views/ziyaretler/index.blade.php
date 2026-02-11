@@ -246,16 +246,25 @@
                                 $query->where('durumu', request('durumu'));
                             }
                             if(request('tarih_baslangic')) {
-                                $query->whereDate('ziyaret_tarihi', '>=', request('tarih_baslangic'));
+                                $query->where(function($q) {
+                                    $q->whereDate('ziyaret_tarihi', '>=', request('tarih_baslangic'))
+                                      ->orWhereDate('arama_tarihi', '>=', request('tarih_baslangic'));
+                                });
                             }
                             if(request('tarih_bitis')) {
-                                $query->whereDate('ziyaret_tarihi', '<=', request('tarih_bitis'));
+                                $query->where(function($q) {
+                                    $q->whereDate('ziyaret_tarihi', '<=', request('tarih_bitis'))
+                                      ->orWhereDate('arama_tarihi', '<=', request('tarih_bitis'));
+                                });
                             }
-                            
-                            $ziyaretler = $query->latest('ziyaret_tarihi')->get();
+
+                            $ziyaretler = $query
+                                ->orderByRaw('COALESCE(ziyaret_tarihi, arama_tarihi) DESC')
+                                ->get();
                         @endphp
                         
                         @forelse($ziyaretler as $ziyaret)
+                            @php($satirTarih = $ziyaret->tur == 'Telefon' ? $ziyaret->arama_tarihi : $ziyaret->ziyaret_tarihi)
                             <tr data-row="1"
                                 data-id="{{ $ziyaret->id }}"
                                 data-ziyaret-ismi="{{ $ziyaret->ziyaret_ismi }}"
@@ -263,8 +272,8 @@
                                 data-musteri="{{ $ziyaret->musteri ? $ziyaret->musteri->sirket : '' }}" 
                                 data-musteri-id="{{ $ziyaret->musteri_id ?? '' }}"
                                 data-musteri_id="{{ $ziyaret->musteri_id ?? '' }}"
-                                data-ziyaret-tarihi="{{ $ziyaret->ziyaret_tarihi }}" 
-                                data-ziyaret_tarihi="{{ $ziyaret->ziyaret_tarihi }}"
+                                data-ziyaret-tarihi="{{ $satirTarih }}" 
+                                data-ziyaret_tarihi="{{ $satirTarih }}"
                                 data-arama-tarihi="{{ $ziyaret->arama_tarihi }}"
                                 data-arama_tarihi="{{ $ziyaret->arama_tarihi }}"
                                 data-tur="{{ $ziyaret->tur ?? '' }}" 
