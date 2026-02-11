@@ -39,13 +39,35 @@ class Musteri extends Model
     // En son baglanti tarihi (ziyaret veya telefon)
     public function getSonBaglantiTarihiAttribute()
     {
-        $sonZiyaret = $this->ziyaretler()
-            ->whereNotNull('ziyaret_tarihi')
-            ->max('ziyaret_tarihi');
+        if ($this->relationLoaded('ziyaretler')) {
+            $latest = $this->ziyaretler
+                ->map(function ($item) {
+                    $visitAt = $item->ziyaret_tarihi;
+                    $callAt = $item->arama_tarihi;
 
-        $sonArama = $this->ziyaretler()
-            ->whereNotNull('arama_tarihi')
-            ->max('arama_tarihi');
+                    if (!$visitAt && !$callAt) {
+                        return null;
+                    }
+
+                    if ($visitAt && !$callAt) {
+                        return $visitAt;
+                    }
+
+                    if (!$visitAt && $callAt) {
+                        return $callAt;
+                    }
+
+                    return $visitAt->greaterThanOrEqualTo($callAt) ? $visitAt : $callAt;
+                })
+                ->filter()
+                ->sortDesc()
+                ->first();
+
+            return $latest ?: null;
+        }
+
+        $sonZiyaret = $this->ziyaretler()->whereNotNull('ziyaret_tarihi')->max('ziyaret_tarihi');
+        $sonArama = $this->ziyaretler()->whereNotNull('arama_tarihi')->max('arama_tarihi');
 
         if (!$sonZiyaret && !$sonArama) {
             return null;
@@ -67,6 +89,42 @@ class Musteri extends Model
     // En son baglanti tipi (Ziyaret / Telefon)
     public function getSonBaglantiTuruAttribute()
     {
+        if ($this->relationLoaded('ziyaretler')) {
+            $record = $this->ziyaretler
+                ->map(function ($item) {
+                    $latestAt = $item->ziyaret_tarihi;
+                    $type = 'Ziyaret';
+
+                    if ($item->arama_tarihi && (!$latestAt || $item->arama_tarihi->greaterThan($latestAt))) {
+                        $latestAt = $item->arama_tarihi;
+                        $type = 'Telefon';
+                    }
+
+                    if (!$latestAt) {
+                        return null;
+                    }
+
+                    $normalized = $item->tur;
+                    if (!$normalized) {
+                        $normalized = $type;
+                    } elseif (in_array(mb_strtolower($normalized), ['arama', 'telefon'], true)) {
+                        $normalized = 'Telefon';
+                    } elseif (mb_strtolower($normalized) === 'ziyaret') {
+                        $normalized = 'Ziyaret';
+                    }
+
+                    return [
+                        'date' => $latestAt,
+                        'type' => $normalized,
+                    ];
+                })
+                ->filter()
+                ->sortByDesc('date')
+                ->first();
+
+            return $record['type'] ?? null;
+        }
+
         $tarih = $this->son_baglanti_tarihi;
         if (!$tarih) {
             return null;
@@ -75,7 +133,7 @@ class Musteri extends Model
         $record = $this->ziyaretler()
             ->where(function ($q) use ($tarih) {
                 $q->where('ziyaret_tarihi', $tarih)
-                  ->orWhere('arama_tarihi', $tarih);
+                    ->orWhere('arama_tarihi', $tarih);
             })
             ->orderByDesc('id')
             ->first();

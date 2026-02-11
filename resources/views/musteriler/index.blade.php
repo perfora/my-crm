@@ -301,11 +301,11 @@
                                 <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="adres" data-id="{{ $musteri->id }}" data-value="{{ $musteri->adres }}">{{ $musteri->adres ?? '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap editable-cell" data-field="notlar" data-id="{{ $musteri->id }}" data-value="{{ $musteri->notlar }}">{{ $musteri->notlar ?? '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $musteri->en_son_ziyaret ? $musteri->en_son_ziyaret->format('d.m.Y') : '-' }}
+                                    {{ $musteri->en_son_ziyaret ? $musteri->en_son_ziyaret->format('d.m.Y H:i') : '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                                     @if($musteri->son_baglanti_turu)
-                                        <span class="px-2 py-1 text-xs rounded-full {{ $musteri->son_baglanti_turu === 'Telefon' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800' }}">
+                                        <span class="px-2 py-1 text-xs rounded-full {{ in_array(mb_strtolower($musteri->son_baglanti_turu), ['telefon', 'arama']) ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800' }}">
                                             {{ $musteri->son_baglanti_turu }}
                                         </span>
                                     @else
