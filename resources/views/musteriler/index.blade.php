@@ -142,6 +142,26 @@
                                 <option value="Üretici">Üretici</option>
                             </select>
                         </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Arama Periyodu (Gün)</label>
+                            <input type="number" min="1" name="arama_periyodu_gun" id="filter-arama-periyodu-gun" class="w-full border rounded px-3 py-2" placeholder="Örn: 30">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Ziyaret Periyodu (Gün)</label>
+                            <input type="number" min="1" name="ziyaret_periyodu_gun" id="filter-ziyaret-periyodu-gun" class="w-full border rounded px-3 py-2" placeholder="Örn: 60">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Temas Türü</label>
+                            <select name="temas_kurali[]" id="filter-temas-kurali" class="w-full border rounded px-3 py-2 select2-filter" multiple>
+                                <option value="Arama Yeterli">Arama Yeterli</option>
+                                <option value="Ziyaret Öncelikli">Ziyaret Öncelikli</option>
+                                <option value="Her İkisi Zorunlu">Her İkisi Zorunlu</option>
+                                <option value="Şehir Dışı (Arama Öncelikli)">Şehir Dışı (Arama Öncelikli)</option>
+                            </select>
+                        </div>
                     </div>
                     
                     <div class="flex gap-2">
@@ -534,7 +554,7 @@
             });
             
             // Select2 başlat
-            $('#filter-derece, #filter-turu').select2(getSelect2Config('Bir veya daha fazla seçin...', {
+            $('#filter-derece, #filter-turu, #filter-temas-kurali').select2(getSelect2Config('Bir veya daha fazla seçin...', {
                 closeOnSelect: false,
                 placeholder: 'Seçiniz'
             }));
@@ -638,6 +658,9 @@
             const sehir = document.getElementById('filter-sehir').value.toLowerCase();
             const derece = ($('#filter-derece').val() || []).filter(Boolean);
             const turu = ($('#filter-turu').val() || []).filter(Boolean);
+            const temasKurali = ($('#filter-temas-kurali').val() || []).filter(Boolean);
+            const aramaPeriyoduGun = parseInt(document.getElementById('filter-arama-periyodu-gun').value, 10);
+            const ziyaretPeriyoduGun = parseInt(document.getElementById('filter-ziyaret-periyodu-gun').value, 10);
             
             const tbody = document.querySelector('#musteriler-table tbody');
             const rows = tbody.querySelectorAll('tr');
@@ -651,6 +674,9 @@
                 const rowSehir = (row.getAttribute('data-sehir') || '').toLowerCase();
                 const rowDerece = row.getAttribute('data-derece') || '';
                 const rowTuru = row.getAttribute('data-turu') || '';
+                const rowTemasKurali = row.getAttribute('data-temas_kurali') || '';
+                const rowAramaPeriyoduGun = parseInt(row.getAttribute('data-arama_periyodu_gun') || '0', 10);
+                const rowZiyaretPeriyoduGun = parseInt(row.getAttribute('data-ziyaret_periyodu_gun') || '0', 10);
                 
                 let show = true;
                 
@@ -658,6 +684,9 @@
                 if (sehir && !rowSehir.includes(sehir)) show = false;
                 if (derece.length && !derece.includes(rowDerece)) show = false;
                 if (turu.length && !turu.includes(rowTuru)) show = false;
+                if (temasKurali.length && !temasKurali.includes(rowTemasKurali)) show = false;
+                if (!Number.isNaN(aramaPeriyoduGun) && rowAramaPeriyoduGun !== aramaPeriyoduGun) show = false;
+                if (!Number.isNaN(ziyaretPeriyoduGun) && rowZiyaretPeriyoduGun !== ziyaretPeriyoduGun) show = false;
                 
                 row.style.display = show ? '' : 'none';
                 if (show) visibleCount++;
@@ -673,6 +702,9 @@
             document.getElementById('filter-sehir').value = '';
             $('#filter-derece').val('').trigger('change');
             $('#filter-turu').val('').trigger('change');
+            $('#filter-temas-kurali').val('').trigger('change');
+            document.getElementById('filter-arama-periyodu-gun').value = '';
+            document.getElementById('filter-ziyaret-periyodu-gun').value = '';
             
             const tbody = document.querySelector('#musteriler-table tbody');
             const rows = tbody.querySelectorAll('tr');
