@@ -317,8 +317,18 @@
                                 <td class="px-3 py-4 whitespace-nowrap text-center">
                                     <input type="checkbox" class="row-checkbox cursor-pointer" data-id="{{ $musteri->id }}">
                                 </td>
+                                @php
+                                    $sirketLinkClass = match($musteri->derece) {
+                                        '1 -Sık' => 'text-red-700 hover:text-red-800',
+                                        '2 - Orta' => 'text-amber-700 hover:text-amber-800',
+                                        '3- Düşük' => 'text-green-700 hover:text-green-800',
+                                        '4 - Potansiyel' => 'text-blue-700 hover:text-blue-800',
+                                        '5 - İş Ortağı' => 'text-slate-700 hover:text-slate-900',
+                                        default => 'text-blue-600 hover:text-blue-800',
+                                    };
+                                @endphp
                                 <td class="px-6 py-4 whitespace-nowrap font-medium editable-cell" data-field="sirket" data-id="{{ $musteri->id }}" data-value="{{ $musteri->sirket }}">
-                                    <a href="/musteriler/{{ $musteri->id }}" class="text-blue-600 hover:text-blue-800 hover:underline">
+                                    <a href="/musteriler/{{ $musteri->id }}" class="{{ $sirketLinkClass }} hover:underline">
                                         {{ $musteri->sirket }}
                                     </a>
                                 </td>
@@ -500,6 +510,22 @@
             const color = colorPalette[Object.keys(turuColors).filter(k => !defaultTuruValues.includes(k)).length % colorPalette.length];
             turuColors[turu] = color;
             return color;
+        }
+
+        function getSirketLinkColorClassByDegree(derece) {
+            if (derece === '1 -Sık') return 'text-red-700 hover:text-red-800';
+            if (derece === '2 - Orta') return 'text-amber-700 hover:text-amber-800';
+            if (derece === '3- Düşük') return 'text-green-700 hover:text-green-800';
+            if (derece === '4 - Potansiyel') return 'text-blue-700 hover:text-blue-800';
+            if (derece === '5 - İş Ortağı') return 'text-slate-700 hover:text-slate-900';
+            return 'text-blue-600 hover:text-blue-800';
+        }
+
+        function applySirketLinkColorByDegree(row, derece) {
+            const link = row.find('td[data-field="sirket"] a');
+            if (!link.length) return;
+            link.removeClass('text-red-700 hover:text-red-800 text-amber-700 hover:text-amber-800 text-green-700 hover:text-green-800 text-blue-700 hover:text-blue-800 text-slate-700 hover:text-slate-900 text-blue-600 hover:text-blue-800');
+            link.addClass(getSirketLinkColorClassByDegree(derece));
         }
 
         function deleteTuruInline(turu, afterDelete) {
@@ -924,6 +950,9 @@
                             
                             // Update data attribute for filtering
                             cell.closest('tr').attr('data-' + field, newValue);
+                            if (field === 'derece') {
+                                applySirketLinkColorByDegree(cell.closest('tr'), newValue);
+                            }
                         },
                         error: function() {
                             alert('Kaydedilemedi!');
