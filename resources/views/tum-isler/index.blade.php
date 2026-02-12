@@ -755,7 +755,7 @@
                                         {{ $is->tipi ?? '-' }}
                                     </span>
                                 </td>
-                                <td class="px-3 py-3 text-sm editable-cell max-w-xs truncate" data-field="kaybedilme_nedeni" data-id="{{ $is->id }}" data-value="{{ $is->kaybedilme_nedeni ?? '' }}" title="{{ $is->kaybedilme_nedeni ?? '' }}">
+                                <td class="px-3 py-3 text-sm editable-select max-w-xs truncate" data-field="kaybedilme_nedeni" data-id="{{ $is->id }}" data-value="{{ $is->kaybedilme_nedeni ?? '' }}" title="{{ $is->kaybedilme_nedeni ?? '' }}">
                                     {{ $is->kaybedilme_nedeni ?: '-' }}
                                 </td>
                                 <td class="px-3 py-3 whitespace-nowrap">
@@ -1099,7 +1099,7 @@
                         <td class="px-3 py-3 whitespace-nowrap editable-select" data-field="tipi" data-id="new" data-value="">
                             <span class="text-gray-400">Tip seçiniz...</span>
                         </td>
-                        <td class="px-3 py-3 editable-cell" data-field="kaybedilme_nedeni" data-id="new" data-value="">
+                        <td class="px-3 py-3 editable-select" data-field="kaybedilme_nedeni" data-id="new" data-value="">
                             <span class="text-gray-400">Kaybedilme nedeni...</span>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">-</td>
@@ -1694,11 +1694,27 @@
                     options += `<option value="{{ $marka->id }}" ${currentValue == '{{ $marka->id }}' ? 'selected' : ''}>{{ $marka->name }}</option>`;
                 @endforeach
                 options += '<option value="__new__" style="color: green; font-weight: bold;">➕ Yeni Marka Ekle</option>';
+            } else if (field === 'kaybedilme_nedeni') {
+                options = '<option value="">Seçiniz</option>';
+                const kaybedilmeNedenleri = [
+                    'Diğer',
+                    'Bütçe Yok',
+                    'Kendileri Kurdu',
+                    'Müşteri Vazgeçti',
+                    'Yerli Ürün Tercihi',
+                    'Vade/Ödeme Koşulu',
+                    'Stok Yok',
+                    'Rakip Daha Ucuz',
+                    'Fiyat Yüksek'
+                ];
+                kaybedilmeNedenleri.forEach(function(neden) {
+                    options += `<option value="${neden}" ${currentValue === neden ? 'selected' : ''}>${neden}</option>`;
+                });
             }
             
             cell.html(`<select class="w-full px-2 py-1 border rounded text-sm">${options}</select>`);
             const select = cell.find('select');
-            const useSearchableSelect = ['musteri_id', 'marka_id', 'tipi'].includes(field);
+            const useSearchableSelect = ['musteri_id', 'marka_id', 'tipi', 'kaybedilme_nedeni'].includes(field);
             if (useSearchableSelect && $.fn.select2) {
                 select.select2({
                     width: '100%',
@@ -1860,7 +1876,10 @@
                 const newValue = select.val();
                 
                 // "__new__" seçeneğiyse kaydetme (zaten yeni kayıt akışı başladı)
-                if (newValue === '__new__' || !newValue) {
+                if (newValue === '__new__') {
+                    return;
+                }
+                if (!newValue && field !== 'kaybedilme_nedeni') {
                     return;
                 }
                 
@@ -1948,6 +1967,9 @@
                                 } else {
                                     cell.html('-');
                                 }
+                            } else if (field === 'kaybedilme_nedeni') {
+                                cell.html(newValue || '-');
+                                cell.attr('title', newValue || '');
                             }
                             
                             cell.removeClass('editing');
