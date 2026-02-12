@@ -156,7 +156,7 @@
                     ->orWhereNotNull('ziyaret_periyodu_gun');
             })
             ->get()
-            ->map(function ($musteri) {
+            ->map(function ($musteri) use ($dereceSirasi) {
                 $lastVisit = $musteri->ziyaretler
                     ->whereNotNull('ziyaret_tarihi')
                     ->max('ziyaret_tarihi');
