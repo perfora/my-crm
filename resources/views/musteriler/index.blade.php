@@ -319,6 +319,14 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap font-medium editable-cell" data-field="sirket" data-id="{{ $musteri->id }}" data-value="{{ $musteri->sirket }}">
                                     <a href="/musteriler/{{ $musteri->id }}" class="text-blue-600 hover:text-blue-800 hover:underline">
+                                        <span class="inline-block w-2 h-2 rounded-full align-middle mr-2
+                                            @if($musteri->derece == '1 -Sık') bg-red-500
+                                            @elseif($musteri->derece == '2 - Orta') bg-orange-500
+                                            @elseif($musteri->derece == '3- Düşük') bg-green-500
+                                            @elseif($musteri->derece == '4 - Potansiyel') bg-blue-500
+                                            @elseif($musteri->derece == '5 - İş Ortağı') bg-slate-500
+                                            @else bg-gray-400
+                                            @endif"></span>
                                         {{ $musteri->sirket }}
                                     </a>
                                 </td>
@@ -500,6 +508,24 @@
             const color = colorPalette[Object.keys(turuColors).filter(k => !defaultTuruValues.includes(k)).length % colorPalette.length];
             turuColors[turu] = color;
             return color;
+        }
+
+        function getDegreeDotClass(derece) {
+            if (derece === '1 -Sık') return 'bg-red-500';
+            if (derece === '2 - Orta') return 'bg-orange-500';
+            if (derece === '3- Düşük') return 'bg-green-500';
+            if (derece === '4 - Potansiyel') return 'bg-blue-500';
+            if (derece === '5 - İş Ortağı') return 'bg-slate-500';
+            return 'bg-gray-400';
+        }
+
+        function applyCompanyDotByDegree(row, derece) {
+            const link = row.find('td[data-field="sirket"] a');
+            if (!link.length) return;
+            const dot = link.find('span').first();
+            if (!dot.length) return;
+            dot.removeClass('bg-red-500 bg-orange-500 bg-green-500 bg-blue-500 bg-slate-500 bg-gray-400');
+            dot.addClass(getDegreeDotClass(derece));
         }
 
         function deleteTuruInline(turu, afterDelete) {
@@ -924,6 +950,9 @@
                             
                             // Update data attribute for filtering
                             cell.closest('tr').attr('data-' + field, newValue);
+                            if (field === 'derece') {
+                                applyCompanyDotByDegree(cell.closest('tr'), newValue);
+                            }
                         },
                         error: function() {
                             alert('Kaydedilemedi!');

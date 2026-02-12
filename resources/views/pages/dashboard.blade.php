@@ -207,6 +207,17 @@
                 return strcasecmp((string) ($a->sirket ?? ''), (string) ($b->sirket ?? ''));
             })
             ->take(10);
+
+        $degreeDotClass = function (?string $derece): string {
+            return match ($derece) {
+                '1 -Sık' => 'bg-red-500',
+                '2 - Orta' => 'bg-orange-500',
+                '3- Düşük' => 'bg-green-500',
+                '4 - Potansiyel' => 'bg-blue-500',
+                '5 - İş Ortağı' => 'bg-slate-500',
+                default => 'bg-gray-400',
+            };
+        };
     @endphp
 
     <div class="container mx-auto px-6 py-8 max-w-screen-2xl">
@@ -377,7 +388,13 @@
                             @forelse($bekleyenIsler as $is)
                             <tr class="border-b hover:bg-gray-50">
                                 <td class="px-4 py-3">{{ $is->name }}</td>
-                                <td class="px-4 py-3">{{ $is->musteri->sirket ?? '-' }}</td>
+                                <td class="px-4 py-3">
+                                    @if($is->musteri)
+                                        <span class="inline-block w-2 h-2 rounded-full align-middle mr-2 {{ $degreeDotClass($is->musteri->derece) }}"></span>{{ $is->musteri->sirket }}
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                             </tr>
                             @empty
                             <tr>
@@ -482,7 +499,9 @@
                             @forelse($ziyaretGerekliList as $m)
                             <tr class="border-b hover:bg-gray-50">
                                 <td class="px-4 py-3">
-                                    <a href="/musteriler/{{ $m->id }}" class="text-blue-600 hover:underline font-semibold">{{ $m->sirket }}</a>
+                                    <a href="/musteriler/{{ $m->id }}" class="text-blue-600 hover:underline font-semibold">
+                                        <span class="inline-block w-2 h-2 rounded-full align-middle mr-2 {{ $degreeDotClass($m->derece) }}"></span>{{ $m->sirket }}
+                                    </a>
                                 </td>
                                 <td class="px-4 py-3">
                                     @if($m->tt_last_visit)
@@ -525,7 +544,9 @@
                             @forelse($ikisiGerekliList as $m)
                             <tr class="border-b hover:bg-gray-50">
                                 <td class="px-4 py-3">
-                                    <a href="/musteriler/{{ $m->id }}" class="text-blue-600 hover:underline font-semibold">{{ $m->sirket }}</a>
+                                    <a href="/musteriler/{{ $m->id }}" class="text-blue-600 hover:underline font-semibold">
+                                        <span class="inline-block w-2 h-2 rounded-full align-middle mr-2 {{ $degreeDotClass($m->derece) }}"></span>{{ $m->sirket }}
+                                    </a>
                                 </td>
                                 <td class="px-4 py-3">
                                     @if($m->tt_last_visit)
@@ -572,7 +593,9 @@
                             @forelse($aramaGerekliList as $m)
                             <tr class="border-b hover:bg-gray-50">
                                 <td class="px-4 py-3">
-                                    <a href="/musteriler/{{ $m->id }}" class="text-blue-600 hover:underline font-semibold">{{ $m->sirket }}</a>
+                                    <a href="/musteriler/{{ $m->id }}" class="text-blue-600 hover:underline font-semibold">
+                                        <span class="inline-block w-2 h-2 rounded-full align-middle mr-2 {{ $degreeDotClass($m->derece) }}"></span>{{ $m->sirket }}
+                                    </a>
                                 </td>
                                 <td class="px-4 py-3">
                                     @if($m->tt_last_visit)
@@ -625,7 +648,13 @@
                         <tbody>
                             @forelse($yaklasanZiyaretler as $ziyaret)
                             <tr class="border-b hover:bg-gray-50">
-                                <td class="px-4 py-3">{{ $ziyaret->musteri->sirket ?? '-' }}</td>
+                                <td class="px-4 py-3">
+                                    @if($ziyaret->musteri)
+                                        <span class="inline-block w-2 h-2 rounded-full align-middle mr-2 {{ $degreeDotClass($ziyaret->musteri->derece) }}"></span>{{ $ziyaret->musteri->sirket }}
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                                 <td class="px-4 py-3">{{ $ziyaret->ziyaret_tarihi ? \Carbon\Carbon::parse($ziyaret->ziyaret_tarihi)->format('d.m.Y') : '-' }}</td>
                                 <td class="px-4 py-3">
                                     <span class="px-2 py-1 rounded text-xs font-semibold {{ $ziyaret->durumu == 'Beklemede' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800' }}">
