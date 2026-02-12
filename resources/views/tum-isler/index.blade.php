@@ -1142,8 +1142,8 @@
                 const tipi = $(this).val();
                 const kapanisTarihi = $('#kapanis_tarihi');
                 
-                // Eğer Kazanıldı, Kaybedildi veya Vazgeçildi seçildiyse ve kapanış tarihi boşsa
-                if ((tipi === 'Kazanıldı' || tipi === 'Kaybedildi' || tipi === 'Vazgeçildi') && !kapanisTarihi.val()) {
+                // Eğer kapanış gerektiren tip seçildiyse ve kapanış tarihi boşsa
+                if ((tipi === 'Kazanıldı' || tipi === 'Kaybedildi' || tipi === 'Vazgeçildi' || tipi === 'Tamamlandı') && !kapanisTarihi.val()) {
                     // Bugünün tarihini set et
                     const today = new Date().toISOString().split('T')[0];
                     kapanisTarihi.val(today);
@@ -1913,8 +1913,8 @@
                         success: function(response) {
                             cell.data('value', newValue);
                             
-                            // Eğer tipi "Kazanıldı" seçildiyse ve kapanış tarihi boşsa, bugünün tarihini yaz
-                            if (field === 'tipi' && newValue === 'Kazanıldı') {
+                            // Eğer kapanış gerektiren tip seçildiyse ve kapanış tarihi boşsa, bugünün tarihini yaz
+                            if (field === 'tipi' && ['Kazanıldı', 'Kaybedildi', 'Vazgeçildi', 'Tamamlandı'].includes(newValue)) {
                                 const row = cell.closest('tr');
                                 const kapanisCell = row.find('[data-field="kapanis_tarihi"]');
                                 const currentKapanis = kapanisCell.data('value');
