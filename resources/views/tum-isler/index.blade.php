@@ -552,6 +552,9 @@
                                     <input type="checkbox" class="column-toggle" data-column="alis_tutari"> Alış
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="kur"> Kur
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
                                     <input type="checkbox" class="column-toggle" data-column="kar_tutari"> Kar
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
@@ -596,6 +599,7 @@
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="lisans_bitis">Lisans <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="teklif_tutari">Teklif <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="alis_tutari">Alış <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="kur">Kur <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="kar_tutari">Kar <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="is_guncellenme_tarihi">Açılış <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="updated_at">Güncelleme <span class="sort-icon"></span></th>
@@ -713,6 +717,7 @@
                                 data-lisans_bitis="{{ $is->lisans_bitis ?? '' }}" 
                                 data-teklif_tutari="{{ $is->teklif_tutari ?? 0 }}" 
                                 data-alis_tutari="{{ $is->alis_tutari ?? 0 }}" 
+                                data-kur="{{ $is->kur ?? 0 }}"
                                 data-kar_tutari="{{ $is->kar_tutari ?? 0 }}" 
                                 data-is_guncellenme_tarihi="{{ $is->is_guncellenme_tarihi }}"
                                 data-notlar="{{ $is->notlar ?? '' }}"
@@ -808,6 +813,9 @@
                                         -
                                     @endif
                                 </td>
+                                <td class="px-3 py-3 whitespace-nowrap editable-number" data-field="kur" data-id="{{ $is->id }}" data-value="{{ $is->kur }}">
+                                    {{ $is->kur !== null ? number_format((float)$is->kur, 4) : '-' }}
+                                </td>
                                 <td class="px-3 py-3 whitespace-nowrap">
                                     @if($is->kar_tutari)
                                         @php
@@ -864,7 +872,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="19" class="px-3 py-3 text-center text-gray-500">
+                                <td colspan="20" class="px-3 py-3 text-center text-gray-500">
                                     Henüz iş kaydı yok.
                                 </td>
                             </tr>
@@ -942,7 +950,7 @@
                         let bVal = b.getAttribute('data-' + column) || '';
                         
                         // Sayısal sütunlar için
-                        if (['oncelik', 'teklif_tutari', 'alis_tutari', 'kar_tutari'].includes(column)) {
+                        if (['oncelik', 'teklif_tutari', 'alis_tutari', 'kur', 'kar_tutari'].includes(column)) {
                             aVal = parseFloat(aVal) || 0;
                             bVal = parseFloat(bVal) || 0;
                             return isAsc ? aVal - bVal : bVal - aVal;
@@ -1109,6 +1117,7 @@
                         <td class="px-3 py-3 whitespace-nowrap editable-date" data-field="lisans_bitis" data-id="new" data-value="">-</td>
                         <td class="px-3 py-3 whitespace-nowrap editable-number" data-field="teklif_tutari" data-id="new" data-value="">-</td>
                         <td class="px-3 py-3 whitespace-nowrap editable-number" data-field="alis_tutari" data-id="new" data-value="">-</td>
+                        <td class="px-3 py-3 whitespace-nowrap editable-number" data-field="kur" data-id="new" data-value="">-</td>
                         <td class="px-3 py-3 whitespace-nowrap">-</td>
                         <td class="px-3 py-3 whitespace-nowrap editable-date" data-field="is_guncellenme_tarihi" data-id="new" data-value="">-</td>
                         <td class="px-3 py-3 whitespace-nowrap">-</td>
@@ -2034,7 +2043,10 @@
                     success: function(response) {
                         cell.data('value', newValue);
                         if (newValue) {
-                            const formatted = parseFloat(newValue).toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                            const formatted = parseFloat(newValue).toLocaleString('tr-TR', {
+                                minimumFractionDigits: field === 'kur' ? 4 : 2,
+                                maximumFractionDigits: field === 'kur' ? 4 : 2
+                            });
                             cell.html(formatted);
                         } else {
                             cell.html('-');
