@@ -11,6 +11,7 @@ use App\Models\TumIsler;
 use App\Models\SystemLog;
 use App\Models\ChangeJournal;
 use App\Support\LogSanitizer;
+use App\Services\TcmbExchangeService;
 
 if (!function_exists('crmToIstanbulCarbon')) {
     function crmToIstanbulCarbon($value): \Carbon\Carbon
@@ -21,6 +22,27 @@ if (!function_exists('crmToIstanbulCarbon')) {
         }
 
         return \Carbon\Carbon::parse($value, 'Europe/Istanbul');
+    }
+}
+
+if (!function_exists('crmAutoFillTcmKur')) {
+    function crmAutoFillTcmKur(array $validated, ?TumIsler $existing = null): array
+    {
+        $finalTipi = $validated['tipi'] ?? ($existing?->tipi);
+        $finalKapanis = $validated['kapanis_tarihi'] ?? ($existing?->kapanis_tarihi);
+        $finalKur = array_key_exists('kur', $validated) ? $validated['kur'] : ($existing?->kur);
+
+        $kurBos = $finalKur === null || $finalKur === '' || (is_numeric($finalKur) && (float) $finalKur <= 0);
+        if ($finalTipi !== 'Kazanıldı' || empty($finalKapanis) || !$kurBos) {
+            return $validated;
+        }
+
+        $tcmbRate = app(TcmbExchangeService::class)->getUsdSellingRateForDate($finalKapanis);
+        if ($tcmbRate !== null) {
+            $validated['kur'] = $tcmbRate;
+        }
+
+        return $validated;
     }
 }
 
@@ -1090,6 +1112,7 @@ Route::post('/tum-isler', function () {
     if (!empty($validated['alis_tutari']) && empty($validated['alis_doviz'])) {
         $validated['alis_doviz'] = 'USD';
     }
+    $validated = crmAutoFillTcmKur($validated);
     
     // AJAX inline editing için yeni kayıt
     if (request()->ajax() || request()->wantsJson()) {
@@ -1164,6 +1187,7 @@ Route::put('/tum-isler/{id}', function ($id) {
         if (array_key_exists('alis_tutari', $validated) && !empty($validated['alis_tutari']) && empty($validated['alis_doviz'])) {
             $validated['alis_doviz'] = 'USD';
         }
+        $validated = crmAutoFillTcmKur($validated, $is);
         
         $is->update($validated);
         
@@ -1206,6 +1230,7 @@ Route::put('/tum-isler/{id}', function ($id) {
     if (!empty($validated['alis_tutari']) && empty($validated['alis_doviz'])) {
         $validated['alis_doviz'] = 'USD';
     }
+    $validated = crmAutoFillTcmKur($validated, $is);
     
     $is->update($validated);
     
