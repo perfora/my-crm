@@ -58,9 +58,6 @@
         $karOran2026 = $teklif2026 > 0 ? ($kar2026 / $teklif2026) * 100 : 0;
         
         // Widget Görünürlüğü
-        $showBekleyenIsler = $widgetSettings['bekleyen_isler'] ?? true;
-        $showBuAyKazanilan = $widgetSettings['bu_ay_kazanilan'] ?? false;
-        $showYuksekOncelik = $widgetSettings['yuksek_oncelik'] ?? true;
         $showYaklasanZiyaretler = $widgetSettings['yaklasan_ziyaretler'] ?? true;
         
         // Widget Verileri
@@ -70,51 +67,6 @@
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
-            
-        $buAyKazanilan = \App\Models\TumIsler::where('tipi', 'Kazanıldı')
-            ->whereMonth('kapanis_tarihi', date('m'))
-            ->whereYear('kapanis_tarihi', date('Y'))
-            ->orderBy('kapanis_tarihi', 'desc')
-            ->limit(10)
-            ->get();
-            
-        // Yüksek Teklif/Kazanılan Müşteriler - Konya, Derece 1-2, Belirli Türler, 60+ gün ziyaret/arama yok
-        $yuksekOncelikIsler = \App\Models\Musteri::where('sehir', 'Konya')
-            ->whereIn('derece', ['1 -Sık', '2 - Orta'])
-            ->whereIn('turu', ['Resmi Kurum', 'Üniversite', 'Belediye', 'Hastane', 'Özel Sektör'])
-            ->with(['tumIsler', 'ziyaretler'])
-            ->get()
-            ->filter(function($musteri) {
-                // Son ziyaret/arama tarihini bul
-                $sonZiyaret = $musteri->ziyaretler->max('ziyaret_tarihi');
-                $sonArama = $musteri->ziyaretler->max('arama_tarihi');
-                
-                // İki tarih varsa en büyüğünü al
-                if ($sonZiyaret && $sonArama) {
-                    $sonTarih = max($sonZiyaret, $sonArama);
-                } elseif ($sonZiyaret) {
-                    $sonTarih = $sonZiyaret;
-                } elseif ($sonArama) {
-                    $sonTarih = $sonArama;
-                } else {
-                    // Hiç ziyaret/arama yoksa gösterme
-                    return false;
-                }
-                
-                $gunFarki = (int) \Carbon\Carbon::parse($sonTarih)->diffInDays(now());
-                $musteri->gecen_gun = $gunFarki;
-                return $gunFarki > 60;
-            })
-            ->map(function($musteri) {
-                $musteri->toplam_teklif = $musteri->tumIsler->sum('teklif_tutari');
-                $musteri->kazanilan_tutar = $musteri->tumIsler->where('tipi', 'Kazanıldı')->sum('teklif_tutari');
-                return $musteri;
-            })
-            ->sortBy(function($musteri) {
-                // En yakın son bağlantı üstte (geçen gün küçükten büyüğe)
-                return (int) ($musteri->gecen_gun ?? PHP_INT_MAX);
-            })
-            ->take(10);
             
         $yaklasanZiyaretler = \App\Models\Ziyaret::whereIn('durumu', ['Beklemede', 'Planlandı'])
             ->orderBy('ziyaret_tarihi', 'asc')
@@ -402,14 +354,16 @@
             </div>
         </div>
 
-        <!-- Widget'lar -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Bekleyen İşler -->
-            @if($showBekleyenIsler)
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div class="bg-white rounded-lg shadow-lg border-t-4 border-yellow-500">
                 <div class="p-4 border-b bg-yellow-50">
-                    <h3 class="text-xl font-bold text-yellow-800">⏳ Bekleyen İşler</h3>
-                    <p class="text-sm text-gray-600">Teklif Aşamasında ve Devam Edecek</p>
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-xl font-bold text-yellow-800">⏳ Bekleyen İşler</h3>
+                            <p class="text-sm text-gray-600">Tipi Verilecek kayıtlar</p>
+                        </div>
+                        <span class="text-sm text-gray-600 font-semibold">{{ $bekleyenIsler->count() }} kayıt</span>
+                    </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
@@ -417,8 +371,6 @@
                             <tr>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-700">İş Adı</th>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-700">Müşteri</th>
-                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Durum</th>
-                                <th class="px-4 py-3 text-right font-semibold text-gray-700">Teklif</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -426,115 +378,17 @@
                             <tr class="border-b hover:bg-gray-50">
                                 <td class="px-4 py-3">{{ $is->name }}</td>
                                 <td class="px-4 py-3">{{ $is->musteri->sirket ?? '-' }}</td>
-                                <td class="px-4 py-3">
-                                    <span class="px-2 py-1 rounded text-xs font-semibold {{ $is->tipi == 'Teklif Aşamasında' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800' }}">
-                                        {{ $is->tipi }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3 text-right font-mono">${{ number_format($is->teklif_tutari, 0, ',', '.') }}</td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="4" class="px-4 py-8 text-center text-gray-500">Bekleyen iş yok</td>
+                                <td colspan="2" class="px-4 py-8 text-center text-gray-500">Kayıt yok</td>
                             </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
             </div>
-            @endif
 
-            <!-- Bu Ay Kazanılan İşler -->
-            @if($showBuAyKazanilan)
-            <div class="bg-white rounded-lg shadow-lg border-t-4 border-green-500">
-                <div class="p-4 border-b bg-green-50">
-                    <h3 class="text-xl font-bold text-green-800">✅ Bu Ay Kazanılan İşler</h3>
-                    <p class="text-sm text-gray-600">{{ date('F Y') }}</p>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-50 border-b">
-                            <tr>
-                                <th class="px-4 py-3 text-left font-semibold text-gray-700">İş Adı</th>
-                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Müşteri</th>
-                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Tarih</th>
-                                <th class="px-4 py-3 text-right font-semibold text-gray-700">Teklif</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($buAyKazanilan as $is)
-                            <tr class="border-b hover:bg-gray-50">
-                                <td class="px-4 py-3">{{ $is->name }}</td>
-                                <td class="px-4 py-3">{{ $is->musteri->sirket ?? '-' }}</td>
-                                <td class="px-4 py-3">{{ $is->kapanis_tarihi ? date('d.m.Y', strtotime($is->kapanis_tarihi)) : '-' }}</td>
-                                <td class="px-4 py-3 text-right font-mono">${{ number_format($is->teklif_tutari, 0, ',', '.') }}</td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="4" class="px-4 py-8 text-center text-gray-500">Bu ay kazanılan iş yok</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            @endif
-
-            <!-- Yüksek Teklif Müşterileri (60+ Gün Ziyaretsiz) -->
-            @if($showYuksekOncelik)
-            <div class="bg-white rounded-lg shadow-lg border-t-4 border-red-500">
-                <div class="p-4 border-b bg-red-50">
-                    <h3 class="text-xl font-bold text-red-800">🎯 Yüksek Potansiyel Müşteriler</h3>
-                    <p class="text-sm text-gray-600">Konya - Derece 1-2 - Resmi Kurum/Üniv./Belediye/Hastane/Özel - 60+ gün</p>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-50 border-b">
-                            <tr>
-                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Müşteri</th>
-                                <th class="px-4 py-3 text-center font-semibold text-gray-700">Derece</th>
-                                <th class="px-4 py-3 text-center font-semibold text-gray-700">Geçen Gün</th>
-                                <th class="px-4 py-3 text-right font-semibold text-gray-700">Toplam Teklif</th>
-                                <th class="px-4 py-3 text-right font-semibold text-gray-700">Kazanıldı</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($yuksekOncelikIsler as $musteri)
-                            <tr class="border-b hover:bg-gray-50">
-                                <td class="px-4 py-3">
-                                    <a href="/musteriler/{{ $musteri->id }}" class="text-blue-600 hover:underline font-semibold">
-                                        {{ $musteri->sirket }}
-                                    </a>
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <span class="px-2 py-1 rounded text-xs font-semibold {{ $musteri->derece == '1 -Sık' ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800' }}">
-                                        {{ str_replace(['-', ' '], '', $musteri->derece) }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <span class="px-2 py-1 rounded text-xs font-bold {{ $musteri->gecen_gun > 120 ? 'bg-red-100 text-red-800' : ($musteri->gecen_gun > 90 ? 'bg-orange-100 text-orange-800' : 'bg-yellow-100 text-yellow-800') }}">
-                                        {{ $musteri->gecen_gun }} gün
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3 text-right font-mono text-blue-600 font-semibold">${{ number_format($musteri->toplam_teklif, 0, ',', '.') }}</td>
-                                <td class="px-4 py-3 text-right font-mono {{ $musteri->kazanilan_tutar > 0 ? 'text-green-600 font-bold' : 'text-gray-400' }}">${{ number_format($musteri->kazanilan_tutar, 0, ',', '.') }}</td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="5" class="px-4 py-8 text-center text-gray-500">Kriterlere uygun müşteri yok</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            @endif
-        </div>
-    </div>
-
-    <!-- 2026 Kapanış / Register / Takip Edilecek -->
-    <div class="container mx-auto px-6 py-8 max-w-screen-2xl">
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
             <div class="bg-white rounded-lg shadow-lg border-t-4 border-amber-500">
                 <div class="p-4 border-b bg-amber-50">
                     <div class="flex justify-between items-center">
@@ -550,22 +404,20 @@
                         <thead class="bg-gray-50 border-b">
                             <tr>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-700">İş</th>
-                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Müşteri</th>
-                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Açılış</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Kapanış</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($registerIsleri as $is)
                             <tr class="border-b hover:bg-gray-50">
                                 <td class="px-4 py-3">{{ $is->name }}</td>
-                                <td class="px-4 py-3">{{ $is->musteri->sirket ?? '-' }}</td>
                                 <td class="px-4 py-3">
                                     {{ $is->kapanis_tarihi ? \Carbon\Carbon::parse($is->kapanis_tarihi)->format('d.m.Y') : 'Kapanış Yok' }}
                                 </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="3" class="px-4 py-8 text-center text-gray-500">Kayıt yok</td>
+                                <td colspan="2" class="px-4 py-8 text-center text-gray-500">Kayıt yok</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -588,7 +440,6 @@
                         <thead class="bg-gray-50 border-b">
                             <tr>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-700">İş</th>
-                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Müşteri</th>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-700">Açılış</th>
                             </tr>
                         </thead>
@@ -596,12 +447,11 @@
                             @forelse($takipEdilecekIsler as $is)
                             <tr class="border-b hover:bg-gray-50">
                                 <td class="px-4 py-3">{{ $is->name }}</td>
-                                <td class="px-4 py-3">{{ $is->musteri->sirket ?? '-' }}</td>
                                 <td class="px-4 py-3">{{ $is->is_guncellenme_tarihi ? \Carbon\Carbon::parse($is->is_guncellenme_tarihi)->format('d.m.Y') : '-' }}</td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="3" class="px-4 py-8 text-center text-gray-500">Kayıt yok</td>
+                                <td colspan="2" class="px-4 py-8 text-center text-gray-500">Kayıt yok</td>
                             </tr>
                             @endforelse
                         </tbody>
