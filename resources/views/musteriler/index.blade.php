@@ -331,7 +331,7 @@
                                             @elseif($musteri->derece == '2 - Orta') bg-yellow-100 text-yellow-800
                                             @elseif($musteri->derece == '3- Düşük') bg-green-100 text-green-800
                                             @elseif($musteri->derece == '4 - Potansiyel') bg-blue-100 text-blue-800
-                                            @elseif($musteri->derece == '5 - İş Ortağı') bg-slate-100 text-slate-800
+                                            @elseif($musteri->derece == '5 - İş Ortağı') bg-slate-200 text-slate-900
                                             @else bg-gray-100 text-gray-800
                                             @endif">
                                             {{ $musteri->derece }}
@@ -1138,7 +1138,7 @@
                                     else if (newValue === '2 - Orta') badgeClass = 'bg-yellow-100 text-yellow-800';
                                     else if (newValue === '3- Düşük') badgeClass = 'bg-green-100 text-green-800';
                                     else if (newValue === '4 - Potansiyel') badgeClass = 'bg-blue-100 text-blue-800';
-                                    else if (newValue === '5 - İş Ortağı') badgeClass = 'bg-slate-100 text-slate-800';
+                                    else if (newValue === '5 - İş Ortağı') badgeClass = 'bg-slate-200 text-slate-900';
                                 } else if (field === 'turu') {
                                     // Renk paletinden al
                                     badgeClass = getColorForTuru(newValue);
