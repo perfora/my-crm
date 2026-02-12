@@ -142,6 +142,13 @@
             ->get();
 
         // Temas takip widget verileri (periyot farkı > 0 olanlar)
+        $dereceSirasi = function ($derece) {
+            if (preg_match('/^\s*([1-5])/', (string) $derece, $m)) {
+                return (int) $m[1];
+            }
+            return 99;
+        };
+
         $temasTakipRaw = \App\Models\Musteri::with(['ziyaretler'])
             ->where(function ($q) {
                 $q->whereNotNull('temas_kurali')
@@ -174,15 +181,30 @@
                 $musteri->tt_last_call = $lastCall;
                 $musteri->tt_visit_overdue = $visitOverdue;
                 $musteri->tt_call_overdue = $callOverdue;
+                $musteri->tt_derece_rank = $dereceSirasi($musteri->derece ?? null);
                 return $musteri;
             });
 
         $ziyaretGerekliList = $temasTakipRaw
             ->filter(function ($m) {
-                return $m->temas_kurali === 'Ziyaret Öncelikli' && (($m->tt_visit_overdue ?? 0) > 0);
+                return $m->temas_kurali === 'Ziyaret Öncelikli'
+                    && (($m->tt_visit_overdue ?? 0) > 0)
+                    && (($m->tt_derece_rank ?? 99) <= 3);
             })
-            ->sortBy(function ($m) {
-                return (int) ($m->tt_visit_overdue ?? PHP_INT_MAX);
+            ->sort(function ($a, $b) {
+                $aOverdue = (int) ($a->tt_visit_overdue ?? 0);
+                $bOverdue = (int) ($b->tt_visit_overdue ?? 0);
+                if ($aOverdue !== $bOverdue) {
+                    return $bOverdue <=> $aOverdue; // çok geciken üstte
+                }
+
+                $aRank = (int) ($a->tt_derece_rank ?? 99);
+                $bRank = (int) ($b->tt_derece_rank ?? 99);
+                if ($aRank !== $bRank) {
+                    return $aRank <=> $bRank; // 1,2,3
+                }
+
+                return strcasecmp((string) ($a->sirket ?? ''), (string) ($b->sirket ?? ''));
             })
             ->take(10);
 
@@ -191,22 +213,46 @@
                 if ($m->temas_kurali !== 'Her İkisi Zorunlu') {
                     return false;
                 }
-                return (($m->tt_visit_overdue ?? 0) > 0) || (($m->tt_call_overdue ?? 0) > 0);
+                return ((($m->tt_visit_overdue ?? 0) > 0) || (($m->tt_call_overdue ?? 0) > 0))
+                    && (($m->tt_derece_rank ?? 99) <= 3);
             })
-            ->sortBy(function ($m) {
-                $visit = (int) max(0, (int) ($m->tt_visit_overdue ?? 0));
-                $call = (int) max(0, (int) ($m->tt_call_overdue ?? 0));
-                return max($visit, $call);
+            ->sort(function ($a, $b) {
+                $aScore = max((int) max(0, (int) ($a->tt_visit_overdue ?? 0)), (int) max(0, (int) ($a->tt_call_overdue ?? 0)));
+                $bScore = max((int) max(0, (int) ($b->tt_visit_overdue ?? 0)), (int) max(0, (int) ($b->tt_call_overdue ?? 0)));
+                if ($aScore !== $bScore) {
+                    return $bScore <=> $aScore; // çok geciken üstte
+                }
+
+                $aRank = (int) ($a->tt_derece_rank ?? 99);
+                $bRank = (int) ($b->tt_derece_rank ?? 99);
+                if ($aRank !== $bRank) {
+                    return $aRank <=> $bRank; // 1,2,3
+                }
+
+                return strcasecmp((string) ($a->sirket ?? ''), (string) ($b->sirket ?? ''));
             })
             ->take(10);
 
         $aramaGerekliList = $temasTakipRaw
             ->filter(function ($m) {
                 return in_array($m->temas_kurali, ['Arama Yeterli', 'Şehir Dışı (Arama Öncelikli)'], true)
-                    && (($m->tt_call_overdue ?? 0) > 0);
+                    && (($m->tt_call_overdue ?? 0) > 0)
+                    && (($m->tt_derece_rank ?? 99) <= 3);
             })
-            ->sortBy(function ($m) {
-                return (int) ($m->tt_call_overdue ?? PHP_INT_MAX);
+            ->sort(function ($a, $b) {
+                $aOverdue = (int) ($a->tt_call_overdue ?? 0);
+                $bOverdue = (int) ($b->tt_call_overdue ?? 0);
+                if ($aOverdue !== $bOverdue) {
+                    return $bOverdue <=> $aOverdue; // çok geciken üstte
+                }
+
+                $aRank = (int) ($a->tt_derece_rank ?? 99);
+                $bRank = (int) ($b->tt_derece_rank ?? 99);
+                if ($aRank !== $bRank) {
+                    return $aRank <=> $bRank; // 1,2,3
+                }
+
+                return strcasecmp((string) ($a->sirket ?? ''), (string) ($b->sirket ?? ''));
             })
             ->take(10);
     @endphp
