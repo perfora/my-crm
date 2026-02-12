@@ -528,6 +528,9 @@
                                     <input type="checkbox" class="column-toggle" data-column="tipi" checked> Tipi
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                    <input type="checkbox" class="column-toggle" data-column="kaybedilme_nedeni"> Kaybedilme Nedeni
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
                                     <input type="checkbox" class="column-toggle" data-column="durum"> Durum
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
@@ -585,6 +588,7 @@
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="musteri">Müşteri <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="marka">Marka <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="tipi">Tipi <span class="sort-icon"></span></th>
+                            <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="kaybedilme_nedeni">Kaybedilme Nedeni <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="durum">Durum <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="turu">Türü <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="oncelik">Öncelik <span class="sort-icon"></span></th>
@@ -701,6 +705,7 @@
                                 data-musteri="{{ $is->musteri ? $is->musteri->sirket : '' }}" 
                                 data-marka="{{ $is->marka ? $is->marka->name : '' }}" 
                                 data-tipi="{{ $is->tipi ?? '' }}" 
+                                data-kaybedilme_nedeni="{{ $is->kaybedilme_nedeni ?? '' }}"
                                 data-durum="{{ $is->durum ?? '' }}" 
                                 data-turu="{{ $is->turu ?? '' }}" 
                                 data-oncelik="{{ $is->oncelik ?? '' }}" 
@@ -749,6 +754,9 @@
                                     <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
                                         {{ $is->tipi ?? '-' }}
                                     </span>
+                                </td>
+                                <td class="px-3 py-3 text-sm editable-cell max-w-xs truncate" data-field="kaybedilme_nedeni" data-id="{{ $is->id }}" data-value="{{ $is->kaybedilme_nedeni ?? '' }}" title="{{ $is->kaybedilme_nedeni ?? '' }}">
+                                    {{ $is->kaybedilme_nedeni ?: '-' }}
                                 </td>
                                 <td class="px-3 py-3 whitespace-nowrap">
                                     @if($is->durum)
@@ -856,7 +864,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="18" class="px-3 py-3 text-center text-gray-500">
+                                <td colspan="19" class="px-3 py-3 text-center text-gray-500">
                                     Henüz iş kaydı yok.
                                 </td>
                             </tr>
@@ -1090,6 +1098,9 @@
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap editable-select" data-field="tipi" data-id="new" data-value="">
                             <span class="text-gray-400">Tip seçiniz...</span>
+                        </td>
+                        <td class="px-3 py-3 editable-cell" data-field="kaybedilme_nedeni" data-id="new" data-value="">
+                            <span class="text-gray-400">Kaybedilme nedeni...</span>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">-</td>
                         <td class="px-3 py-3 whitespace-nowrap editable-select" data-field="turu" data-id="new" data-value="">-</td>
