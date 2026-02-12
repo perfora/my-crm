@@ -192,16 +192,16 @@
                     && (($m->tt_derece_rank ?? 99) <= 3);
             })
             ->sort(function ($a, $b) {
-                $aOverdue = (int) ($a->tt_visit_overdue ?? 0);
-                $bOverdue = (int) ($b->tt_visit_overdue ?? 0);
-                if ($aOverdue !== $bOverdue) {
-                    return $bOverdue <=> $aOverdue; // çok geciken üstte
-                }
-
                 $aRank = (int) ($a->tt_derece_rank ?? 99);
                 $bRank = (int) ($b->tt_derece_rank ?? 99);
                 if ($aRank !== $bRank) {
                     return $aRank <=> $bRank; // 1,2,3
+                }
+
+                $aOverdue = (int) ($a->tt_visit_overdue ?? 0);
+                $bOverdue = (int) ($b->tt_visit_overdue ?? 0);
+                if ($aOverdue !== $bOverdue) {
+                    return $bOverdue <=> $aOverdue; // aynı derecede çok geciken üstte
                 }
 
                 return strcasecmp((string) ($a->sirket ?? ''), (string) ($b->sirket ?? ''));
@@ -217,16 +217,16 @@
                     && (($m->tt_derece_rank ?? 99) <= 3);
             })
             ->sort(function ($a, $b) {
-                $aScore = max((int) max(0, (int) ($a->tt_visit_overdue ?? 0)), (int) max(0, (int) ($a->tt_call_overdue ?? 0)));
-                $bScore = max((int) max(0, (int) ($b->tt_visit_overdue ?? 0)), (int) max(0, (int) ($b->tt_call_overdue ?? 0)));
-                if ($aScore !== $bScore) {
-                    return $bScore <=> $aScore; // çok geciken üstte
-                }
-
                 $aRank = (int) ($a->tt_derece_rank ?? 99);
                 $bRank = (int) ($b->tt_derece_rank ?? 99);
                 if ($aRank !== $bRank) {
                     return $aRank <=> $bRank; // 1,2,3
+                }
+
+                $aScore = max((int) max(0, (int) ($a->tt_visit_overdue ?? 0)), (int) max(0, (int) ($a->tt_call_overdue ?? 0)));
+                $bScore = max((int) max(0, (int) ($b->tt_visit_overdue ?? 0)), (int) max(0, (int) ($b->tt_call_overdue ?? 0)));
+                if ($aScore !== $bScore) {
+                    return $bScore <=> $aScore; // aynı derecede çok geciken üstte
                 }
 
                 return strcasecmp((string) ($a->sirket ?? ''), (string) ($b->sirket ?? ''));
@@ -240,16 +240,16 @@
                     && (($m->tt_derece_rank ?? 99) <= 3);
             })
             ->sort(function ($a, $b) {
-                $aOverdue = (int) ($a->tt_call_overdue ?? 0);
-                $bOverdue = (int) ($b->tt_call_overdue ?? 0);
-                if ($aOverdue !== $bOverdue) {
-                    return $bOverdue <=> $aOverdue; // çok geciken üstte
-                }
-
                 $aRank = (int) ($a->tt_derece_rank ?? 99);
                 $bRank = (int) ($b->tt_derece_rank ?? 99);
                 if ($aRank !== $bRank) {
                     return $aRank <=> $bRank; // 1,2,3
+                }
+
+                $aOverdue = (int) ($a->tt_call_overdue ?? 0);
+                $bOverdue = (int) ($b->tt_call_overdue ?? 0);
+                if ($aOverdue !== $bOverdue) {
+                    return $bOverdue <=> $aOverdue; // aynı derecede çok geciken üstte
                 }
 
                 return strcasecmp((string) ($a->sirket ?? ''), (string) ($b->sirket ?? ''));
