@@ -321,7 +321,7 @@
                                     <a href="/musteriler/{{ $musteri->id }}" class="text-blue-600 hover:text-blue-800 hover:underline">
                                         <span class="inline-block w-2 h-2 rounded-full align-middle mr-2
                                             @if($musteri->derece == '1 -Sık') bg-red-500
-                                            @elseif($musteri->derece == '2 - Orta') bg-orange-500
+                                            @elseif($musteri->derece == '2 - Orta') bg-yellow-500
                                             @elseif($musteri->derece == '3- Düşük') bg-green-500
                                             @elseif($musteri->derece == '4 - Potansiyel') bg-blue-500
                                             @elseif($musteri->derece == '5 - İş Ortağı') bg-slate-500
@@ -512,7 +512,7 @@
 
         function getDegreeDotClass(derece) {
             if (derece === '1 -Sık') return 'bg-red-500';
-            if (derece === '2 - Orta') return 'bg-orange-500';
+            if (derece === '2 - Orta') return 'bg-yellow-500';
             if (derece === '3- Düşük') return 'bg-green-500';
             if (derece === '4 - Potansiyel') return 'bg-blue-500';
             if (derece === '5 - İş Ortağı') return 'bg-slate-500';
@@ -524,7 +524,7 @@
             if (!link.length) return;
             const dot = link.find('span').first();
             if (!dot.length) return;
-            dot.removeClass('bg-red-500 bg-orange-500 bg-green-500 bg-blue-500 bg-slate-500 bg-gray-400');
+            dot.removeClass('bg-red-500 bg-yellow-500 bg-green-500 bg-blue-500 bg-slate-500 bg-gray-400');
             dot.addClass(getDegreeDotClass(derece));
         }
 

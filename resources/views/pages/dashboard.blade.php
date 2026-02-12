@@ -211,7 +211,7 @@
         $degreeDotClass = function (?string $derece): string {
             return match ($derece) {
                 '1 -Sık' => 'bg-red-500',
-                '2 - Orta' => 'bg-orange-500',
+                '2 - Orta' => 'bg-yellow-500',
                 '3- Düşük' => 'bg-green-500',
                 '4 - Potansiyel' => 'bg-blue-500',
                 '5 - İş Ortağı' => 'bg-slate-500',
