@@ -1104,15 +1104,17 @@
                         <td class="px-3 py-3 whitespace-nowrap editable-select" data-field="marka_id" data-id="new" data-value="">
                             <span class="text-gray-400">Marka seçiniz...</span>
                         </td>
-                        <td class="px-3 py-3 whitespace-nowrap editable-select" data-field="tipi" data-id="new" data-value="">
-                            <span class="text-gray-400">Tip seçiniz...</span>
+                        <td class="px-3 py-3 whitespace-nowrap editable-select" data-field="tipi" data-id="new" data-value="Verilecek">
+                            <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">Verilecek</span>
                         </td>
                         <td class="px-3 py-3 editable-select" data-field="kaybedilme_nedeni" data-id="new" data-value="">
                             <span class="text-gray-400">Kaybedilme nedeni...</span>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">-</td>
                         <td class="px-3 py-3 whitespace-nowrap editable-select" data-field="turu" data-id="new" data-value="">-</td>
-                        <td class="px-3 py-3 whitespace-nowrap editable-select" data-field="oncelik" data-id="new" data-value="">-</td>
+                        <td class="px-3 py-3 whitespace-nowrap editable-select" data-field="oncelik" data-id="new" data-value="1">
+                            <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">1</span>
+                        </td>
                         <td class="px-3 py-3 whitespace-nowrap editable-date" data-field="kapanis_tarihi" data-id="new" data-value="">-</td>
                         <td class="px-3 py-3 whitespace-nowrap editable-date" data-field="lisans_bitis" data-id="new" data-value="">-</td>
                         <td class="px-3 py-3 whitespace-nowrap editable-number" data-field="teklif_tutari" data-id="new" data-value="">-</td>

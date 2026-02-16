@@ -1105,6 +1105,14 @@ Route::post('/tum-isler', function () {
         'aciklama' => 'nullable|string',
     ]);
 
+    // Varsayılanlar: kullanıcı seçmezse
+    if (empty($validated['tipi'])) {
+        $validated['tipi'] = 'Verilecek';
+    }
+    if (empty($validated['oncelik'])) {
+        $validated['oncelik'] = '1';
+    }
+
     // Varsayılan döviz: kullanıcı seçmediyse ve tutar girildiyse USD kabul et
     if (!empty($validated['teklif_tutari']) && empty($validated['teklif_doviz'])) {
         $validated['teklif_doviz'] = 'USD';

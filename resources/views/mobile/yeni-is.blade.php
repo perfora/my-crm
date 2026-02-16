@@ -95,7 +95,7 @@
                     class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg">
                     <option value="">Seçiniz</option>
                     @foreach(\App\Models\IsTipi::orderBy('name')->get() as $tip)
-                        <option value="{{ $tip->name }}">{{ $tip->name }}</option>
+                        <option value="{{ $tip->name }}" {{ $tip->name === 'Verilecek' ? 'selected' : '' }}>{{ $tip->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -106,7 +106,7 @@
                 <div class="grid grid-cols-4 gap-2">
                     @foreach(\App\Models\Oncelik::orderBy('sira')->get() as $oncelik)
                         <label class="relative">
-                            <input type="radio" name="oncelik" value="{{ $oncelik->name }}" class="hidden peer">
+                            <input type="radio" name="oncelik" value="{{ $oncelik->name }}" class="hidden peer" {{ (string)$oncelik->name === '1' ? 'checked' : '' }}>
                             <div class="peer-checked:bg-green-600 peer-checked:text-white bg-white border-2 border-gray-300 rounded-lg p-4 text-center font-bold text-lg cursor-pointer active:scale-95 transition">
                                 {{ $oncelik->name }}
                             </div>
