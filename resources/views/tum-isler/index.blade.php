@@ -1737,6 +1737,14 @@
                         searching: function() { return 'Aranıyor...'; }
                     }
                 });
+                select.on('select2:open', function() {
+                    setTimeout(function() {
+                        const searchField = $('.select2-container--open .select2-search__field');
+                        if (searchField.length) {
+                            searchField.focus();
+                        }
+                    }, 0);
+                });
                 setTimeout(() => select.select2('open'), 0);
             } else {
                 select.focus();

@@ -1042,6 +1042,14 @@
             const select2Config = getInlineSelect2Config();
             
             select.select2(select2Config);
+            select.on('select2:open', function() {
+                setTimeout(function() {
+                    const searchField = $('.select2-container--open .select2-search__field');
+                    if (searchField.length) {
+                        searchField.focus();
+                    }
+                }, 0);
+            });
             select.select2('open');
 
             let isSaving = false;

@@ -1103,6 +1103,7 @@
                     setTimeout(function() {
                         const searchField = $('.select2-container--open .select2-search__field');
                         if (!searchField.length) return;
+                        searchField.focus();
                         searchField.off('keydown.crmNav').on('keydown.crmNav', function(e) {
                             if (e.key === 'Tab') {
                                 e.preventDefault();
