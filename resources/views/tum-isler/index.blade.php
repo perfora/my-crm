@@ -25,6 +25,13 @@
         .scroll-sync {
             overflow-x: auto;
         }
+        .sticky-x-scroll {
+            position: sticky;
+            bottom: 0;
+            z-index: 40;
+            background: #fff;
+            border-top: 1px solid #e5e7eb;
+        }
         .sortable {
             cursor: pointer;
             user-select: none;
@@ -576,7 +583,7 @@
             </div>
             
             <!-- Üst scroll bar -->
-            <div id="scroll-top" class="scroll-sync" style="overflow-x: auto; height: 20px;">
+            <div id="scroll-top" class="scroll-sync sticky-x-scroll" style="overflow-x: auto; height: 20px;">
                 <div id="scroll-content-top" style="height: 1px;"></div>
             </div>
             
