@@ -1036,15 +1036,18 @@
                 select.select2(getSelect2Config('Müşteri ara...', {
                     dropdownParent: $('body')
                 }));
-                select.select2('open');
+                // İlk tıklamanın dropdown'daki ilk elemanı istemsiz seçmesini önlemek için
+                // açılışı bir sonraki tick'e bırak.
                 setTimeout(function() {
-                    $('.select2-search__field').focus();
-                }, 50);
+                    select.select2('open');
+                }, 0);
             } else {
                 select.select2(getSelect2Config('Seçiniz...', {
                     dropdownParent: $('body')
                 }));
-                select.select2('open');
+                setTimeout(function() {
+                    select.select2('open');
+                }, 0);
             }
 
             function saveSelect() {
