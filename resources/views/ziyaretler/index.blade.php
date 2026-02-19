@@ -884,6 +884,9 @@
             row.find('[data-id="new"]').attr('data-id', newId).data('id', newId);
             const checkbox = row.find('input[type="checkbox"]');
             checkbox.prop('disabled', false).removeClass('opacity-50').addClass('row-checkbox').attr('data-id', newId);
+            const noteCell = row.find('[data-field="ziyaret_notlari"]');
+            const noteValue = getRowValue(row, 'ziyaret_notlari') || '';
+            noteCell.html(renderNoteCellHtml(noteValue));
         }
 
         $(document).on('click', '.editable-cell:not(.editing)', function(e) {
@@ -894,9 +897,9 @@
             const currentValue = cell.data('value') || '';
             const row = cell.closest('tr');
 
-            // Notlar modalini sadece mevcut kayitlarda goster.
-            // Yeni satirda not hucresi dogrudan duzenlenebilir olmali.
-            if (field === 'ziyaret_notlari' && id !== 'new' && !cell.data('forceEdit')) {
+            // Notlar modalini sadece dolu notu olan mevcut kayitlarda goster.
+            // Bos notta dogrudan yazilabilsin.
+            if (field === 'ziyaret_notlari' && id !== 'new' && !cell.data('forceEdit') && String(currentValue || '').trim() !== '') {
                 const text = currentValue || '';
                 openNoteModal(text);
                 return;
