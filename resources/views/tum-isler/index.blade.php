@@ -9,6 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
     <style>
         .select2-container--default .select2-selection--single {
             height: 42px;
@@ -594,7 +595,7 @@
                 <table id="isler-table" class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-3 py-3 text-center">
+                            <th class="px-3 py-3 text-center" data-fixed="select">
                                 <input type="checkbox" id="select-all" class="cursor-pointer">
                             </th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="name">İş Adı <span class="sort-icon"></span></th>
@@ -615,7 +616,7 @@
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="updated_at">Güncelleme <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="notlar">Notlar <span class="sort-icon"></span></th>
                             <th class="sortable px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase" data-column="gecmis_notlar">Geçmiş Notlar <span class="sort-icon"></span></th>
-                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase">Yenileme</th>
+                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase" data-fixed="yenileme">Yenileme</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -895,6 +896,106 @@
     </div> <!-- max-w-7xl bitiş -->
 
     <script>
+        const tumIslerColumnOrderStorageKey = 'tumIslerColumnOrderV1';
+
+        function syncTumIslerTopScrollWidth() {
+            const table = document.getElementById('isler-table');
+            const topContent = document.getElementById('scroll-content-top');
+            if (table && topContent) {
+                topContent.style.width = table.offsetWidth + 'px';
+            }
+        }
+
+        function getTumIslerHeaderOrder() {
+            const headerRow = document.querySelector('#isler-table thead tr');
+            if (!headerRow) return [];
+            return Array.from(headerRow.querySelectorAll('th[data-column]'))
+                .map(th => th.getAttribute('data-column'))
+                .filter(Boolean);
+        }
+
+        function applyTumIslerColumnOrder(orderFromStorage) {
+            const table = document.getElementById('isler-table');
+            const headerRow = table?.querySelector('thead tr');
+            if (!table || !headerRow) return;
+
+            const fixedSelect = headerRow.querySelector('th[data-fixed="select"]');
+            const fixedYenileme = headerRow.querySelector('th[data-fixed="yenileme"]');
+            const currentDynamicHeaders = Array.from(headerRow.querySelectorAll('th[data-column]'));
+            const headerMap = new Map(currentDynamicHeaders.map(th => [th.getAttribute('data-column'), th]));
+
+            const validOrder = (Array.isArray(orderFromStorage) ? orderFromStorage : [])
+                .filter(column => headerMap.has(column));
+            const missingColumns = currentDynamicHeaders
+                .map(th => th.getAttribute('data-column'))
+                .filter(column => !validOrder.includes(column));
+            const finalColumnOrder = [...validOrder, ...missingColumns];
+
+            const finalHeaderCells = [
+                fixedSelect,
+                ...finalColumnOrder.map(column => headerMap.get(column)),
+                fixedYenileme
+            ].filter(Boolean);
+
+            const currentHeaderCells = Array.from(headerRow.children);
+            const currentIndexByHeader = new Map(currentHeaderCells.map((cell, index) => [cell, index]));
+            const finalIndexes = finalHeaderCells
+                .map(cell => currentIndexByHeader.get(cell))
+                .filter(index => index !== undefined);
+
+            table.querySelectorAll('tbody tr').forEach(row => {
+                const rowCells = Array.from(row.children);
+                finalIndexes.forEach(index => {
+                    if (rowCells[index]) {
+                        row.appendChild(rowCells[index]);
+                    }
+                });
+            });
+
+            finalHeaderCells.forEach(cell => headerRow.appendChild(cell));
+            syncTumIslerTopScrollWidth();
+        }
+
+        function saveTumIslerColumnOrder() {
+            localStorage.setItem(tumIslerColumnOrderStorageKey, JSON.stringify(getTumIslerHeaderOrder()));
+        }
+
+        function loadTumIslerColumnOrder() {
+            const saved = localStorage.getItem(tumIslerColumnOrderStorageKey);
+            if (!saved) return;
+            try {
+                const order = JSON.parse(saved);
+                applyTumIslerColumnOrder(order);
+            } catch (error) {
+                console.error('Sütun sırası yüklenemedi:', error);
+            }
+        }
+
+        function initTumIslerColumnDragDrop() {
+            const headerRow = document.querySelector('#isler-table thead tr');
+            if (!headerRow || typeof Sortable === 'undefined') return { isDraggingRef: { value: false } };
+
+            const isDraggingRef = { value: false };
+
+            Sortable.create(headerRow, {
+                animation: 150,
+                draggable: 'th[data-column]',
+                onStart: function() {
+                    isDraggingRef.value = true;
+                },
+                onEnd: function() {
+                    const currentOrder = getTumIslerHeaderOrder();
+                    applyTumIslerColumnOrder(currentOrder);
+                    saveTumIslerColumnOrder();
+                    setTimeout(function() {
+                        isDraggingRef.value = false;
+                    }, 0);
+                }
+            });
+
+            return { isDraggingRef };
+        }
+
         $(document).ready(function() {
             function getSelect2Config(placeholder, extra = {}) {
                 return Object.assign({
@@ -921,7 +1022,7 @@
             const table = document.getElementById('isler-table');
             
             // Üst scroll bar genişliğini ayarla
-            document.getElementById('scroll-content-top').style.width = table.offsetWidth + 'px';
+            syncTumIslerTopScrollWidth();
             
             // Scroll senkronize et
             scrollTop.addEventListener('scroll', function() {
@@ -932,11 +1033,18 @@
                 scrollTop.scrollLeft = scrollBottom.scrollLeft;
             });
 
+            loadTumIslerColumnOrder();
+            const { isDraggingRef } = initTumIslerColumnDragDrop();
+
             // Sıralama fonksiyonu
             let sortDirection = {};
             
             document.querySelectorAll('.sortable').forEach(header => {
                 header.addEventListener('click', function() {
+                    if (isDraggingRef && isDraggingRef.value) {
+                        return;
+                    }
+
                     const column = this.getAttribute('data-column');
                     const tbody = document.querySelector('#isler-table tbody');
                     const rows = Array.from(tbody.querySelectorAll('tr:not(:last-child)'));
@@ -986,7 +1094,7 @@
 
             // Sayfa yüklendiğinde scroll genişliğini tekrar ayarla
             window.addEventListener('load', function() {
-                document.getElementById('scroll-content-top').style.width = table.offsetWidth + 'px';
+                syncTumIslerTopScrollWidth();
             });
         });
 
@@ -1148,6 +1256,9 @@
                 } else {
                     $('#isler-table tbody').prepend(newRow);
                 }
+
+                // Kullanıcının sürükle-bırak sütun sırasını yeni satıra da uygula
+                applyTumIslerColumnOrder(getTumIslerHeaderOrder());
                 
                 // İlk hücreye odaklan
                 setTimeout(() => {
