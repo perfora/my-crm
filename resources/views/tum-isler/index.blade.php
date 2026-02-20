@@ -914,11 +914,14 @@
                 .filter(Boolean);
         }
 
-        function applyTumIslerColumnOrder(orderFromStorage) {
+        function applyTumIslerColumnOrder(orderFromStorage, sourceOrder = null) {
             const table = document.getElementById('isler-table');
             const headerRow = table?.querySelector('thead tr');
             if (!table || !headerRow) return;
 
+            const baseColumnOrder = Array.isArray(sourceOrder) && sourceOrder.length
+                ? sourceOrder
+                : getTumIslerHeaderOrder();
             const fixedSelect = headerRow.querySelector('th[data-fixed="select"]');
             const fixedYenileme = headerRow.querySelector('th[data-fixed="yenileme"]');
             const currentDynamicHeaders = Array.from(headerRow.querySelectorAll('th[data-column]'));
@@ -937,18 +940,27 @@
                 fixedYenileme
             ].filter(Boolean);
 
-            const currentHeaderCells = Array.from(headerRow.children);
-            const currentIndexByHeader = new Map(currentHeaderCells.map((cell, index) => [cell, index]));
-            const finalIndexes = finalHeaderCells
-                .map(cell => currentIndexByHeader.get(cell))
-                .filter(index => index !== undefined);
-
             table.querySelectorAll('tbody tr').forEach(row => {
                 const rowCells = Array.from(row.children);
-                finalIndexes.forEach(index => {
-                    if (rowCells[index]) {
-                        row.appendChild(rowCells[index]);
+                if (!rowCells.length) return;
+
+                const selectCell = rowCells[0];
+                const yenilemeCell = rowCells[rowCells.length - 1];
+                const dynamicCellMap = new Map();
+
+                baseColumnOrder.forEach((column, index) => {
+                    const cell = rowCells[index + 1];
+                    if (cell) {
+                        dynamicCellMap.set(column, cell);
                     }
+                });
+
+                const reorderedDynamicCells = finalColumnOrder
+                    .map(column => dynamicCellMap.get(column))
+                    .filter(Boolean);
+
+                [selectCell, ...reorderedDynamicCells, yenilemeCell].forEach(cell => {
+                    if (cell) row.appendChild(cell);
                 });
             });
 
@@ -976,16 +988,18 @@
             if (!headerRow || typeof Sortable === 'undefined') return { isDraggingRef: { value: false } };
 
             const isDraggingRef = { value: false };
+            let orderBeforeDrag = getTumIslerHeaderOrder();
 
             Sortable.create(headerRow, {
                 animation: 150,
                 draggable: 'th[data-column]',
                 onStart: function() {
                     isDraggingRef.value = true;
+                    orderBeforeDrag = getTumIslerHeaderOrder();
                 },
                 onEnd: function() {
                     const currentOrder = getTumIslerHeaderOrder();
-                    applyTumIslerColumnOrder(currentOrder);
+                    applyTumIslerColumnOrder(currentOrder, orderBeforeDrag);
                     saveTumIslerColumnOrder();
                     setTimeout(function() {
                         isDraggingRef.value = false;
