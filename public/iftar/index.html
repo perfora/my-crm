@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>İftar Davet Kayıt</title>
+  <title>Netcom-Konya İftar Davet Kaydı</title>
   <style>
     :root {
       --bg: #f6f8fb;
@@ -115,8 +115,11 @@
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>İftar Davet Kayıt</h1>
-      <p class="subtitle">Lütfen davet bilgilerini girin. Kayıtlar doğrudan Google Sheets'e yazılır.</p>
+      <h1>Netcom-Konya İftar Davet Kaydı</h1>
+      <p class="subtitle">
+        5 Mart 2026 tarihinde Konya Kebapevi'nde düzenleyeceğimiz iftar programında sizleri aramızda görmekten memnuniyet duyarız.
+        Katılım planlamamızı doğru yapabilmemiz için lütfen aşağıdaki formu doldurunuz.
+      </p>
 
       <form id="iftarForm" novalidate>
         <div class="grid-2">
@@ -132,12 +135,12 @@
 
         <div class="grid-2">
           <div>
-            <label for="kurum">Kurum / Firma</label>
-            <input id="kurum" name="kurum" type="text" maxlength="150">
+            <label for="gorev">Görev</label>
+            <input id="gorev" name="gorev" type="text" maxlength="120">
           </div>
           <div>
-            <label for="kisi_sayisi">Kişi Sayısı *</label>
-            <input id="kisi_sayisi" name="kisi_sayisi" type="number" min="1" max="20" value="1" required>
+            <label for="kurum">Kurum / Firma</label>
+            <input id="kurum" name="kurum" type="text" maxlength="150">
           </div>
         </div>
 
@@ -149,11 +152,6 @@
             <option value="Katılamayacak">Katılamayacak</option>
             <option value="Belirsiz">Belirsiz</option>
           </select>
-        </div>
-
-        <div>
-          <label for="not">Not</label>
-          <textarea id="not" name="not" maxlength="1000" placeholder="Varsa notunuzu yazın..."></textarea>
         </div>
 
         <input type="text" id="website" name="website" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -223,13 +221,14 @@
           ad_soyad: document.getElementById('ad_soyad').value.trim(),
           isim: document.getElementById('ad_soyad').value.trim(),
           telefon: document.getElementById('telefon').value.trim(),
+          gorev: document.getElementById('gorev').value.trim(),
           kurum: document.getElementById('kurum').value.trim(),
           firma: document.getElementById('kurum').value.trim(),
-          kisi_sayisi: document.getElementById('kisi_sayisi').value,
-          kisi: document.getElementById('kisi_sayisi').value,
+          kisi_sayisi: '',
+          kisi: '',
           katilim_durumu: document.getElementById('katilim_durumu').value,
           katilim: document.getElementById('katilim_durumu').value,
-          not: document.getElementById('not').value.trim(),
+          not: '',
           source: 'iftar-page',
           timestamp: new Date().toISOString(),
           page_url: window.location.href,
@@ -269,7 +268,6 @@
           }
           setMessage('ok', 'Kayıt başarıyla gönderildi.');
           form.reset();
-          document.getElementById('kisi_sayisi').value = 1;
         } catch (error) {
           setMessage('err', error.message || 'Bağlantı hatası. Lütfen tekrar deneyin.');
         } finally {
