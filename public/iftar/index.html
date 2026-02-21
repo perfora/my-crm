@@ -133,6 +133,11 @@
           </div>
         </div>
 
+        <div>
+          <label for="email">E-posta *</label>
+          <input id="email" name="email" type="email" required maxlength="150" placeholder="ornek@firma.com">
+        </div>
+
         <div class="grid-2">
           <div>
             <label for="gorev">Görev</label>
@@ -274,6 +279,7 @@
           ad_soyad: document.getElementById('ad_soyad').value.trim(),
           isim: document.getElementById('ad_soyad').value.trim(),
           telefon: document.getElementById('telefon').value.trim(),
+          email: document.getElementById('email').value.trim(),
           gorev: document.getElementById('gorev').value.trim(),
           kurum: document.getElementById('kurum').value.trim(),
           firma: document.getElementById('kurum').value.trim(),
