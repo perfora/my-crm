@@ -73,6 +73,27 @@
     .logo-link {
       display: inline-block;
       cursor: pointer;
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .logo-link-hint {
+      position: absolute;
+      left: 50%;
+      top: 12px;
+      transform: translateX(-50%);
+      background: rgba(18, 26, 38, 0.82);
+      color: #f8fafc;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      pointer-events: none;
     }
 
     form {
@@ -146,8 +167,8 @@
           href="https://maps.app.goo.gl/vQyGk48wPoaBqurQ9"
           target="_blank"
           rel="noopener noreferrer"
-          title="Yol tarifi için tıklayınız."
         >
+          <span class="logo-link-hint">YOL TARİFİ İÇİN TIKLAYINIZ.</span>
           <img src="/public/iftar/netcomanalogo.png" alt="Netcom Logo">
         </a>
       </div>
