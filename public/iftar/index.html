@@ -6,7 +6,7 @@
   <title>Netcom-Konya İftar Davet Kaydı</title>
   <style>
     :root {
-      --bg: #f6f8fb;
+      --bg: #0b1f35;
       --card: #ffffff;
       --text: #1f2937;
       --muted: #6b7280;
@@ -17,6 +17,7 @@
       --ok-text: #065f46;
       --err-bg: #fef2f2;
       --err-text: #991b1b;
+      --iftar-side-bg: #0d2540;
     }
 
     * { box-sizing: border-box; }
@@ -28,10 +29,36 @@
       line-height: 1.45;
     }
 
-    .wrap {
-      max-width: 760px;
-      margin: 32px auto;
-      padding: 0 16px;
+    .page-layout {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) minmax(380px, 760px) minmax(220px, 1fr);
+      background: var(--iftar-side-bg);
+    }
+
+    .side-panel {
+      background: var(--iftar-side-bg);
+      padding: 24px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .side-panel img {
+      width: 100%;
+      max-width: 360px;
+      height: auto;
+      border-radius: 24px;
+      display: block;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+    }
+
+    .center-wrap {
+      background: linear-gradient(180deg, #f7fafc 0%, #f0f4f8 100%);
+      padding: 28px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .card {
@@ -105,16 +132,34 @@
 
     .hidden { display: none !important; }
 
+    @media (max-width: 1100px) {
+      .page-layout { grid-template-columns: minmax(120px, 220px) minmax(360px, 760px) minmax(120px, 220px); }
+      .side-panel { padding: 16px 8px; }
+      .side-panel img { max-width: 240px; border-radius: 16px; }
+    }
+
+    @media (max-width: 900px) {
+      .page-layout { grid-template-columns: 1fr; background: #f0f4f8; }
+      .side-panel { display: none; }
+      .center-wrap { min-height: 100vh; }
+    }
+
     @media (max-width: 640px) {
       .grid-2 { grid-template-columns: 1fr; }
-      .wrap { margin: 18px auto; }
+      .center-wrap { padding: 12px; }
+      .card { padding: 16px; }
       h1 { font-size: 24px; }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
+  <div class="page-layout">
+    <aside class="side-panel">
+      <img src="/public/iftar/img/davet.jpg" alt="İftar Daveti Görseli">
+    </aside>
+
+    <main class="center-wrap">
+      <div class="card">
       <h1>Netcom-Konya İftar Davet Kaydı</h1>
       <p class="subtitle">
         5 Mart 2026 tarihinde Konya Kebapevi'nde düzenleyeceğimiz iftar programında sizleri aramızda görmekten memnuniyet duyarız.
@@ -166,7 +211,12 @@
 
       <div id="okMsg" class="msg" role="status" aria-live="polite"></div>
       <div id="errMsg" class="msg" role="alert" aria-live="assertive"></div>
-    </div>
+      </div>
+    </main>
+
+    <aside class="side-panel">
+      <img src="/public/iftar/img/davet.jpg" alt="İftar Daveti Görseli">
+    </aside>
   </div>
 
   <script>
