@@ -37,9 +37,14 @@
       background: var(--bg);
       padding: 28px 16px;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       min-height: 100vh;
+    }
+
+    .content-stack {
+      width: 100%;
+      max-width: 760px;
     }
 
     .card {
@@ -129,10 +134,11 @@
 <body>
   <div class="page-layout">
     <main class="center-wrap">
-      <div class="card">
+      <div class="content-stack">
       <div class="logo-wrap">
         <img src="/public/iftar/netcomanalogo.png" alt="Netcom Logo">
       </div>
+      <div class="card">
 
       <form id="iftarForm" novalidate>
         <div class="grid-2">
@@ -179,6 +185,7 @@
 
       <div id="okMsg" class="msg" role="status" aria-live="polite"></div>
       <div id="errMsg" class="msg" role="alert" aria-live="assertive"></div>
+      </div>
       </div>
     </main>
   </div>
