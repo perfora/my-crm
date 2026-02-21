@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>İftar Davet Kayıt</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #0f766e;
+      --primary-hover: #115e59;
+      --border: #e5e7eb;
+      --ok-bg: #ecfdf5;
+      --ok-text: #065f46;
+      --err-bg: #fef2f2;
+      --err-text: #991b1b;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    .wrap {
+      max-width: 760px;
+      margin: 32px auto;
+      padding: 0 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .grid-2 {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input, textarea, select, button {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 15px;
+      font-family: inherit;
+    }
+
+    textarea { min-height: 90px; resize: vertical; }
+
+    .btn {
+      background: var(--primary);
+      color: #fff;
+      border: 0;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .btn:hover { background: var(--primary-hover); }
+    .btn[disabled] { opacity: .65; cursor: not-allowed; }
+
+    .msg {
+      display: none;
+      margin-top: 14px;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    .msg.ok { display: block; background: var(--ok-bg); color: var(--ok-text); }
+    .msg.err { display: block; background: var(--err-bg); color: var(--err-text); }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 640px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .wrap { margin: 18px auto; }
+      h1 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>İftar Davet Kayıt</h1>
+      <p class="subtitle">Lütfen davet bilgilerini girin. Kayıtlar doğrudan Google Sheets'e yazılır.</p>
+
+      <form id="iftarForm" novalidate>
+        <div class="grid-2">
+          <div>
+            <label for="ad_soyad">Ad Soyad *</label>
+            <input id="ad_soyad" name="ad_soyad" type="text" required maxlength="120">
+          </div>
+          <div>
+            <label for="telefon">Telefon *</label>
+            <input id="telefon" name="telefon" type="tel" required maxlength="30">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <label for="kurum">Kurum / Firma</label>
+            <input id="kurum" name="kurum" type="text" maxlength="150">
+          </div>
+          <div>
+            <label for="kisi_sayisi">Kişi Sayısı *</label>
+            <input id="kisi_sayisi" name="kisi_sayisi" type="number" min="1" max="20" value="1" required>
+          </div>
+        </div>
+
+        <div>
+          <label for="katilim_durumu">Katılım Durumu *</label>
+          <select id="katilim_durumu" name="katilim_durumu" required>
+            <option value="">Seçiniz</option>
+            <option value="Katılacak">Katılacak</option>
+            <option value="Katılamayacak">Katılamayacak</option>
+            <option value="Belirsiz">Belirsiz</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="not">Not</label>
+          <textarea id="not" name="not" maxlength="1000" placeholder="Varsa notunuzu yazın..."></textarea>
+        </div>
+
+        <input type="text" id="website" name="website" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+        <button class="btn" id="submitBtn" type="submit">Kaydı Gönder</button>
+      </form>
+
+      <div id="okMsg" class="msg" role="status" aria-live="polite"></div>
+      <div id="errMsg" class="msg" role="alert" aria-live="assertive"></div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwv-ie75SOFaXkgpxtLSsqSeJO0HcvPL9ZgyfC9qUKemsm_WoCc6jlOmMZxuJh5ZWGEGA/exec';
+
+      const form = document.getElementById('iftarForm');
+      const submitBtn = document.getElementById('submitBtn');
+      const okMsg = document.getElementById('okMsg');
+      const errMsg = document.getElementById('errMsg');
+
+      function setMessage(type, message) {
+        okMsg.className = 'msg';
+        errMsg.className = 'msg';
+        okMsg.textContent = '';
+        errMsg.textContent = '';
+
+        if (type === 'ok') {
+          okMsg.className = 'msg ok';
+          okMsg.textContent = message;
+        } else if (type === 'err') {
+          errMsg.className = 'msg err';
+          errMsg.textContent = message;
+        }
+      }
+
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        setMessage('', '');
+
+        if (!form.reportValidity()) return;
+
+        const honeypot = document.getElementById('website').value.trim();
+        if (honeypot) {
+          setMessage('ok', 'Kayıt alındı.');
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Gönderiliyor...';
+
+        const payload = {
+          ad_soyad: document.getElementById('ad_soyad').value.trim(),
+          telefon: document.getElementById('telefon').value.trim(),
+          kurum: document.getElementById('kurum').value.trim(),
+          kisi_sayisi: document.getElementById('kisi_sayisi').value,
+          katilim_durumu: document.getElementById('katilim_durumu').value,
+          not: document.getElementById('not').value.trim(),
+          source: 'iftar-page',
+          timestamp: new Date().toISOString(),
+          page_url: window.location.href,
+          user_agent: navigator.userAgent
+        };
+
+        try {
+          const response = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          let result = null;
+          try {
+            result = await response.json();
+          } catch (jsonError) {
+            result = null;
+          }
+
+          if (!response.ok || (result && result.success === false)) {
+            throw new Error((result && result.message) ? result.message : 'Kayıt sırasında hata oluştu.');
+          }
+
+          setMessage('ok', 'Kayıt başarıyla gönderildi.');
+          form.reset();
+          document.getElementById('kisi_sayisi').value = 1;
+        } catch (error) {
+          setMessage('err', error.message || 'Bağlantı hatası. Lütfen tekrar deneyin.');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Kaydı Gönder';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
