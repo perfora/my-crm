@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Netcom-Konya İftar Davet Kaydı</title>
+  <style>
+    :root {
+      --bg: #121A26;
+      --card: #121A26;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --primary: #0f766e;
+      --primary-hover: #115e59;
+      --border: #2a3649;
+      --ok-bg: #ecfdf5;
+      --ok-text: #065f46;
+      --err-bg: #fef2f2;
+      --err-text: #991b1b;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    .page-layout {
+      min-height: 100vh;
+      background: var(--bg);
+    }
+
+    .center-wrap {
+      background: var(--bg);
+      padding: 28px 16px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .content-stack {
+      width: 100%;
+      max-width: 760px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+      width: 100%;
+      max-width: 760px;
+    }
+
+    .logo-wrap {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .logo-wrap img {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      display: inline-block;
+      border-radius: 10px;
+    }
+
+    .logo-link {
+      display: inline-block;
+      cursor: pointer;
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .logo-link-hint {
+      position: absolute;
+      left: calc(18px + 2ch);
+      bottom: calc(18px - 1ch);
+      background: rgba(18, 26, 38, 0.82);
+      color: #f8fafc;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .grid-2 {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input, textarea, select, button {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 15px;
+      font-family: inherit;
+      background: #0f1724;
+      color: #f3f4f6;
+    }
+
+    textarea { min-height: 90px; resize: vertical; }
+
+    .btn {
+      background: var(--primary);
+      color: #fff;
+      border: 0;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .btn:hover { background: var(--primary-hover); }
+    .btn[disabled] { opacity: .65; cursor: not-allowed; }
+
+    .msg {
+      display: none;
+      margin-top: 14px;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    .msg.ok { display: block; background: var(--ok-bg); color: var(--ok-text); }
+    .msg.err { display: block; background: var(--err-bg); color: var(--err-text); }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 640px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .center-wrap { padding: 12px; }
+      .card { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-layout">
+    <main class="center-wrap">
+      <div class="content-stack">
+      <div class="logo-wrap">
+        <a
+          class="logo-link"
+          href="https://maps.app.goo.gl/vQyGk48wPoaBqurQ9"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="logo-link-hint">YOL TARİFİ İÇİN TIKLAYINIZ.</span>
+          <img src="/public/iftar/netcomanalogo.png" alt="Netcom Logo">
+        </a>
+      </div>
+      <div class="card">
+
+      <form id="iftarForm" novalidate>
+        <div class="grid-2">
+          <div>
+            <label for="ad_soyad">Ad Soyad *</label>
+            <input id="ad_soyad" name="ad_soyad" type="text" required maxlength="120">
+          </div>
+          <div>
+            <label for="telefon">Telefon *</label>
+            <input id="telefon" name="telefon" type="tel" required maxlength="30">
+          </div>
+        </div>
+
+        <div>
+          <label for="email">E-posta *</label>
+          <input id="email" name="email" type="email" required maxlength="150" placeholder="ornek@firma.com">
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <label for="gorev">Görev</label>
+            <input id="gorev" name="gorev" type="text" maxlength="120">
+          </div>
+          <div>
+            <label for="kurum">Kurum / Firma *</label>
+            <input id="kurum" name="kurum" type="text" maxlength="150" required>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <label for="katilim_durumu">Katılım Durumu *</label>
+            <select id="katilim_durumu" name="katilim_durumu" required>
+              <option value="">Seçiniz</option>
+              <option value="Katılacak">Katılacak</option>
+              <option value="Katılamayacak">Katılamayacak</option>
+              <option value="Belirsiz">Belirsiz</option>
+            </select>
+          </div>
+          <div>
+            <label for="menu_secimi">Lütfen Menü Seçiniz *</label>
+            <select id="menu_secimi" name="menu_secimi" required>
+              <option value="">Seçiniz</option>
+              <option value="Kuzu Tandır Furun Kebabı">Kuzu Tandır Furun Kebabı</option>
+              <option value="Adana Kebabı">Adana Kebabı</option>
+              <option value="Urfa Kebabı">Urfa Kebabı</option>
+              <option value="Izgara Köfte">Izgara Köfte</option>
+              <option value="Tavuk Kanat">Tavuk Kanat</option>
+            </select>
+          </div>
+        </div>
+
+        <input type="text" id="website" name="website" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+        <button class="btn" id="submitBtn" type="submit">Kaydı Gönder</button>
+      </form>
+
+      <div id="okMsg" class="msg" role="status" aria-live="polite"></div>
+      <div id="errMsg" class="msg" role="alert" aria-live="assertive"></div>
+      </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (function() {
+      const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwv-ie75SOFaXkgpxtLSsqSeJO0HcvPL9ZgyfC9qUKemsm_WoCc6jlOmMZxuJh5ZWGEGA/exec';
+
+      const form = document.getElementById('iftarForm');
+      const submitBtn = document.getElementById('submitBtn');
+      const okMsg = document.getElementById('okMsg');
+      const errMsg = document.getElementById('errMsg');
+
+      function escapeIcsText(value) {
+        return String(value || '')
+          .replace(/\\/g, '\\\\')
+          .replace(/\n/g, '\\n')
+          .replace(/,/g, '\\,')
+          .replace(/;/g, '\\;');
+      }
+
+      function formatIcsDateLocal(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        const h = String(date.getHours()).padStart(2, '0');
+        const i = String(date.getMinutes()).padStart(2, '0');
+        const s = String(date.getSeconds()).padStart(2, '0');
+        return `${y}${m}${d}T${h}${i}${s}`;
+      }
+
+      function downloadCalendarInvite() {
+        const start = new Date(2026, 2, 5, 18, 30, 0);
+        const end = new Date(2026, 2, 5, 21, 0, 0);
+        const created = new Date();
+        const uid = 'netcom-iftar-20260305@muratpektas.com';
+
+        const ics = [
+          'BEGIN:VCALENDAR',
+          'VERSION:2.0',
+          'PRODID:-//Netcom Konya//Iftar Davet//TR',
+          'CALSCALE:GREGORIAN',
+          'METHOD:PUBLISH',
+          'BEGIN:VEVENT',
+          `UID:${uid}`,
+          `DTSTAMP:${formatIcsDateLocal(created)}`,
+          `DTSTART:${formatIcsDateLocal(start)}`,
+          `DTEND:${formatIcsDateLocal(end)}`,
+          `SUMMARY:${escapeIcsText('Netcom-Konya İftar Daveti')}`,
+          `LOCATION:${escapeIcsText('Konya Kebapevi')}`,
+          `DESCRIPTION:${escapeIcsText('Netcom-Konya iftar daveti. Katılımınız için teşekkür ederiz.')}`,
+          'END:VEVENT',
+          'END:VCALENDAR'
+        ].join('\r\n');
+
+        const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'netcom-konya-iftar-daveti.ics';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+
+      function setMessage(type, message) {
+        okMsg.className = 'msg';
+        errMsg.className = 'msg';
+        okMsg.textContent = '';
+        errMsg.textContent = '';
+
+        if (type === 'ok') {
+          okMsg.className = 'msg ok';
+          okMsg.textContent = message;
+        } else if (type === 'err') {
+          errMsg.className = 'msg err';
+          errMsg.textContent = message;
+        }
+      }
+
+      async function submitNoCors(payload) {
+        const params = new URLSearchParams();
+        Object.keys(payload).forEach(function(key) {
+          params.append(key, payload[key] == null ? '' : String(payload[key]));
+        });
+
+        await fetch(WEB_APP_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body: params.toString()
+        });
+      }
+
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        setMessage('', '');
+
+        if (!form.reportValidity()) return;
+
+        const honeypot = document.getElementById('website').value.trim();
+        if (honeypot) {
+          setMessage('ok', 'Kayıt alındı.');
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Gönderiliyor...';
+
+        const payload = {
+          ad_soyad: document.getElementById('ad_soyad').value.trim(),
+          isim: document.getElementById('ad_soyad').value.trim(),
+          telefon: document.getElementById('telefon').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          gorev: document.getElementById('gorev').value.trim(),
+          kurum: document.getElementById('kurum').value.trim(),
+          firma: document.getElementById('kurum').value.trim(),
+          kisi_sayisi: '',
+          kisi: '',
+          katilim_durumu: document.getElementById('katilim_durumu').value,
+          katilim: document.getElementById('katilim_durumu').value,
+          menu_secimi: document.getElementById('menu_secimi').value,
+          menu: document.getElementById('menu_secimi').value,
+          not: '',
+          source: 'iftar-page',
+          timestamp: new Date().toISOString(),
+          page_url: window.location.href,
+          user_agent: navigator.userAgent
+        };
+
+        try {
+          // 1) Önce normal JSON dene (CORS açıksa sonuç mesajı okunur)
+          let sent = false;
+          try {
+            const response = await fetch(WEB_APP_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+
+            let result = null;
+            try {
+              result = await response.json();
+            } catch (jsonError) {
+              result = null;
+            }
+
+            if (!response.ok || (result && result.success === false)) {
+              throw new Error((result && result.message) ? result.message : 'Kayıt sırasında hata oluştu.');
+            }
+
+            sent = true;
+          } catch (corsErr) {
+            // 2) CORS engeli varsa no-cors ile gönder (cevap okunamaz ama kayıt gider)
+            await submitNoCors(payload);
+            sent = true;
+          }
+
+          if (!sent) {
+            throw new Error('Kayıt gönderilemedi.');
+          }
+          setMessage('ok', 'Başvuru Kaydınız Alındı.');
+          form.reset();
+          alert('Başvuru Kaydınız Alındı. Takviminize Eklemeyi Unutmayın!!!');
+          downloadCalendarInvite();
+        } catch (error) {
+          setMessage('err', error.message || 'Bağlantı hatası. Lütfen tekrar deneyin.');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Kaydı Gönder';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
