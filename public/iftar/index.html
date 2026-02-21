@@ -173,6 +173,59 @@
       const okMsg = document.getElementById('okMsg');
       const errMsg = document.getElementById('errMsg');
 
+      function escapeIcsText(value) {
+        return String(value || '')
+          .replace(/\\/g, '\\\\')
+          .replace(/\n/g, '\\n')
+          .replace(/,/g, '\\,')
+          .replace(/;/g, '\\;');
+      }
+
+      function formatIcsDateLocal(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        const h = String(date.getHours()).padStart(2, '0');
+        const i = String(date.getMinutes()).padStart(2, '0');
+        const s = String(date.getSeconds()).padStart(2, '0');
+        return `${y}${m}${d}T${h}${i}${s}`;
+      }
+
+      function downloadCalendarInvite() {
+        const start = new Date(2026, 2, 5, 18, 30, 0);
+        const end = new Date(2026, 2, 5, 21, 0, 0);
+        const created = new Date();
+        const uid = 'netcom-iftar-20260305@muratpektas.com';
+
+        const ics = [
+          'BEGIN:VCALENDAR',
+          'VERSION:2.0',
+          'PRODID:-//Netcom Konya//Iftar Davet//TR',
+          'CALSCALE:GREGORIAN',
+          'METHOD:PUBLISH',
+          'BEGIN:VEVENT',
+          `UID:${uid}`,
+          `DTSTAMP:${formatIcsDateLocal(created)}`,
+          `DTSTART:${formatIcsDateLocal(start)}`,
+          `DTEND:${formatIcsDateLocal(end)}`,
+          `SUMMARY:${escapeIcsText('Netcom-Konya İftar Daveti')}`,
+          `LOCATION:${escapeIcsText('Konya Kebapevi')}`,
+          `DESCRIPTION:${escapeIcsText('Netcom-Konya iftar daveti. Katılımınız için teşekkür ederiz.')}`,
+          'END:VEVENT',
+          'END:VCALENDAR'
+        ].join('\r\n');
+
+        const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'netcom-konya-iftar-daveti.ics';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+
       function setMessage(type, message) {
         okMsg.className = 'msg';
         errMsg.className = 'msg';
@@ -268,6 +321,8 @@
           }
           setMessage('ok', 'Kayıt başarıyla gönderildi.');
           form.reset();
+          alert('Kayıt gönderildi. Takviminize eklemeyi unutmayın.');
+          downloadCalendarInvite();
         } catch (error) {
           setMessage('err', error.message || 'Bağlantı hatası. Lütfen tekrar deneyin.');
         } finally {
