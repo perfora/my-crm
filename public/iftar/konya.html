@@ -147,6 +147,44 @@
     .msg.ok { display: block; background: var(--ok-bg); color: var(--ok-text); }
     .msg.err { display: block; background: var(--err-bg); color: var(--err-text); }
 
+    .custom-popup {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .custom-popup.open { display: flex; }
+
+    .custom-popup-card {
+      width: min(92vw, 420px);
+      background: #111827;
+      border: 1px solid #2a3649;
+      border-radius: 12px;
+      padding: 18px;
+      color: #f3f4f6;
+      text-align: center;
+    }
+
+    .custom-popup-text {
+      margin: 0 0 14px;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .custom-popup-btn {
+      border: 0;
+      border-radius: 8px;
+      background: #0f766e;
+      color: #fff;
+      font-weight: 700;
+      padding: 10px 16px;
+      cursor: pointer;
+    }
+
     .hidden { display: none !important; }
 
     @media (max-width: 640px) {
@@ -236,6 +274,13 @@
     </main>
   </div>
 
+  <div id="customPopup" class="custom-popup" role="dialog" aria-modal="true" aria-labelledby="customPopupText">
+    <div class="custom-popup-card">
+      <p id="customPopupText" class="custom-popup-text"></p>
+      <button id="customPopupBtn" type="button" class="custom-popup-btn">Tamam</button>
+    </div>
+  </div>
+
   <script>
     (function() {
       const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwv-ie75SOFaXkgpxtLSsqSeJO0HcvPL9ZgyfC9qUKemsm_WoCc6jlOmMZxuJh5ZWGEGA/exec?sehir=Konya';
@@ -244,6 +289,23 @@
       const submitBtn = document.getElementById('submitBtn');
       const okMsg = document.getElementById('okMsg');
       const errMsg = document.getElementById('errMsg');
+      const customPopup = document.getElementById('customPopup');
+      const customPopupText = document.getElementById('customPopupText');
+      const customPopupBtn = document.getElementById('customPopupBtn');
+
+      function showCustomPopup(message) {
+        customPopupText.textContent = message;
+        customPopup.classList.add('open');
+      }
+
+      function closeCustomPopup() {
+        customPopup.classList.remove('open');
+      }
+
+      customPopupBtn.addEventListener('click', closeCustomPopup);
+      customPopup.addEventListener('click', function(e) {
+        if (e.target === customPopup) closeCustomPopup();
+      });
 
       function escapeIcsText(value) {
         return String(value || '')
@@ -397,7 +459,7 @@
           }
           setMessage('ok', 'Başvuru Kaydınız Alındı.');
           form.reset();
-          alert('Başvuru Kaydınız Alındı. Takviminize Eklemeyi Unutmayın!!!');
+          showCustomPopup('Başvuru Kaydınız Alındı. Takviminize Eklemeyi Unutmayın!!!');
           downloadCalendarInvite();
         } catch (error) {
           setMessage('err', error.message || 'Bağlantı hatası. Lütfen tekrar deneyin.');
