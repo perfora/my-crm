@@ -68,7 +68,38 @@
     
     <div class="container mx-auto px-4 py-8">
         @php
-            $toplamZiyaret = \App\Models\Ziyaret::count();
+            $ziyaretlerQuery = \App\Models\Ziyaret::with('musteri');
+
+            if(request('ziyaret_ismi')) {
+                $ziyaretlerQuery->where('ziyaret_ismi', 'like', '%' . request('ziyaret_ismi') . '%');
+            }
+            if(request('musteri_id')) {
+                $ziyaretlerQuery->where('musteri_id', request('musteri_id'));
+            }
+            if(request('tur')) {
+                $ziyaretlerQuery->where('tur', request('tur'));
+            }
+            if(request('durumu')) {
+                $ziyaretlerQuery->where('durumu', request('durumu'));
+            }
+            if(request('tarih_baslangic')) {
+                $ziyaretlerQuery->where(function($q) {
+                    $q->whereDate('ziyaret_tarihi', '>=', request('tarih_baslangic'))
+                      ->orWhereDate('arama_tarihi', '>=', request('tarih_baslangic'));
+                });
+            }
+            if(request('tarih_bitis')) {
+                $ziyaretlerQuery->where(function($q) {
+                    $q->whereDate('ziyaret_tarihi', '<=', request('tarih_bitis'))
+                      ->orWhereDate('arama_tarihi', '<=', request('tarih_bitis'));
+                });
+            }
+
+            $ziyaretler = $ziyaretlerQuery
+                ->orderByRaw('COALESCE(ziyaret_tarihi, arama_tarihi) DESC')
+                ->get();
+
+            $toplamZiyaret = $ziyaretler->count();
         @endphp
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold">Ziyaret Takip</h1>
@@ -230,39 +261,6 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @php
-                            $query = \App\Models\Ziyaret::with('musteri');
-                            
-                            if(request('ziyaret_ismi')) {
-                                $query->where('ziyaret_ismi', 'like', '%' . request('ziyaret_ismi') . '%');
-                            }
-                            if(request('musteri_id')) {
-                                $query->where('musteri_id', request('musteri_id'));
-                            }
-                            if(request('tur')) {
-                                $query->where('tur', request('tur'));
-                            }
-                            if(request('durumu')) {
-                                $query->where('durumu', request('durumu'));
-                            }
-                            if(request('tarih_baslangic')) {
-                                $query->where(function($q) {
-                                    $q->whereDate('ziyaret_tarihi', '>=', request('tarih_baslangic'))
-                                      ->orWhereDate('arama_tarihi', '>=', request('tarih_baslangic'));
-                                });
-                            }
-                            if(request('tarih_bitis')) {
-                                $query->where(function($q) {
-                                    $q->whereDate('ziyaret_tarihi', '<=', request('tarih_bitis'))
-                                      ->orWhereDate('arama_tarihi', '<=', request('tarih_bitis'));
-                                });
-                            }
-
-                            $ziyaretler = $query
-                                ->orderByRaw('COALESCE(ziyaret_tarihi, arama_tarihi) DESC')
-                                ->get();
-                        @endphp
-                        
                         @forelse($ziyaretler as $ziyaret)
                             @php($satirTarih = $ziyaret->tur == 'Telefon' ? $ziyaret->arama_tarihi : $ziyaret->ziyaret_tarihi)
                             <tr data-row="1"
