@@ -190,6 +190,20 @@
         }
       }
 
+      async function submitNoCors(payload) {
+        const params = new URLSearchParams();
+        Object.keys(payload).forEach(function(key) {
+          params.append(key, payload[key] == null ? '' : String(payload[key]));
+        });
+
+        await fetch(WEB_APP_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body: params.toString()
+        });
+      }
+
       form.addEventListener('submit', async function(e) {
         e.preventDefault();
         setMessage('', '');
@@ -219,23 +233,36 @@
         };
 
         try {
-          const response = await fetch(WEB_APP_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-
-          let result = null;
+          // 1) Önce normal JSON dene (CORS açıksa sonuç mesajı okunur)
+          let sent = false;
           try {
-            result = await response.json();
-          } catch (jsonError) {
-            result = null;
+            const response = await fetch(WEB_APP_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+
+            let result = null;
+            try {
+              result = await response.json();
+            } catch (jsonError) {
+              result = null;
+            }
+
+            if (!response.ok || (result && result.success === false)) {
+              throw new Error((result && result.message) ? result.message : 'Kayıt sırasında hata oluştu.');
+            }
+
+            sent = true;
+          } catch (corsErr) {
+            // 2) CORS engeli varsa no-cors ile gönder (cevap okunamaz ama kayıt gider)
+            await submitNoCors(payload);
+            sent = true;
           }
 
-          if (!response.ok || (result && result.success === false)) {
-            throw new Error((result && result.message) ? result.message : 'Kayıt sırasında hata oluştu.');
+          if (!sent) {
+            throw new Error('Kayıt gönderilemedi.');
           }
-
           setMessage('ok', 'Kayıt başarıyla gönderildi.');
           form.reset();
           document.getElementById('kisi_sayisi').value = 1;
