@@ -252,27 +252,14 @@
           </div>
         </div>
 
-        <div class="grid-2">
-          <div>
-            <label for="katilim_durumu">Katılım Durumu *</label>
-            <select id="katilim_durumu" name="katilim_durumu" required>
-              <option value="">Seçiniz</option>
-              <option value="Katılacak">Katılacak</option>
-              <option value="Katılamayacak">Katılamayacak</option>
-              <option value="Belirsiz">Belirsiz</option>
-            </select>
-          </div>
-          <div>
-            <label for="menu_secimi">Lütfen Menü Seçiniz *</label>
-            <select id="menu_secimi" name="menu_secimi" required>
-              <option value="">Seçiniz</option>
-              <option value="Kuzu Tandır Furun Kebabı">Kuzu Tandır Furun Kebabı</option>
-              <option value="Adana Kebabı">Adana Kebabı</option>
-              <option value="Urfa Kebabı">Urfa Kebabı</option>
-              <option value="Izgara Köfte">Izgara Köfte</option>
-              <option value="Tavuk Kanat">Tavuk Kanat</option>
-            </select>
-          </div>
+        <div>
+          <label for="katilim_durumu">Katılım Durumu *</label>
+          <select id="katilim_durumu" name="katilim_durumu" required>
+            <option value="">Seçiniz</option>
+            <option value="Katılacak">Katılacak</option>
+            <option value="Katılamayacak">Katılamayacak</option>
+            <option value="Belirsiz">Belirsiz</option>
+          </select>
         </div>
 
         <input type="text" id="website" name="website" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -430,8 +417,8 @@
           kisi: '',
           katilim_durumu: document.getElementById('katilim_durumu').value,
           katilim: document.getElementById('katilim_durumu').value,
-          menu_secimi: document.getElementById('menu_secimi').value,
-          menu: document.getElementById('menu_secimi').value,
+          menu_secimi: '',
+          menu: '',
           not: '',
           source: 'iftar-page',
           timestamp: new Date().toISOString(),
