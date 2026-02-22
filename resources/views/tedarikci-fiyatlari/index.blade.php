@@ -183,17 +183,107 @@
 
     <script>
         let parsedData = [];
-        const markalar = @json($markalar);
+        let markalar = @json($markalar);
+        const csrfToken = '{{ csrf_token() }}';
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function markaLabel(marka) {
+            return (marka && (marka.name || marka.marka_adi)) ? (marka.name || marka.marka_adi) : '-';
+        }
+
+        function extractEntity(response) {
+            if (response && response.data) return response.data;
+            return response || null;
+        }
 
         $(document).ready(function() {
-            $('#tedarikciSelect').select2({
+            initTedarikciSelect();
+        });
+
+        function initTedarikciSelect() {
+            const $select = $('#tedarikciSelect');
+            if ($select.hasClass('select2-hidden-accessible')) {
+                $select.select2('destroy');
+            }
+
+            $select.select2({
                 placeholder: 'Tedarikçi seçin...',
+                tags: true,
+                createTag: function (params) {
+                    const term = $.trim(params.term);
+                    if (term === '') return null;
+                    return {
+                        id: `__new_tedarikci__${term}`,
+                        text: `${term} (Yeni Ekle)`,
+                        newTag: true,
+                        term: term
+                    };
+                },
                 language: {
                     noResults: function() { return "Sonuç bulunamadı"; },
                     searching: function() { return "Aranıyor..."; }
                 }
             });
-        });
+
+            $select.off('select2:open.tedarikci').on('select2:open.tedarikci', function() {
+                const searchField = document.querySelector('.select2-container--open .select2-search__field');
+                if (searchField) searchField.focus();
+            });
+
+            $select.off('select2:select.tedarikci').on('select2:select.tedarikci', function(e) {
+                const selected = e.params.data;
+                if (!selected || !selected.newTag) return;
+
+                const term = selected.term || String(selected.id || '').replace('__new_tedarikci__', '');
+                if (!term) return;
+
+                const existingOption = Array.from(this.options).find(opt =>
+                    opt.value &&
+                    !String(opt.value).startsWith('__new_tedarikci__') &&
+                    opt.text.trim().toLowerCase() === term.trim().toLowerCase()
+                );
+                if (existingOption) {
+                    $select.val(existingOption.value).trigger('change');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/musteriler',
+                    method: 'POST',
+                    dataType: 'json',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    data: {
+                        sirket: term,
+                        turu: 'Tedarikçi'
+                    },
+                    success: function(response) {
+                        const entity = extractEntity(response);
+                        const id = entity?.id;
+                        const name = entity?.sirket || term;
+                        if (!id) return;
+
+                        if ($select.find(`option[value="${id}"]`).length === 0) {
+                            $select.append(new Option(name, id, true, true));
+                        }
+                        $select.val(String(id)).trigger('change');
+                    },
+                    error: function() {
+                        alert('Tedarikçi eklenemedi!');
+                        $select.val('').trigger('change');
+                    }
+                });
+            });
+        }
 
         function openPasteModal() {
             document.getElementById('pasteModal').classList.remove('hidden');
@@ -277,7 +367,7 @@
                     <td class="px-4 py-2">
                         <select class="marka-select border border-gray-300 rounded px-2 py-1" data-index="${index}">
                             <option value="">Marka seç...</option>
-                            ${markalar.map(m => `<option value="${m.id}">${m.name || m.marka_adi || '-'}</option>`).join('')}
+                            ${markalar.map(m => `<option value="${escapeHtml(m.id)}">${escapeHtml(markaLabel(m))}</option>`).join('')}
                         </select>
                     </td>
                     <td class="px-4 py-2">
@@ -287,11 +377,101 @@
                 tbody.appendChild(row);
             });
 
-            // Marka değişikliklerini dinle
-            document.querySelectorAll('.marka-select').forEach(select => {
-                select.addEventListener('change', function() {
-                    const index = parseInt(this.dataset.index);
-                    parsedData[index].marka_id = this.value || null;
+            // Marka select2 + yeni marka ekleme
+            document.querySelectorAll('.marka-select').forEach(selectEl => {
+                const $select = $(selectEl);
+                const rowIndex = parseInt(selectEl.dataset.index);
+
+                if ($select.hasClass('select2-hidden-accessible')) {
+                    $select.select2('destroy');
+                }
+
+                $select.select2({
+                    width: '220px',
+                    placeholder: 'Marka seç...',
+                    tags: true,
+                    createTag: function(params) {
+                        const term = $.trim(params.term);
+                        if (term === '') return null;
+                        return {
+                            id: `__new_marka__${term}`,
+                            text: `${term} (Yeni Ekle)`,
+                            newTag: true,
+                            term: term
+                        };
+                    },
+                    language: {
+                        noResults: function() { return "Sonuç bulunamadı"; },
+                        searching: function() { return "Aranıyor..."; }
+                    }
+                });
+
+                $select.off('select2:open.marka').on('select2:open.marka', function() {
+                    const searchField = document.querySelector('.select2-container--open .select2-search__field');
+                    if (searchField) searchField.focus();
+                });
+
+                $select.off('change.marka').on('change.marka', function() {
+                    const value = $(this).val();
+                    if (value && String(value).startsWith('__new_marka__')) return;
+                    parsedData[rowIndex].marka_id = value || null;
+                });
+
+                $select.off('select2:select.marka').on('select2:select.marka', function(e) {
+                    const selected = e.params.data;
+                    if (!selected || !selected.newTag) return;
+
+                    const term = selected.term || String(selected.id || '').replace('__new_marka__', '');
+                    if (!term) return;
+
+                    const existingOption = Array.from(selectEl.options).find(opt =>
+                        opt.value &&
+                        !String(opt.value).startsWith('__new_marka__') &&
+                        opt.text.trim().toLowerCase() === term.trim().toLowerCase()
+                    );
+                    if (existingOption) {
+                        $select.val(existingOption.value).trigger('change');
+                        parsedData[rowIndex].marka_id = existingOption.value;
+                        return;
+                    }
+
+                    $.ajax({
+                        url: '/markalar',
+                        method: 'POST',
+                        dataType: 'json',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                        data: { name: term },
+                        success: function(response) {
+                            const entity = extractEntity(response);
+                            const id = entity?.id;
+                            const name = entity?.name || entity?.marka_adi || term;
+                            if (!id) return;
+
+                            const alreadyExists = markalar.some(m => String(m.id) === String(id));
+                            if (!alreadyExists) {
+                                markalar.push({ id: id, name: name });
+                            }
+
+                            document.querySelectorAll('.marka-select').forEach(otherSelectEl => {
+                                if (!Array.from(otherSelectEl.options).some(opt => String(opt.value) === String(id))) {
+                                    otherSelectEl.add(new Option(name, id, false, false));
+                                }
+                            });
+
+                            if ($select.find(`option[value="${id}"]`).length === 0) {
+                                $select.append(new Option(name, id, true, true));
+                            }
+                            $select.val(String(id)).trigger('change');
+                            parsedData[rowIndex].marka_id = id;
+                        },
+                        error: function() {
+                            alert('Marka eklenemedi!');
+                            $select.val('').trigger('change');
+                            parsedData[rowIndex].marka_id = null;
+                        }
+                    });
                 });
             });
 
