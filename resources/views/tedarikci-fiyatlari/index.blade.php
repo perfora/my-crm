@@ -204,6 +204,59 @@
             return response || null;
         }
 
+        function parseFlexibleNumber(value) {
+            let s = String(value ?? '').trim();
+            if (!s) return NaN;
+
+            s = s.replace(/[^\d,.\-]/g, '');
+            if (!s) return NaN;
+
+            const lastComma = s.lastIndexOf(',');
+            const lastDot = s.lastIndexOf('.');
+
+            if (lastComma > -1 && lastDot > -1) {
+                if (lastComma > lastDot) {
+                    s = s.replace(/\./g, '').replace(',', '.');
+                } else {
+                    s = s.replace(/,/g, '');
+                }
+            } else if (lastComma > -1) {
+                const commaCount = (s.match(/,/g) || []).length;
+                const decimalDigits = s.split(',').pop()?.length || 0;
+                if (commaCount === 1 && decimalDigits <= 2) {
+                    s = s.replace(',', '.');
+                } else {
+                    s = s.replace(/,/g, '');
+                }
+            } else if (lastDot > -1) {
+                const dotCount = (s.match(/\./g) || []).length;
+                if (dotCount > 1) {
+                    const i = s.lastIndexOf('.');
+                    s = s.slice(0, i).replace(/\./g, '') + '.' + s.slice(i + 1);
+                }
+            }
+
+            return parseFloat(s);
+        }
+
+        function normalizeCurrency(raw) {
+            const t = String(raw ?? '').trim();
+            if (!t) return null;
+            const u = t.toUpperCase();
+
+            if (u.includes('USD') || t.includes('$')) return 'USD';
+            if (u.includes('EUR') || t.includes('€')) return 'EUR';
+            if (u.includes('GBP') || t.includes('£')) return 'GBP';
+            if (u.includes('TL') || u.includes('TRY') || t.includes('₺')) return 'TL';
+
+            const justCode = u.replace(/[^A-Z]/g, '');
+            if (['USD', 'EUR', 'GBP', 'TL', 'TRY'].includes(justCode)) {
+                return justCode === 'TRY' ? 'TL' : justCode;
+            }
+
+            return null;
+        }
+
         $(document).ready(function() {
             initTedarikciSelect();
         });
@@ -328,15 +381,20 @@
                 
                 if (parts.length >= 2) {
                     const urunAdi = parts[0];
-                    const birimFiyat = parseFloat(parts[1].replace(/[^0-9.,]/g, '').replace(',', '.'));
-                    const adet = parts[2] ? parseInt(parts[2]) : 1;
-                    const paraBirimi = parts[3] || 'TL';
+                    const rawBirimFiyat = parts[1];
+                    const birimFiyat = parseFlexibleNumber(rawBirimFiyat);
+                    const adet = parts[2] ? parseInt(parts[2], 10) : 1;
+                    const paraBirimi =
+                        normalizeCurrency(parts[3]) ||
+                        normalizeCurrency(parts[4]) ||
+                        normalizeCurrency(rawBirimFiyat) ||
+                        'TL';
 
                     if (urunAdi && !isNaN(birimFiyat)) {
                         parsedData.push({
                             urun_adi: urunAdi,
                             birim_fiyat: birimFiyat,
-                            adet: adet,
+                            adet: Number.isFinite(adet) && adet > 0 ? adet : 1,
                             para_birimi: paraBirimi,
                             marka_id: null
                         });
