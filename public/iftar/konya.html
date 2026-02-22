@@ -304,6 +304,9 @@
       const submitBtn = document.getElementById('submitBtn');
       const okMsg = document.getElementById('okMsg');
       const errMsg = document.getElementById('errMsg');
+      const katilimDurumuSelect = document.getElementById('katilim_durumu');
+      const menuSecimiSelect = document.getElementById('menu_secimi');
+      const menuSecimiLabel = document.querySelector('label[for="menu_secimi"]');
       const customPopup = document.getElementById('customPopup');
       const customPopupText = document.getElementById('customPopupText');
       const customPopupBtn = document.getElementById('customPopupBtn');
@@ -321,6 +324,22 @@
       customPopup.addEventListener('click', function(e) {
         if (e.target === customPopup) closeCustomPopup();
       });
+
+      function updateMenuRequirement() {
+        const katilamiyor = katilimDurumuSelect.value === 'Katılamayacak';
+        menuSecimiSelect.required = !katilamiyor;
+        menuSecimiSelect.disabled = katilamiyor;
+
+        if (katilamiyor) {
+          menuSecimiSelect.value = '';
+          menuSecimiLabel.textContent = 'Lütfen Menü Seçiniz';
+        } else {
+          menuSecimiLabel.textContent = 'Lütfen Menü Seçiniz *';
+        }
+      }
+
+      katilimDurumuSelect.addEventListener('change', updateMenuRequirement);
+      updateMenuRequirement();
 
       function escapeIcsText(value) {
         return String(value || '')
