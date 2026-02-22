@@ -277,7 +277,7 @@
                     <td class="px-4 py-2">
                         <select class="marka-select border border-gray-300 rounded px-2 py-1" data-index="${index}">
                             <option value="">Marka seç...</option>
-                            ${markalar.map(m => `<option value="${m.id}">${m.marka_adi}</option>`).join('')}
+                            ${markalar.map(m => `<option value="${m.id}">${m.name || m.marka_adi || '-'}</option>`).join('')}
                         </select>
                     </td>
                     <td class="px-4 py-2">

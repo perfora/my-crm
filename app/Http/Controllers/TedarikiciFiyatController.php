@@ -21,7 +21,7 @@ class TedarikiciFiyatController extends Controller
             ->orderBy('sirket')
             ->get();
         
-        $markalar = Marka::orderBy('marka_adi')->get();
+        $markalar = Marka::orderBy('name')->get();
         
         return view('tedarikci-fiyatlari.index', compact('fiyatlar', 'tedarikciler', 'markalar'));
     }
