@@ -11,11 +11,16 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'ai.auth' => \App\Http\Middleware\AuthenticateAiToken::class,
+            'ai.scope' => \App\Http\Middleware\EnsureAiScope::class,
+            'ai.audit' => \App\Http\Middleware\LogAiRequest::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->report(function (\Throwable $e): void {
