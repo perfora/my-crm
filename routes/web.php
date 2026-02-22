@@ -12,6 +12,7 @@ use App\Models\SystemLog;
 use App\Models\ChangeJournal;
 use App\Support\LogSanitizer;
 use App\Services\TcmbExchangeService;
+use App\Http\Controllers\AiTokenController;
 
 if (!function_exists('crmToIstanbulCarbon')) {
     function crmToIstanbulCarbon($value): \Carbon\Carbon
@@ -193,6 +194,11 @@ Route::middleware(['auth'])->group(function () {
             'logs' => $query->limit(300)->get(),
         ]);
     })->name('system-logs.index');
+
+    // AI API token management
+    Route::get('/sistem/ai-api', [AiTokenController::class, 'index'])->name('system.ai-api.index');
+    Route::post('/sistem/ai-api/tokens', [AiTokenController::class, 'store'])->name('system.ai-api.store');
+    Route::post('/sistem/ai-api/tokens/{id}/toggle', [AiTokenController::class, 'toggle'])->name('system.ai-api.toggle');
 
     // System export
     Route::get('/sistem/disa-aktar', [App\Http\Controllers\SystemExportController::class, 'index'])->name('system-export.index');
