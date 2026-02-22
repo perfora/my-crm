@@ -261,7 +261,6 @@
               <option value="">Seçiniz</option>
               <option value="Katılacak">Katılacak</option>
               <option value="Katılamayacak">Katılamayacak</option>
-              <option value="Belirsiz">Belirsiz</option>
             </select>
           </div>
           <div>
@@ -326,11 +325,11 @@
       });
 
       function updateMenuRequirement() {
-        const katilamiyor = katilimDurumuSelect.value === 'Katılamayacak';
-        menuSecimiSelect.required = !katilamiyor;
-        menuSecimiSelect.disabled = katilamiyor;
+        const katilacak = katilimDurumuSelect.value === 'Katılacak';
+        menuSecimiSelect.required = katilacak;
+        menuSecimiSelect.disabled = !katilacak;
 
-        if (katilamiyor) {
+        if (!katilacak) {
           menuSecimiSelect.value = '';
           menuSecimiLabel.textContent = 'Lütfen Menü Seçiniz';
         } else {
