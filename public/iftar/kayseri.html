@@ -189,6 +189,41 @@
 
     .hidden { display: none !important; }
 
+    .kvkk-box {
+      margin-top: 6px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #0f1724;
+      padding: 12px;
+      font-size: 12px;
+      color: #d1d5db;
+      line-height: 1.5;
+    }
+
+    .kvkk-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f3f4f6;
+      margin: 0 0 8px;
+    }
+
+    .kvkk-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-top: 10px;
+      font-size: 13px;
+      color: #e5e7eb;
+    }
+
+    .kvkk-check input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin-top: 2px;
+      accent-color: #0f766e;
+      flex: 0 0 auto;
+    }
+
     @media (max-width: 640px) {
       .grid-2 { grid-template-columns: 1fr; }
       .center-wrap { padding: 12px; }
@@ -265,7 +300,18 @@
 
         <input type="text" id="website" name="website" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
 
-        <button class="btn" id="submitBtn" type="submit">Kaydı Gönder</button>
+        <div class="kvkk-box">
+          <p class="kvkk-title">ONLINE REZERVASYON AYDINLATMA METNİ</p>
+          <p>6698 sayılı Kişisel Verilerin Korunması Kanunu (“KVKK”) uyarınca, rezervasyon formu aracılığıyla paylaştığınız ad-soyad, telefon numarası, e-posta adresi ve rezervasyon bilgileri; rezervasyon işlemlerinin yürütülmesi, sizinle iletişime geçilmesi ve hizmet süreçlerinin planlanması amacıyla veri sorumlusu sıfatıyla Netcom Bilgisayar A.Ş. tarafından işlenecektir.</p>
+          <p>Kişisel verileriniz, ilgili mevzuata uygun şekilde saklanacak ve üçüncü kişilerle yalnızca yasal yükümlülükler kapsamında paylaşılacaktır.</p>
+          <p>KVKK’nın 11. maddesi kapsamında sahip olduğunuz haklara ilişkin taleplerinizi <strong>etkinlik@netcom.com.tr</strong> mail adresi üzerinden iletebilirsiniz.</p>
+          <label class="kvkk-check" for="kvkk_onay">
+            <input type="checkbox" id="kvkk_onay" name="kvkk_onay" required>
+            <span>Aydınlatma metnini okudum, anladım ve kişisel verilerimin bu kapsamda işlenmesine onay veriyorum.</span>
+          </label>
+        </div>
+
+        <button class="btn" id="submitBtn" type="submit" disabled>Kaydı Gönder</button>
       </form>
 
       <div id="okMsg" class="msg" role="status" aria-live="polite"></div>
@@ -290,6 +336,7 @@
       const submitBtn = document.getElementById('submitBtn');
       const okMsg = document.getElementById('okMsg');
       const errMsg = document.getElementById('errMsg');
+      const kvkkOnay = document.getElementById('kvkk_onay');
       const customPopup = document.getElementById('customPopup');
       const customPopupText = document.getElementById('customPopupText');
       const customPopupBtn = document.getElementById('customPopupBtn');
@@ -307,6 +354,13 @@
       customPopup.addEventListener('click', function(e) {
         if (e.target === customPopup) closeCustomPopup();
       });
+
+      function updateSubmitState() {
+        submitBtn.disabled = !kvkkOnay.checked;
+      }
+
+      kvkkOnay.addEventListener('change', updateSubmitState);
+      updateSubmitState();
 
       function escapeIcsText(value) {
         return String(value || '')
@@ -460,13 +514,14 @@
           }
           setMessage('ok', 'Başvuru Kaydınız Alındı.');
           form.reset();
+          updateSubmitState();
           showCustomPopup('Başvuru Kaydınız Alındı. Takviminize Eklemeyi Unutmayın!!!');
           downloadCalendarInvite();
         } catch (error) {
           setMessage('err', error.message || 'Bağlantı hatası. Lütfen tekrar deneyin.');
         } finally {
-          submitBtn.disabled = false;
           submitBtn.textContent = 'Kaydı Gönder';
+          updateSubmitState();
         }
       });
     })();
