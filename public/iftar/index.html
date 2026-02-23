@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Netcom İftar Buluşması</title>
+  <link rel="icon" type="image/jpeg" href="./netcom-40yil.jpg">
+  <style>
+    :root {
+      --bg: #0f1a2b;
+      --focus: #f59e0b;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at 50% 20%, #1a2f4a 0%, var(--bg) 60%);
+      font-family: Arial, sans-serif;
+      padding: 16px;
+    }
+
+    .hero {
+      width: min(96vw, 1200px);
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .hero img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .hotspot {
+      position: absolute;
+      border-radius: 16px;
+      text-indent: -9999px;
+      overflow: hidden;
+      outline: none;
+      background: rgba(245, 158, 11, 0);
+      transition: background .15s ease;
+    }
+
+    .hotspot:hover,
+    .hotspot:focus-visible {
+      background: rgba(245, 158, 11, 0.18);
+      box-shadow: 0 0 0 3px var(--focus) inset;
+    }
+
+    .hotspot.konya {
+      left: 5.2%;
+      top: 59.1%;
+      width: 20.4%;
+      height: 14.5%;
+    }
+
+    .hotspot.kayseri {
+      left: 27.3%;
+      top: 59.1%;
+      width: 22.0%;
+      height: 14.5%;
+    }
+
+    .fallback {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 14px;
+      color: #dbe5f3;
+    }
+
+    .fallback a {
+      color: #f3b64b;
+      text-decoration: none;
+      margin: 0 10px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="hero">
+      <img src="./analogo-secim.png" alt="Netcom İftar Buluşması - Şehir Seçimi">
+      <a class="hotspot konya" href="./konya.html" aria-label="Konya Kaydı">Konya</a>
+      <a class="hotspot kayseri" href="./kayseri.html" aria-label="Kayseri Kaydı">Kayseri</a>
+    </div>
+    <div class="fallback">
+      Görselde seçim çalışmazsa:
+      <a href="./konya.html">Konya</a>
+      <a href="./kayseri.html">Kayseri</a>
+    </div>
+  </main>
+</body>
+</html>
+
