@@ -129,17 +129,31 @@
                     
                     <div>
                         <label class="block text-sm font-medium mb-1">Tipi</label>
+                        @php
+                            $tipSirasi = [
+                                'Kazanıldı',
+                                'Kaybedildi',
+                                'Verildi',
+                                'Verilecek',
+                                'Takip Edilecek',
+                                'Askıda',
+                                'Vazgeçildi',
+                                'Tamamlandı',
+                                'Register',
+                            ];
+                            $dbTipleri = \App\Models\IsTipi::pluck('name')->all();
+                            $tipSecenekleri = collect($tipSirasi)
+                                ->merge(array_values(array_diff($dbTipleri, $tipSirasi)))
+                                ->filter(fn ($name) => in_array($name, $dbTipleri, true))
+                                ->values();
+                        @endphp
                         <select name="tipi" class="w-full border rounded px-3 py-2">
                             <option value="">Tümü</option>
-                            <option value="Kazanıldı" {{ request('tipi') == 'Kazanıldı' ? 'selected' : '' }}>Kazanıldı</option>
-                            <option value="Kaybedildi" {{ request('tipi') == 'Kaybedildi' ? 'selected' : '' }}>Kaybedildi</option>
-                            <option value="Verildi" {{ request('tipi') == 'Verildi' ? 'selected' : '' }}>Verildi</option>
-                            <option value="Verilecek" {{ request('tipi') == 'Verilecek' ? 'selected' : '' }}>Verilecek</option>
-                            <option value="Takip Edilecek" {{ request('tipi') == 'Takip Edilecek' ? 'selected' : '' }}>Takip Edilecek</option>
-                            <option value="Askıda" {{ request('tipi') == 'Askıda' ? 'selected' : '' }}>Askıda</option>
-                            <option value="Vazgeçildi" {{ request('tipi') == 'Vazgeçildi' ? 'selected' : '' }}>Vazgeçildi</option>
-                            <option value="Tamamlandı" {{ request('tipi') == 'Tamamlandı' ? 'selected' : '' }}>Tamamlandı</option>
-                            <option value="Register" {{ request('tipi') == 'Register' ? 'selected' : '' }}>Register</option>
+                            @foreach($tipSecenekleri as $tipSecenegi)
+                                <option value="{{ $tipSecenegi }}" {{ request('tipi') == $tipSecenegi ? 'selected' : '' }}>
+                                    {{ $tipSecenegi }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                     
