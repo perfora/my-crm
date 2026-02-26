@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\YenilemeController;
 use App\Http\Controllers\MobileController;
 use App\Http\Controllers\SystemLogController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\NotionSettingsController;
 
 if (!function_exists('crmToIstanbulCarbon')) {
     function crmToIstanbulCarbon($value): \Carbon\Carbon
@@ -239,81 +240,10 @@ Route::post('/api/rapor-marka', [RaporController::class, 'marka']);
 Route::post('/api/rapor-musteri', [RaporController::class, 'musteri']);
 
 // Notion Ayarları
-Route::get('/notion-settings', function() {
-    $settings = DB::table('notion_settings')->pluck('value', 'key')->toArray();
-    return view('notion-settings', compact('settings'));
-});
-
-Route::post('/notion-settings/update', function() {
-    $key = request('key');
-    $value = request('value');
-    
-    DB::table('notion_settings')
-        ->where('key', $key)
-        ->update(['value' => $value, 'updated_at' => now()]);
-    
-    // .env'i de güncelle (api_token için)
-    if($key === 'api_token') {
-        $envFile = base_path('.env');
-        $envContent = file_get_contents($envFile);
-        
-        if(str_contains($envContent, 'NOTION_API_TOKEN=')) {
-            $envContent = preg_replace('/NOTION_API_TOKEN=.*/', "NOTION_API_TOKEN={$value}", $envContent);
-        } else {
-            $envContent .= "\nNOTION_API_TOKEN={$value}\n";
-        }
-        
-        file_put_contents($envFile, $envContent);
-    }
-    
-    return redirect('/notion-settings')->with('success', 'Ayar kaydedildi!');
-});
-
-Route::post('/notion-settings/sync', function() {
-    $type = request('type');
-    $settings = DB::table('notion_settings')->pluck('value', 'key')->toArray();
-    
-    $databaseId = $settings["{$type}_db_id"] ?? null;
-    
-    if(!$databaseId) {
-        return redirect('/notion-settings')->with('error', 'Database ID bulunamadı!');
-    }
-    
-    try {
-        Artisan::call('notion:sync', [
-            'database_id' => $databaseId,
-            '--type' => $type
-        ]);
-        
-        $output = Artisan::output();
-        return redirect('/notion-settings')->with('success', "✅ Sync tamamlandı!\n\n{$output}");
-    } catch(\Exception $e) {
-        return redirect('/notion-settings')->with('error', "❌ Hata: " . $e->getMessage());
-    }
-});
-
-Route::post('/notion-settings/push', function() {
-    $type = request('type');
-    $settings = DB::table('notion_settings')->pluck('value', 'key')->toArray();
-    
-    $databaseId = $settings["{$type}_db_id"] ?? null;
-    
-    if(!$databaseId) {
-        return redirect('/notion-settings')->with('error', 'Database ID bulunamadı!');
-    }
-    
-    try {
-        Artisan::call('notion:push', [
-            'database_id' => $databaseId,
-            '--type' => $type
-        ]);
-        
-        $output = Artisan::output();
-        return redirect('/notion-settings')->with('success', "✅ Push tamamlandı!\n\n{$output}");
-    } catch(\Exception $e) {
-        return redirect('/notion-settings')->with('error', "❌ Hata: " . $e->getMessage());
-    }
-});
+Route::get('/notion-settings', [NotionSettingsController::class, 'index']);
+Route::post('/notion-settings/update', [NotionSettingsController::class, 'update']);
+Route::post('/notion-settings/sync', [NotionSettingsController::class, 'sync']);
+Route::post('/notion-settings/push', [NotionSettingsController::class, 'push']);
 
 // Widget Ayarları
 Route::get('/dashboard/widget-settings', fn () => view('dashboard-settings'));
