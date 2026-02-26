@@ -13,6 +13,7 @@ use App\Support\LogSanitizer;
 use App\Services\TcmbExchangeService;
 use App\Http\Controllers\AiTokenController;
 use App\Http\Controllers\Auth\SessionController;
+use App\Http\Controllers\MobileController;
 
 if (!function_exists('crmToIstanbulCarbon')) {
     function crmToIstanbulCarbon($value): \Carbon\Carbon
@@ -78,57 +79,14 @@ Route::middleware(['auth'])->group(function () {
     
     // Mobil Routes
     Route::prefix('mobile')->group(function () {
-        Route::get('/', fn () => view('mobile.index'))->name('mobile.index');
-        Route::get('/yeni-is', fn () => view('mobile.yeni-is'))->name('mobile.yeni-is');
-        Route::get('/yeni-ziyaret', fn () => view('mobile.yeni-ziyaret'))->name('mobile.yeni-ziyaret');
-        Route::get('/planli-kayitlar', fn () => view('mobile.planli-kayitlar'))->name('mobile.planli-kayitlar');
-        Route::get('/hizli-kayit', fn () => view('mobile.hizli-kayit'))->name('mobile.hizli-kayit');
-        Route::post('/hizli-kayit', function () {
-            $validated = request()->validate([
-                'musteri_id' => 'required|exists:musteriler,id',
-                'contact_type' => 'required|in:Telefon,Ziyaret',
-                'ziyaret_notlari' => 'nullable|string',
-            ]);
-
-            $musteri = \App\Models\Musteri::findOrFail($validated['musteri_id']);
-            $now = \Carbon\Carbon::now('Europe/Istanbul');
-            $isTelefon = $validated['contact_type'] === 'Telefon';
-
-            \App\Models\Ziyaret::create([
-                'ziyaret_ismi' => $musteri->sirket . ' ' . ($isTelefon ? 'Arama' : 'Ziyaret'),
-                'musteri_id' => $musteri->id,
-                'ziyaret_tarihi' => $isTelefon ? null : $now,
-                'arama_tarihi' => $isTelefon ? $now : null,
-                'gerceklesen_tarih' => $now,
-                'tur' => $validated['contact_type'],
-                'durumu' => 'Tamamlandı',
-                'ziyaret_notlari' => $validated['ziyaret_notlari'] ?? null,
-            ]);
-
-            return redirect('/mobile/hizli-kayit')->with('message', 'Hızlı kayıt oluşturuldu.');
-        })->name('mobile.hizli-kayit.store');
-        Route::post('/ziyaretler/{id}/tamamla', function ($id) {
-            $ziyaret = \App\Models\Ziyaret::findOrFail($id);
-            $validated = request()->validate([
-                'ziyaret_notlari' => 'nullable|string',
-            ]);
-
-            $updateData = [
-                'durumu' => 'Tamamlandı',
-                'gerceklesen_tarih' => \Carbon\Carbon::now('Europe/Istanbul'),
-            ];
-
-            $newNote = trim((string) ($validated['ziyaret_notlari'] ?? ''));
-            if ($newNote !== '') {
-                $oldNote = trim((string) ($ziyaret->ziyaret_notlari ?? ''));
-                $updateData['ziyaret_notlari'] = $oldNote === '' ? $newNote : $oldNote . "\n\n" . $newNote;
-            }
-
-            $ziyaret->update($updateData);
-
-            return redirect('/mobile/planli-kayitlar')->with('message', 'Kayıt tamamlandı.');
-        })->name('mobile.planli-kayitlar.tamamla');
-        Route::get('/raporlar', fn () => view('mobile.raporlar'))->name('mobile.raporlar');
+        Route::get('/', [MobileController::class, 'index'])->name('mobile.index');
+        Route::get('/yeni-is', [MobileController::class, 'yeniIs'])->name('mobile.yeni-is');
+        Route::get('/yeni-ziyaret', [MobileController::class, 'yeniZiyaret'])->name('mobile.yeni-ziyaret');
+        Route::get('/planli-kayitlar', [MobileController::class, 'planliKayitlar'])->name('mobile.planli-kayitlar');
+        Route::get('/hizli-kayit', [MobileController::class, 'hizliKayit'])->name('mobile.hizli-kayit');
+        Route::post('/hizli-kayit', [MobileController::class, 'hizliKayitStore'])->name('mobile.hizli-kayit.store');
+        Route::post('/ziyaretler/{id}/tamamla', [MobileController::class, 'planliKayitTamamla'])->name('mobile.planli-kayitlar.tamamla');
+        Route::get('/raporlar', [MobileController::class, 'raporlar'])->name('mobile.raporlar');
     });
     
     // Dashboard - Özelleştirilebilir widget sistemi (alias)
