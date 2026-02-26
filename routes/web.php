@@ -14,6 +14,7 @@ use App\Services\TcmbExchangeService;
 use App\Http\Controllers\AiTokenController;
 use App\Http\Controllers\Auth\SessionController;
 use App\Http\Controllers\MobileController;
+use App\Http\Controllers\SystemLogController;
 
 if (!function_exists('crmToIstanbulCarbon')) {
     function crmToIstanbulCarbon($value): \Carbon\Carbon
@@ -93,27 +94,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', fn () => view('pages.dashboard'))->name('dashboard.index');
 
     // System logs screen
-    Route::get('/sistem-loglari', function (Request $request) {
-        $query = SystemLog::query()->latest('id');
-        if ($request->filled('channel')) {
-            $query->where('channel', $request->string('channel'));
-        }
-        if ($request->filled('level')) {
-            $query->where('level', $request->string('level'));
-        }
-        if ($request->filled('q')) {
-            $q = (string) $request->string('q');
-            $query->where(function ($inner) use ($q) {
-                $inner->where('message', 'like', '%'.$q.'%')
-                    ->orWhere('url', 'like', '%'.$q.'%')
-                    ->orWhere('source', 'like', '%'.$q.'%');
-            });
-        }
-
-        return view('sistem-loglari.index', [
-            'logs' => $query->limit(300)->get(),
-        ]);
-    })->name('system-logs.index');
+    Route::get('/sistem-loglari', [SystemLogController::class, 'index'])->name('system-logs.index');
 
     // AI API token management
     Route::get('/sistem/ai-api', [AiTokenController::class, 'index'])->name('system.ai-api.index');
