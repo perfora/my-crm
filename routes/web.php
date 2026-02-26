@@ -50,7 +50,7 @@ if (!function_exists('crmAutoFillTcmKur')) {
 // Login/Logout Routes (no auth middleware)
 Route::get('/finans', function () {
     return view('finans');
-})->name('finans');
+})->name('finans')->middleware('auth');
 
 Route::get('/login', function() {
     return view('auth.login');
