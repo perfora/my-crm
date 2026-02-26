@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\Kisi;
@@ -13,6 +12,7 @@ use App\Models\ChangeJournal;
 use App\Support\LogSanitizer;
 use App\Services\TcmbExchangeService;
 use App\Http\Controllers\AiTokenController;
+use App\Http\Controllers\Auth\SessionController;
 
 if (!function_exists('crmToIstanbulCarbon')) {
     function crmToIstanbulCarbon($value): \Carbon\Carbon
@@ -52,47 +52,9 @@ Route::get('/finans', function () {
     return view('finans');
 })->name('finans')->middleware('auth');
 
-Route::get('/login', function() {
-    return view('auth.login');
-})->name('login')->middleware('guest');
-
-Route::post('/login', function(Request $request) {
-    $credentials = $request->validate([
-        'email' => ['required', 'email'],
-        'password' => ['required'],
-    ]);
-    
-    // Rate limiting: 5 deneme / 1 dakika
-    $key = 'login.' . $request->ip();
-    $maxAttempts = 5;
-    $decayMinutes = 1;
-    
-    if (RateLimiter::tooManyAttempts($key, $maxAttempts)) {
-        $seconds = RateLimiter::availableIn($key);
-        return back()->withErrors([
-            'email' => "Çok fazla başarısız deneme! {$seconds} saniye sonra tekrar deneyin.",
-        ])->onlyInput('email');
-    }
-    
-    if (auth()->attempt($credentials, $request->filled('remember'))) {
-        RateLimiter::clear($key); // Başarılı girişte sayacı sıfırla
-        $request->session()->regenerate();
-        return redirect()->intended('/');
-    }
-    
-    RateLimiter::hit($key, $decayMinutes * 60); // Başarısız deneme kaydet
-    
-    return back()->withErrors([
-        'email' => 'E-posta veya şifre hatalı.',
-    ])->onlyInput('email');
-});
-
-Route::post('/logout', function() {
-    auth()->logout();
-    request()->session()->invalidate();
-    request()->session()->regenerateToken();
-    return redirect('/login');
-})->name('logout');
+Route::get('/login', [SessionController::class, 'create'])->name('login')->middleware('guest');
+Route::post('/login', [SessionController::class, 'store'])->middleware('guest');
+Route::post('/logout', [SessionController::class, 'destroy'])->name('logout');
 
 // Static asset compatibility routes for environments serving files under /public
 Route::get('/favicon.ico', fn () => redirect('/public/favicon.ico', 301));
