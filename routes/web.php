@@ -15,6 +15,7 @@ use App\Http\Controllers\AiTokenController;
 use App\Http\Controllers\Auth\SessionController;
 use App\Http\Controllers\MobileController;
 use App\Http\Controllers\SystemLogController;
+use App\Http\Controllers\PageController;
 
 if (!function_exists('crmToIstanbulCarbon')) {
     function crmToIstanbulCarbon($value): \Carbon\Carbon
@@ -50,9 +51,7 @@ if (!function_exists('crmAutoFillTcmKur')) {
 }
 
 // Login/Logout Routes (no auth middleware)
-Route::get('/finans', function () {
-    return view('finans');
-})->name('finans')->middleware('auth');
+Route::get('/finans', [PageController::class, 'finans'])->name('finans')->middleware('auth');
 
 Route::get('/login', [SessionController::class, 'create'])->name('login')->middleware('guest');
 Route::post('/login', [SessionController::class, 'store'])->middleware('guest');
@@ -67,16 +66,7 @@ Route::get('/apple-touch-icon.png', fn () => redirect('/public/apple-touch-icon.
 Route::middleware(['auth'])->group(function () {
     
     // Ana sayfa - Telefon algılama ile yönlendirme
-    Route::get('/', function () {
-        $userAgent = request()->header('User-Agent');
-        $isMobile = preg_match('/(android|iphone|ipad|mobile)/i', $userAgent);
-        
-        if ($isMobile) {
-            return redirect('/mobile');
-        }
-        
-        return view('pages.dashboard');
-    })->name('home');
+    Route::get('/', [PageController::class, 'home'])->name('home');
     
     // Mobil Routes
     Route::prefix('mobile')->group(function () {
@@ -91,7 +81,7 @@ Route::middleware(['auth'])->group(function () {
     });
     
     // Dashboard - Özelleştirilebilir widget sistemi (alias)
-    Route::get('/dashboard', fn () => view('pages.dashboard'))->name('dashboard.index');
+    Route::get('/dashboard', [PageController::class, 'dashboard'])->name('dashboard.index');
 
     // System logs screen
     Route::get('/sistem-loglari', [SystemLogController::class, 'index'])->name('system-logs.index');
