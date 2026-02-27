@@ -143,6 +143,77 @@ class FiyatTeklifController extends Controller
         return view('fiyat-teklifleri.show', compact('teklif'));
     }
 
+    public function edit($id)
+    {
+        return redirect('/fiyat-teklifleri/' . $id);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $teklif = FiyatTeklif::findOrFail($id);
+
+        $validated = $request->validate([
+            'yetkili_adi' => 'nullable|string',
+            'yetkili_email' => 'nullable|email',
+            'tarih' => 'nullable|date',
+            'gecerlilik_tarihi' => 'nullable|date',
+            'durum' => 'nullable|string',
+            'giris_metni' => 'nullable|string',
+            'ek_notlar' => 'nullable|string',
+            'teklif_kosullari' => 'nullable|string',
+            'kar_orani_varsayilan' => 'nullable|integer|min:0',
+            'kalemler' => 'nullable|array|min:1',
+            'kalemler.*.musteri_id' => 'nullable|exists:musteriler,id',
+            'kalemler.*.urun_id' => 'nullable|exists:urunler,id',
+            'kalemler.*.urun_adi' => 'required_with:kalemler|string',
+            'kalemler.*.alis_fiyat' => 'required_with:kalemler|numeric|min:0',
+            'kalemler.*.adet' => 'required_with:kalemler|integer|min:1',
+            'kalemler.*.kar_orani' => 'required_with:kalemler|integer',
+            'kalemler.*.para_birimi' => 'required_with:kalemler|string',
+        ]);
+
+        DB::transaction(function () use ($teklif, $validated) {
+            $teklif->update(collect($validated)->except(['kalemler'])->toArray());
+
+            if (isset($validated['kalemler'])) {
+                $teklif->kalemler()->delete();
+
+                foreach ($validated['kalemler'] as $index => $kalemData) {
+                    $urun = null;
+                    if (!empty($kalemData['urun_id'])) {
+                        $urun = Urun::find($kalemData['urun_id']);
+                    } else {
+                        $urun = Urun::create([
+                            'urun_adi' => $kalemData['urun_adi'],
+                            'son_alis_fiyat' => $kalemData['alis_fiyat'],
+                            'ortalama_kar_orani' => $kalemData['kar_orani'],
+                        ]);
+                    }
+
+                    $kalem = $teklif->kalemler()->make([
+                        'musteri_id' => $kalemData['musteri_id'] ?? null,
+                        'urun_id' => $urun?->id,
+                        'sira' => $index + 1,
+                        'urun_adi' => $kalemData['urun_adi'],
+                        'alis_fiyat' => $kalemData['alis_fiyat'],
+                        'adet' => $kalemData['adet'],
+                        'kar_orani' => $kalemData['kar_orani'],
+                        'para_birimi' => $kalemData['para_birimi'],
+                    ]);
+                    $kalem->hesapla();
+                }
+            }
+
+            $teklif->hesaplaToplamlar();
+        });
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Teklif güncellendi.']);
+        }
+
+        return redirect('/fiyat-teklifleri/' . $teklif->id)->with('message', 'Teklif güncellendi.');
+    }
+
     public function destroy($id)
     {
         $teklif = FiyatTeklif::findOrFail($id);

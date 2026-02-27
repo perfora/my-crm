@@ -36,7 +36,13 @@ class ZiyaretController extends Controller
             'tur' => 'sometimes|nullable|string',
             'durumu' => 'sometimes|nullable|string',
             'ziyaret_notlari' => 'sometimes|nullable|string',
+            'notlar' => 'sometimes|nullable|string',
         ]);
+
+        if (isset($validated['notlar'])) {
+            $validated['ziyaret_notlari'] = $validated['notlar'];
+            unset($validated['notlar']);
+        }
 
         if (!empty($validated['ziyaret_tarihi']) && empty($validated['durumu'])) {
             $validated['durumu'] = 'Planlandı';
