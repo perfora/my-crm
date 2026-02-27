@@ -24,6 +24,7 @@ use App\Http\Controllers\MarkaController;
 use App\Http\Controllers\MetaDataController;
 use App\Http\Controllers\MusteriController;
 use App\Http\Controllers\KisiController;
+use App\Http\Controllers\ZiyaretController;
 
 if (!function_exists('crmToIstanbulCarbon')) {
     function crmToIstanbulCarbon($value): \Carbon\Carbon
@@ -316,155 +317,11 @@ Route::post('/teklif-kosullari/{id}/varsayilan', [App\Http\Controllers\TeklifKos
 Route::get('/api/teklif-kosullari', [App\Http\Controllers\TeklifKosuluController::class, 'apiList']);
 
     // Ziyaretler routes
-Route::get('/ziyaretler', fn () => view('ziyaretler.index'));
-Route::get('/ziyaretler/{id}/edit', function ($id) {
-    $ziyaret = \App\Models\Ziyaret::findOrFail($id);
-    return view('ziyaretler.edit', compact('ziyaret'));
-});
-Route::put('/ziyaretler/{id}', function ($id) {
-    $ziyaret = \App\Models\Ziyaret::findOrFail($id);
-    
-    $validated = request()->validate([
-        'ziyaret_ismi' => 'sometimes|nullable|max:255',
-        'musteri_id' => 'sometimes|nullable|exists:musteriler,id',
-        'ziyaret_tarihi' => 'sometimes|nullable|date',
-        'arama_tarihi' => 'sometimes|nullable|date',
-        'tur' => 'sometimes|nullable|string',
-        'durumu' => 'sometimes|nullable|string',
-        'ziyaret_notlari' => 'sometimes|nullable|string',
-    ]);
-    
-    if (!empty($validated['ziyaret_tarihi']) && empty($validated['durumu'])) {
-        $validated['durumu'] = 'Planlandı';
-    }
-    if (!empty($validated['arama_tarihi']) && empty($validated['durumu'])) {
-        $validated['durumu'] = 'Planlandı';
-    }
-    if (($validated['durumu'] ?? null) === 'Tamamlandı') {
-        $validated['gerceklesen_tarih'] = $ziyaret->gerceklesen_tarih ?? \Carbon\Carbon::now('Europe/Istanbul');
-    }
-
-    $ziyaret->update($validated);
-
-    // Outlook senkron - Beklemede/Planlandı ise yaz
-    if (in_array($ziyaret->durumu, ['Beklemede', 'Planlandı']) && $ziyaret->ziyaret_tarihi) {
-        $subject = $ziyaret->ziyaret_ismi ?: 'Ziyaret';
-        $start = crmToIstanbulCarbon($ziyaret->ziyaret_tarihi);
-        $end = $start->copy()->addMinutes(30);
-        $body = $ziyaret->ziyaret_notlari ?? '';
-        $ews = app(\App\Services\ExchangeEwsService::class);
-        $result = $ews->createOrUpdateVisitEvent(
-            $ziyaret->ews_item_id,
-            $ziyaret->ews_change_key,
-            $subject,
-            $start,
-            $end,
-            $body
-        );
-        if (empty($result['error']) && !empty($result['item_id'])) {
-            $ziyaret->update([
-                'ews_item_id' => $result['item_id'],
-                'ews_change_key' => $result['change_key'] ?? $ziyaret->ews_change_key,
-            ]);
-        }
-    }
-    
-    return redirect('/ziyaretler')->with('message', 'Ziyaret güncellendi.');
-});
-Route::delete('/ziyaretler/{id}', function ($id) {
-    $ziyaret = \App\Models\Ziyaret::findOrFail($id);
-    if ($ziyaret->ews_item_id) {
-        try {
-            $ews = app(\App\Services\ExchangeEwsService::class);
-            $ews->deleteVisitEvent($ziyaret->ews_item_id, $ziyaret->ews_change_key);
-        } catch (\Throwable $e) {
-            \Log::warning('EWS delete failed for ziyaret', [
-                'id' => $ziyaret->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
-    $ziyaret->delete();
-    
-    return redirect('/ziyaretler')->with('message', 'Ziyaret silindi.');
-});
-Route::post('/ziyaretler', function () {
-    $validated = request()->validate([
-        'ziyaret_ismi' => 'nullable|max:255',
-        'musteri_id' => 'nullable|exists:musteriler,id',
-        'ziyaret_tarihi' => 'nullable|date',
-        'arama_tarihi' => 'nullable|date',
-        'tur' => 'nullable|string',
-        'durumu' => 'nullable|string',
-        'ziyaret_notlari' => 'nullable|string',
-        'notlar' => 'nullable|string', // Mobil form için
-    ]);
-    
-    // Mobil formdan geliyorsa notlar alanını ziyaret_notlari olarak kaydet
-    if (isset($validated['notlar'])) {
-        $validated['ziyaret_notlari'] = $validated['notlar'];
-        unset($validated['notlar']);
-    }
-    
-    // Ziyaret ismi yoksa müşteri adını kullan
-    if (empty($validated['ziyaret_ismi']) && !empty($validated['musteri_id'])) {
-        $musteri = \App\Models\Musteri::find($validated['musteri_id']);
-        $validated['ziyaret_ismi'] = $musteri ? $musteri->sirket . ' Ziyareti' : 'Ziyaret';
-    }
-    
-    if (!empty($validated['ziyaret_tarihi']) && empty($validated['durumu'])) {
-        $validated['durumu'] = 'Planlandı';
-    }
-    if (!empty($validated['arama_tarihi']) && empty($validated['durumu'])) {
-        $validated['durumu'] = 'Planlandı';
-    }
-    if (($validated['durumu'] ?? null) === 'Tamamlandı' && empty($validated['gerceklesen_tarih'])) {
-        $validated['gerceklesen_tarih'] = \Carbon\Carbon::now('Europe/Istanbul');
-    }
-    
-    $ziyaret = \App\Models\Ziyaret::create($validated);
-
-    if (request()->ajax()) {
-        $musteri = null;
-        if (!empty($ziyaret->musteri_id)) {
-            $musteri = \App\Models\Musteri::find($ziyaret->musteri_id);
-        }
-        return response()->json([
-            'id' => $ziyaret->id,
-            'musteri' => $musteri ? ['id' => $musteri->id, 'sirket' => $musteri->sirket] : null,
-        ]);
-    }
-
-    // Outlook senkron - Beklemede/Planlandı ise yaz
-    if (in_array($ziyaret->durumu, ['Beklemede', 'Planlandı']) && $ziyaret->ziyaret_tarihi) {
-        $subject = $ziyaret->ziyaret_ismi ?: 'Ziyaret';
-        $start = crmToIstanbulCarbon($ziyaret->ziyaret_tarihi);
-        $end = $start->copy()->addMinutes(30);
-        $body = $ziyaret->ziyaret_notlari ?? '';
-        $ews = app(\App\Services\ExchangeEwsService::class);
-        $result = $ews->createOrUpdateVisitEvent(
-            null,
-            null,
-            $subject,
-            $start,
-            $end,
-            $body
-        );
-        if (empty($result['error']) && !empty($result['item_id'])) {
-            $ziyaret->update([
-                'ews_item_id' => $result['item_id'],
-                'ews_change_key' => $result['change_key'] ?? null,
-            ]);
-        }
-    }
-    
-    // Mobil'den geliyorsa mobil'e yönlendir
-    if (str_contains(request()->header('referer', ''), '/mobile')) {
-        return redirect('/mobile')->with('message', 'Ziyaret başarıyla eklendi.');
-    }
-    
-    return redirect('/ziyaretler')->with('message', 'Ziyaret başarıyla eklendi.');
-});
+Route::get('/ziyaretler', [ZiyaretController::class, 'index']);
+Route::get('/ziyaretler/{id}/edit', [ZiyaretController::class, 'edit']);
+Route::put('/ziyaretler/{id}', [ZiyaretController::class, 'update']);
+Route::delete('/ziyaretler/{id}', [ZiyaretController::class, 'destroy']);
+Route::post('/ziyaretler', [ZiyaretController::class, 'store']);
 
 
     // Tüm İşler routes
