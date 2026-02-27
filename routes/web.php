@@ -23,6 +23,7 @@ use App\Http\Controllers\DashboardWidgetSettingsController;
 use App\Http\Controllers\MarkaController;
 use App\Http\Controllers\MetaDataController;
 use App\Http\Controllers\MusteriController;
+use App\Http\Controllers\KisiController;
 
 if (!function_exists('crmToIstanbulCarbon')) {
     function crmToIstanbulCarbon($value): \Carbon\Carbon
@@ -280,53 +281,11 @@ Route::delete('/musteriler/{id}', [MusteriController::class, 'destroy']);
 Route::post('/musteriler/delete-turu', [MusteriController::class, 'deleteTuru']);
 
 // Kişiler routes
-Route::get('/kisiler', fn () => view('kisiler.index'));
-Route::get('/kisiler/{id}/edit', function ($id) {
-    $kisi = \App\Models\Kisi::findOrFail($id);
-    return view('kisiler.edit', compact('kisi'));
-});
-Route::put('/kisiler/{id}', function ($id) {
-    $kisi = \App\Models\Kisi::findOrFail($id);
-    
-    // AJAX inline editing için
-    if (request()->ajax() && request()->has(request()->keys()[1])) {
-        $field = request()->keys()[1]; // _token sonraki field
-        $value = request()->input($field);
-        
-        $kisi->update([$field => $value]);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Güncellendi',
-            'data' => $kisi
-        ]);
-    }
-    
-    // Normal form submit için
-    $validated = request()->validate([
-        'ad_soyad' => 'required|max:255',
-        'telefon_numarasi' => 'nullable|string',
-        'email_adresi' => 'nullable|email',
-        'bolum' => 'nullable|string',
-        'gorev' => 'nullable|string',
-        'musteri_id' => 'nullable|exists:musteriler,id',
-        'url' => 'nullable|url',
-    ]);
-    
-    $kisi->update($validated);
-    
-    return redirect('/kisiler')->with('message', 'Kişi güncellendi.');
-});
-Route::delete('/kisiler/{id}', function ($id) {
-    $kisi = \App\Models\Kisi::findOrFail($id);
-    $kisi->delete();
-    
-    if (request()->ajax()) {
-        return response()->json(['success' => true, 'message' => 'Kişi silindi.']);
-    }
-    
-    return redirect('/kisiler')->with('message', 'Kişi silindi.');
-});
+Route::get('/kisiler', [KisiController::class, 'index']);
+Route::post('/kisiler', [KisiController::class, 'store']);
+Route::get('/kisiler/{id}/edit', [KisiController::class, 'edit']);
+Route::put('/kisiler/{id}', [KisiController::class, 'update']);
+Route::delete('/kisiler/{id}', [KisiController::class, 'destroy']);
 
 // Tedarikçi Fiyatları
 Route::get('/tedarikci-fiyatlari', [App\Http\Controllers\TedarikiciFiyatController::class, 'index']);
@@ -355,23 +314,6 @@ Route::put('/teklif-kosullari/{id}', [App\Http\Controllers\TeklifKosuluControlle
 Route::delete('/teklif-kosullari/{id}', [App\Http\Controllers\TeklifKosuluController::class, 'destroy']);
 Route::post('/teklif-kosullari/{id}/varsayilan', [App\Http\Controllers\TeklifKosuluController::class, 'varsayilanYap']);
 Route::get('/api/teklif-kosullari', [App\Http\Controllers\TeklifKosuluController::class, 'apiList']);
-
-Route::post('/kisiler', function () {
-    $validated = request()->validate([
-        'ad_soyad' => 'required|max:255',
-        'telefon_numarasi' => 'nullable|string',
-        'email_adresi' => 'nullable|email',
-        'bolum' => 'nullable|string',
-        'gorev' => 'nullable|string',
-        'musteri_id' => 'nullable|exists:musteriler,id',
-        'url' => 'nullable|url',
-    ]);
-    
-    \App\Models\Kisi::create($validated);
-    
-    return redirect('/kisiler')->with('message', 'Kişi başarıyla eklendi.');
-});
-
 
     // Ziyaretler routes
 Route::get('/ziyaretler', fn () => view('ziyaretler.index'));
