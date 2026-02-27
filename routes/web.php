@@ -20,6 +20,7 @@ use App\Http\Controllers\SystemLogController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\NotionSettingsController;
 use App\Http\Controllers\DashboardWidgetSettingsController;
+use App\Http\Controllers\MarkaController;
 
 if (!function_exists('crmToIstanbulCarbon')) {
     function crmToIstanbulCarbon($value): \Carbon\Carbon
@@ -251,54 +252,12 @@ Route::get('/dashboard/widget-settings', [DashboardWidgetSettingsController::cla
 Route::post('/dashboard/widget-settings', [DashboardWidgetSettingsController::class, 'update']);
 
 // Markalar routes
-Route::get('/markalar', fn () => view('markalar.index'));
-Route::get('/markalar/{id}', function ($id) {
-    $marka = \App\Models\Marka::findOrFail($id);
-    return view('markalar.show', compact('marka'));
-});
-Route::post('/markalar', function () {
-    $validated = request()->validate([
-        'name' => 'required|max:255',
-    ]);
-    
-    $marka = \App\Models\Marka::create($validated);
-    
-    // AJAX inline creation için
-    if (request()->ajax() || request()->wantsJson()) {
-        return response()->json(['success' => true, 'data' => $marka]);
-    }
-    
-    return redirect('/markalar')->with('message', 'Marka başarıyla eklendi.');
-});
-Route::get('/markalar/{id}/edit', function ($id) {
-    $marka = \App\Models\Marka::findOrFail($id);
-    return view('markalar.edit', compact('marka'));
-});
-Route::put('/markalar/{id}', function ($id) {
-    $marka = \App\Models\Marka::findOrFail($id);
-    
-    $validated = request()->validate([
-        'name' => 'required|max:255',
-    ]);
-    
-    $marka->update($validated);
-
-    if (request()->ajax() || request()->wantsJson()) {
-        return response()->json(['success' => true, 'data' => $marka]);
-    }
-    
-    return redirect('/markalar')->with('message', 'Marka güncellendi.');
-});
-Route::delete('/markalar/{id}', function ($id) {
-    $marka = \App\Models\Marka::findOrFail($id);
-    $marka->delete();
-
-    if (request()->ajax() || request()->wantsJson()) {
-        return response()->json(['success' => true]);
-    }
-    
-    return redirect('/markalar')->with('message', 'Marka silindi.');
-});
+Route::get('/markalar', [MarkaController::class, 'index']);
+Route::get('/markalar/{id}', [MarkaController::class, 'show']);
+Route::post('/markalar', [MarkaController::class, 'store']);
+Route::get('/markalar/{id}/edit', [MarkaController::class, 'edit']);
+Route::put('/markalar/{id}', [MarkaController::class, 'update']);
+Route::delete('/markalar/{id}', [MarkaController::class, 'destroy']);
 
 // İş Tipleri, Türleri ve Öncelik Routes (AJAX inline creation için)
 Route::post('/is-tipleri', function () {
