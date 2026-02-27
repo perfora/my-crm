@@ -26,12 +26,26 @@ class MusteriController extends Controller
     public function import(): RedirectResponse
     {
         $csv = storage_path('app/firmalar.csv');
+        if (!is_file($csv) || !is_readable($csv)) {
+            return redirect('/musteriler')->with('message', 'CSV dosyası bulunamadı veya okunamıyor.');
+        }
+
         $data = array_map('str_getcsv', file($csv));
+        if (empty($data)) {
+            return redirect('/musteriler')->with('message', 'CSV dosyası boş.');
+        }
+
         $header = array_shift($data);
         $imported = 0;
 
         foreach ($data as $row) {
+            if (count($row) !== count($header)) {
+                continue;
+            }
             $record = array_combine($header, $row);
+            if ($record === false) {
+                continue;
+            }
             if (!empty($record['Şirket'])) {
                 Musteri::firstOrCreate(
                     ['sirket' => $record['Şirket']],

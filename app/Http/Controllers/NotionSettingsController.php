@@ -19,24 +19,50 @@ class NotionSettingsController extends Controller
 
     public function update(Request $request): RedirectResponse
     {
-        $key = $request->input('key');
-        $value = $request->input('value');
+        $validated = $request->validate([
+            'key' => 'required|string|max:100',
+            'value' => 'nullable|string',
+        ]);
+
+        $allowedKeys = [
+            'api_token',
+            'tum_isler_db_id',
+            'musteriler_db_id',
+            'kisiler_db_id',
+            'ziyaretler_db_id',
+            'markalar_db_id',
+            'urunler_db_id',
+            'fiyat_teklifleri_db_id',
+        ];
+
+        $key = $validated['key'];
+        $value = $validated['value'] ?? '';
+        if (!in_array($key, $allowedKeys, true)) {
+            return redirect('/notion-settings')->with('error', 'Geçersiz ayar anahtarı.');
+        }
 
         DB::table('notion_settings')
             ->where('key', $key)
             ->update(['value' => $value, 'updated_at' => now()]);
 
         if ($key === 'api_token') {
-            $envFile = base_path('.env');
-            $envContent = file_get_contents($envFile);
-
-            if (str_contains($envContent, 'NOTION_API_TOKEN=')) {
-                $envContent = preg_replace('/NOTION_API_TOKEN=.*/', "NOTION_API_TOKEN={$value}", $envContent);
-            } else {
-                $envContent .= "\nNOTION_API_TOKEN={$value}\n";
+            try {
+                $envFile = base_path('.env');
+                if (is_file($envFile) && is_readable($envFile) && is_writable($envFile)) {
+                    $envContent = file_get_contents($envFile);
+                    if ($envContent !== false) {
+                        if (str_contains($envContent, 'NOTION_API_TOKEN=')) {
+                            $envContent = preg_replace('/NOTION_API_TOKEN=.*/', "NOTION_API_TOKEN={$value}", $envContent);
+                        } else {
+                            $envContent .= "\nNOTION_API_TOKEN={$value}\n";
+                        }
+                        file_put_contents($envFile, $envContent);
+                    }
+                }
+            } catch (Exception $e) {
+                // DB kaydı güncellenmiş olarak kalsın; .env yazımı başarısızsa UI'da sadece uyarı ver.
+                return redirect('/notion-settings')->with('error', '.env güncellenemedi: ' . $e->getMessage());
             }
-
-            file_put_contents($envFile, $envContent);
         }
 
         return redirect('/notion-settings')->with('success', 'Ayar kaydedildi!');

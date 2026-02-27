@@ -9,6 +9,7 @@ use App\Models\Kisi;
 use App\Models\Urun;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class FiyatTeklifController extends Controller
 {
@@ -65,66 +66,63 @@ class FiyatTeklifController extends Controller
             'kalemler.*.para_birimi' => 'required|string',
         ]);
 
-        // Teklif oluştur
-        $teklif = FiyatTeklif::create([
-            'teklif_no' => $validated['teklif_no'],
-            'musteri_id' => $validated['musteri_id'],
-            'yetkili_adi' => $validated['yetkili_adi'],
-            'yetkili_email' => $validated['yetkili_email'],
-            'tarih' => $validated['tarih'],
-            'gecerlilik_tarihi' => $validated['gecerlilik_tarihi'],
-            'durum' => 'Taslak',
-            'giris_metni' => $validated['giris_metni'],
-            'ek_notlar' => $validated['ek_notlar'],
-            'teklif_kosullari' => $validated['teklif_kosullari'],
-            'kar_orani_varsayilan' => $validated['kar_orani_varsayilan'] ?? 25,
-        ]);
-
-        // Kalemleri ekle ve hesapla
-        foreach ($validated['kalemler'] as $index => $kalemData) {
-            // Ürün yoksa oluştur
-            $urun = null;
-            if (!empty($kalemData['urun_id'])) {
-                $urun = Urun::find($kalemData['urun_id']);
-            } else {
-                // Yeni ürün oluştur
-                $urun = Urun::create([
-                    'urun_adi' => $kalemData['urun_adi'],
-                    'son_alis_fiyat' => $kalemData['alis_fiyat'],
-                    'ortalama_kar_orani' => $kalemData['kar_orani'],
-                ]);
-                
-                // Eğer tedarikçi seçildiyse fiyat kaydı da oluştur
-                if (!empty($kalemData['musteri_id'])) {
-                    \App\Models\TedarikiciFiyat::create([
-                        'musteri_id' => $kalemData['musteri_id'],
-                        'urun_id' => $urun->id,
-                        'urun_adi' => $urun->urun_adi,
-                        'tarih' => $validated['tarih'],
-                        'birim_fiyat' => $kalemData['alis_fiyat'],
-                        'para_birimi' => $kalemData['para_birimi'],
-                        'minimum_siparis' => $kalemData['adet'],
-                        'aktif' => true,
-                    ]);
-                }
-            }
-            
-            $kalem = new TeklifKalem([
-                'teklif_id' => $teklif->id,
-                'musteri_id' => $kalemData['musteri_id'],
-                'urun_id' => $urun?->id,
-                'sira' => $index + 1,
-                'urun_adi' => $kalemData['urun_adi'],
-                'alis_fiyat' => $kalemData['alis_fiyat'],
-                'adet' => $kalemData['adet'],
-                'kar_orani' => $kalemData['kar_orani'],
-                'para_birimi' => $kalemData['para_birimi'],
+        $teklif = DB::transaction(function () use ($validated) {
+            $teklif = FiyatTeklif::create([
+                'teklif_no' => $validated['teklif_no'],
+                'musteri_id' => $validated['musteri_id'],
+                'yetkili_adi' => $validated['yetkili_adi'],
+                'yetkili_email' => $validated['yetkili_email'],
+                'tarih' => $validated['tarih'],
+                'gecerlilik_tarihi' => $validated['gecerlilik_tarihi'],
+                'durum' => 'Taslak',
+                'giris_metni' => $validated['giris_metni'],
+                'ek_notlar' => $validated['ek_notlar'],
+                'teklif_kosullari' => $validated['teklif_kosullari'],
+                'kar_orani_varsayilan' => $validated['kar_orani_varsayilan'] ?? 25,
             ]);
-            $kalem->hesapla();
-        }
 
-        // Toplamları güncelle
-        $teklif->hesaplaToplamlar();
+            foreach ($validated['kalemler'] as $index => $kalemData) {
+                $urun = null;
+                if (!empty($kalemData['urun_id'])) {
+                    $urun = Urun::find($kalemData['urun_id']);
+                } else {
+                    $urun = Urun::create([
+                        'urun_adi' => $kalemData['urun_adi'],
+                        'son_alis_fiyat' => $kalemData['alis_fiyat'],
+                        'ortalama_kar_orani' => $kalemData['kar_orani'],
+                    ]);
+
+                    if (!empty($kalemData['musteri_id'])) {
+                        \App\Models\TedarikiciFiyat::create([
+                            'musteri_id' => $kalemData['musteri_id'],
+                            'urun_id' => $urun->id,
+                            'urun_adi' => $urun->urun_adi,
+                            'tarih' => $validated['tarih'],
+                            'birim_fiyat' => $kalemData['alis_fiyat'],
+                            'para_birimi' => $kalemData['para_birimi'],
+                            'minimum_siparis' => $kalemData['adet'],
+                            'aktif' => true,
+                        ]);
+                    }
+                }
+
+                $kalem = $teklif->kalemler()->make([
+                    'musteri_id' => $kalemData['musteri_id'],
+                    'urun_id' => $urun?->id,
+                    'sira' => $index + 1,
+                    'urun_adi' => $kalemData['urun_adi'],
+                    'alis_fiyat' => $kalemData['alis_fiyat'],
+                    'adet' => $kalemData['adet'],
+                    'kar_orani' => $kalemData['kar_orani'],
+                    'para_birimi' => $kalemData['para_birimi'],
+                ]);
+                $kalem->hesapla();
+            }
+
+            $teklif->hesaplaToplamlar();
+
+            return $teklif;
+        });
 
         if ($request->ajax()) {
             return response()->json([

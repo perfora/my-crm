@@ -31,21 +31,24 @@ Route::middleware(['auth'])->group(function () {
 
     require base_path('routes/settings.php');
 
-    Route::post('/api/filter-widget-data', [\App\Http\Controllers\Api\WidgetDataController::class, 'filter']);
+    Route::post('/api/filter-widget-data', [\App\Http\Controllers\Api\WidgetDataController::class, 'filter'])
+        ->name('api.filter-widget-data');
 
     Route::post('/api/yenileme-ac', [\App\Http\Controllers\Api\YenilemeController::class, 'ac']);
     Route::post('/api/yenileme-isaretle', [\App\Http\Controllers\Api\YenilemeController::class, 'isaretle']);
 
-    Route::post('/api/rapor-marka', [\App\Http\Controllers\Api\RaporController::class, 'marka']);
-    Route::post('/api/rapor-musteri', [\App\Http\Controllers\Api\RaporController::class, 'musteri']);
+    Route::post('/api/rapor-marka', [\App\Http\Controllers\Api\RaporController::class, 'marka'])->name('api.rapor.marka');
+    Route::post('/api/rapor-musteri', [\App\Http\Controllers\Api\RaporController::class, 'musteri'])->name('api.rapor.musteri');
 
-    Route::get('/notion-settings', [\App\Http\Controllers\NotionSettingsController::class, 'index']);
-    Route::post('/notion-settings/update', [\App\Http\Controllers\NotionSettingsController::class, 'update']);
-    Route::post('/notion-settings/sync', [\App\Http\Controllers\NotionSettingsController::class, 'sync']);
-    Route::post('/notion-settings/push', [\App\Http\Controllers\NotionSettingsController::class, 'push']);
+    Route::get('/notion-settings', [\App\Http\Controllers\NotionSettingsController::class, 'index'])->name('notion-settings.index');
+    Route::post('/notion-settings/update', [\App\Http\Controllers\NotionSettingsController::class, 'update'])->name('notion-settings.update');
+    Route::post('/notion-settings/sync', [\App\Http\Controllers\NotionSettingsController::class, 'sync'])->name('notion-settings.sync');
+    Route::post('/notion-settings/push', [\App\Http\Controllers\NotionSettingsController::class, 'push'])->name('notion-settings.push');
 
-    Route::get('/dashboard/widget-settings', [\App\Http\Controllers\DashboardWidgetSettingsController::class, 'index']);
-    Route::post('/dashboard/widget-settings', [\App\Http\Controllers\DashboardWidgetSettingsController::class, 'update']);
+    Route::get('/dashboard/widget-settings', [\App\Http\Controllers\DashboardWidgetSettingsController::class, 'index'])
+        ->name('dashboard.widget-settings.index');
+    Route::post('/dashboard/widget-settings', [\App\Http\Controllers\DashboardWidgetSettingsController::class, 'update'])
+        ->name('dashboard.widget-settings.update');
 
     Route::get('/markalar', [\App\Http\Controllers\MarkaController::class, 'index']);
     Route::get('/markalar/{id}', [\App\Http\Controllers\MarkaController::class, 'show']);
