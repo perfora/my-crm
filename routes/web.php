@@ -19,6 +19,7 @@ use App\Http\Controllers\MobileController;
 use App\Http\Controllers\SystemLogController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\NotionSettingsController;
+use App\Http\Controllers\DashboardWidgetSettingsController;
 
 if (!function_exists('crmToIstanbulCarbon')) {
     function crmToIstanbulCarbon($value): \Carbon\Carbon
@@ -246,27 +247,8 @@ Route::post('/notion-settings/sync', [NotionSettingsController::class, 'sync']);
 Route::post('/notion-settings/push', [NotionSettingsController::class, 'push']);
 
 // Widget Ayarları
-Route::get('/dashboard/widget-settings', fn () => view('dashboard-settings'));
-Route::post('/dashboard/widget-settings', function() {
-    $widgets = request('widgets', []);
-    $order = json_decode(request('order', '[]'), true);
-    
-    // Her widget için true/false ayarla
-    $settings = [];
-    foreach(['ozet_kartlar', 'yillik_karsilastirma', 'bekleyen_isler', 'bu_ay_kazanilan', 'yuksek_oncelikli', 'yaklasan_ziyaretler'] as $key) {
-        $settings[$key] = isset($widgets[$key]);
-    }
-    
-    // Sıralamayı kaydet
-    if(!empty($order)) {
-        $settings['order'] = $order;
-    }
-    
-    // Dosyaya kaydet
-    file_put_contents(storage_path('app/widget-settings.json'), json_encode($settings, JSON_PRETTY_PRINT));
-    
-    return redirect('/dashboard/widget-settings')->with('success', 'Widget ayarları kaydedildi!');
-});
+Route::get('/dashboard/widget-settings', [DashboardWidgetSettingsController::class, 'index']);
+Route::post('/dashboard/widget-settings', [DashboardWidgetSettingsController::class, 'update']);
 
 // Markalar routes
 Route::get('/markalar', fn () => view('markalar.index'));
