@@ -21,6 +21,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\NotionSettingsController;
 use App\Http\Controllers\DashboardWidgetSettingsController;
 use App\Http\Controllers\MarkaController;
+use App\Http\Controllers\MetaDataController;
 
 if (!function_exists('crmToIstanbulCarbon')) {
     function crmToIstanbulCarbon($value): \Carbon\Carbon
@@ -260,35 +261,9 @@ Route::put('/markalar/{id}', [MarkaController::class, 'update']);
 Route::delete('/markalar/{id}', [MarkaController::class, 'destroy']);
 
 // İş Tipleri, Türleri ve Öncelik Routes (AJAX inline creation için)
-Route::post('/is-tipleri', function () {
-    $validated = request()->validate(['name' => 'required|max:255|unique:is_tipleri']);
-    $tip = \App\Models\IsTipi::create($validated);
-    
-    if (request()->ajax() || request()->wantsJson()) {
-        return response()->json(['success' => true, 'data' => $tip]);
-    }
-    return back()->with('message', 'İş tipi eklendi.');
-});
-
-Route::post('/is-turleri', function () {
-    $validated = request()->validate(['name' => 'required|max:255|unique:is_turleri']);
-    $tur = \App\Models\IsTuru::create($validated);
-    
-    if (request()->ajax() || request()->wantsJson()) {
-        return response()->json(['success' => true, 'data' => $tur]);
-    }
-    return back()->with('message', 'İş türü eklendi.');
-});
-
-Route::post('/oncelikler', function () {
-    $validated = request()->validate(['name' => 'required|max:255|unique:oncelikler']);
-    $oncelik = \App\Models\Oncelik::create($validated);
-    
-    if (request()->ajax() || request()->wantsJson()) {
-        return response()->json(['success' => true, 'data' => $oncelik]);
-    }
-    return back()->with('message', 'Öncelik eklendi.');
-});
+Route::post('/is-tipleri', [MetaDataController::class, 'storeIsTipi']);
+Route::post('/is-turleri', [MetaDataController::class, 'storeIsTuru']);
+Route::post('/oncelikler', [MetaDataController::class, 'storeOncelik']);
 
 // Müşteriler (Firmalar) routes
 Route::get('/musteriler', fn () => view('musteriler.index'));
