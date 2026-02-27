@@ -22,6 +22,7 @@ use App\Http\Controllers\NotionSettingsController;
 use App\Http\Controllers\DashboardWidgetSettingsController;
 use App\Http\Controllers\MarkaController;
 use App\Http\Controllers\MetaDataController;
+use App\Http\Controllers\MusteriController;
 
 if (!function_exists('crmToIstanbulCarbon')) {
     function crmToIstanbulCarbon($value): \Carbon\Carbon
@@ -266,187 +267,17 @@ Route::post('/is-turleri', [MetaDataController::class, 'storeIsTuru']);
 Route::post('/oncelikler', [MetaDataController::class, 'storeOncelik']);
 
 // Müşteriler (Firmalar) routes
-Route::get('/musteriler', fn () => view('musteriler.index'));
-Route::get('/raporlar', fn () => view('raporlar.index'));
-Route::get('/musteriler/import', function() {
-    $csv = storage_path('app/firmalar.csv');
-    $data = array_map('str_getcsv', file($csv));
-    $header = array_shift($data);
-    $imported = 0;
-    foreach ($data as $row) {
-        $record = array_combine($header, $row);
-        if (!empty($record['Şirket'])) {
-            \App\Models\Musteri::firstOrCreate(
-                ['sirket' => $record['Şirket']],
-                [
-                    'sehir' => $record['Şehir'] ?? null,
-                    'adres' => $record['Adres'] ?? null,
-                    'telefon' => $record['Telefon'] ?? null,
-                    'notlar' => $record['Notlar'] ?? null,
-                    'derece' => $record['Derece'] ?? null,
-                    'turu' => $record['Türü'] ?? null,
-                ]
-            );
-            $imported++;
-        }
-    }
-    $total = \App\Models\Musteri::count();
-    return redirect('/musteriler')->with('message', "✓ $imported firma kontrol edildi. Toplam: $total müşteri");
-});
-Route::post('/musteriler', function () {
-    $validated = request()->validate([
-        'sirket' => 'required|max:255',
-        'sehir' => 'nullable|string',
-        'adres' => 'nullable|string',
-        'telefon' => 'nullable|string',
-        'notlar' => 'nullable|string',
-        'derece' => 'nullable|string',
-        'turu' => 'nullable|string',
-        'arama_periyodu_gun' => 'nullable|integer|min:1|max:3650',
-        'ziyaret_periyodu_gun' => 'nullable|integer|min:1|max:3650',
-        'temas_kurali' => 'nullable|string|max:50',
-    ]);
-    
-    $musteri = \App\Models\Musteri::create($validated);
-    
-    // AJAX inline creation için
-    if (request()->ajax() || request()->wantsJson()) {
-        return response()->json(['success' => true, 'data' => $musteri]);
-    }
-    
-    return redirect('/musteriler')->with('message', 'Müşteri başarıyla eklendi.');
-});
-Route::post('/musteriler/{id}/quick-contact', function ($id) {
-    $musteri = \App\Models\Musteri::findOrFail($id);
-
-    $validated = request()->validate([
-        'contact_type' => 'required|in:Telefon,Ziyaret',
-    ]);
-
-    $now = \Carbon\Carbon::now('Europe/Istanbul');
-    $isTelefon = $validated['contact_type'] === 'Telefon';
-
-    $ziyaret = \App\Models\Ziyaret::create([
-        'ziyaret_ismi' => $musteri->sirket . ' ' . ($isTelefon ? 'Arama' : 'Ziyaret'),
-        'musteri_id' => $musteri->id,
-        'ziyaret_tarihi' => $isTelefon ? null : $now,
-        'arama_tarihi' => $isTelefon ? $now : null,
-        'gerceklesen_tarih' => $now,
-        'tur' => $validated['contact_type'],
-        'durumu' => 'Tamamlandı',
-        'ziyaret_notlari' => null,
-    ]);
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Hızlı kayıt oluşturuldu.',
-        'data' => [
-            'id' => $ziyaret->id,
-            'musteri_id' => $musteri->id,
-            'musteri' => $musteri->sirket,
-            'contact_type' => $validated['contact_type'],
-            'created_at' => $now->toDateTimeString(),
-        ],
-    ]);
-});
-Route::post('/ziyaretler/{id}/quick-note', function ($id) {
-    $ziyaret = \App\Models\Ziyaret::findOrFail($id);
-    $validated = request()->validate([
-        'ziyaret_notlari' => 'required|string',
-    ]);
-
-    $ziyaret->update([
-        'ziyaret_notlari' => $validated['ziyaret_notlari'],
-    ]);
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Not kaydedildi.',
-        'data' => [
-            'id' => $ziyaret->id,
-            'ziyaret_notlari' => $ziyaret->ziyaret_notlari,
-        ],
-    ]);
-});
-Route::get('/musteriler/{id}', function ($id) {
-    $musteri = \App\Models\Musteri::findOrFail($id);
-    $kisiler = Kisi::where('musteri_id', $musteri->id)->get();
-    $ziyaretler = Ziyaret::where('musteri_id', $musteri->id)->orderBy('ziyaret_tarihi', 'desc')->get();
-    $isler = TumIsler::where('musteri_id', $musteri->id)->get();
-    $kazanilanTotal = $isler->where('tipi', 'Kazanıldı')->sum(function($i) {
-        return ($i->teklif_doviz === 'USD' || $i->alis_doviz === 'USD') ? $i->kar_tutari : 0;
-    });
-    return view('musteriler.show', compact('musteri', 'kisiler', 'ziyaretler', 'isler', 'kazanilanTotal'));
-});
-Route::get('/musteriler/{id}/edit', function ($id) {
-    $musteri = \App\Models\Musteri::findOrFail($id);
-    return view('musteriler.edit', compact('musteri'));
-});
-Route::put('/musteriler/{id}', function ($id) {
-    $musteri = \App\Models\Musteri::findOrFail($id);
-    
-    // AJAX inline editing için
-    if (request()->ajax() || request()->wantsJson()) {
-        $validated = request()->validate([
-            'sirket' => 'sometimes|required|max:255',
-            'sehir' => 'nullable|string',
-            'adres' => 'nullable|string',
-            'telefon' => 'nullable|string',
-            'notlar' => 'nullable|string',
-            'derece' => 'nullable|string',
-            'turu' => 'nullable|string',
-            'arama_periyodu_gun' => 'nullable|integer|min:1|max:3650',
-            'ziyaret_periyodu_gun' => 'nullable|integer|min:1|max:3650',
-            'temas_kurali' => 'nullable|string|max:50',
-        ]);
-        
-        $musteri->update($validated);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Güncellendi',
-            'data' => $musteri
-        ]);
-    }
-    
-    // Normal form submit için
-    $validated = request()->validate([
-        'sirket' => 'required|max:255',
-        'sehir' => 'nullable|string',
-        'adres' => 'nullable|string',
-        'telefon' => 'nullable|string',
-        'notlar' => 'nullable|string',
-        'derece' => 'nullable|string',
-        'turu' => 'nullable|string',
-        'arama_periyodu_gun' => 'nullable|integer|min:1|max:3650',
-        'ziyaret_periyodu_gun' => 'nullable|integer|min:1|max:3650',
-        'temas_kurali' => 'nullable|string|max:50',
-    ]);
-    
-    $musteri->update($validated);
-    
-    return redirect('/musteriler')->with('message', 'Müşteri güncellendi.');
-});
-Route::delete('/musteriler/{id}', function ($id) {
-    $musteri = \App\Models\Musteri::findOrFail($id);
-    $musteri->delete();
-    
-    if (request()->ajax()) {
-        return response()->json(['success' => true, 'message' => 'Müşteri silindi.']);
-    }
-    
-    return redirect('/musteriler')->with('message', 'Müşteri silindi.');
-});
-
-// Turu silme route'u
-Route::post('/musteriler/delete-turu', function () {
-    $turu = request('turu');
-    
-    // Bu türe sahip tüm müşterilerde turu null yap
-    \App\Models\Musteri::where('turu', $turu)->update(['turu' => null]);
-    
-    return response()->json(['success' => true, 'message' => 'Tür silindi.']);
-});
+Route::get('/musteriler', [MusteriController::class, 'index']);
+Route::get('/raporlar', [MusteriController::class, 'raporlar']);
+Route::get('/musteriler/import', [MusteriController::class, 'import']);
+Route::post('/musteriler', [MusteriController::class, 'store']);
+Route::post('/musteriler/{id}/quick-contact', [MusteriController::class, 'quickContact']);
+Route::post('/ziyaretler/{id}/quick-note', [MusteriController::class, 'quickNote']);
+Route::get('/musteriler/{id}', [MusteriController::class, 'show']);
+Route::get('/musteriler/{id}/edit', [MusteriController::class, 'edit']);
+Route::put('/musteriler/{id}', [MusteriController::class, 'update']);
+Route::delete('/musteriler/{id}', [MusteriController::class, 'destroy']);
+Route::post('/musteriler/delete-turu', [MusteriController::class, 'deleteTuru']);
 
 // Kişiler routes
 Route::get('/kisiler', fn () => view('kisiler.index'));
