@@ -145,7 +145,13 @@
                 const original = syncBtn.textContent;
                 syncBtn.textContent = '⏳ Senkron...';
                 try {
-                    const res = await fetch('/takvim/sync');
+                    const res = await fetch('/takvim/sync', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    });
                     const data = await res.json();
                     if (!res.ok || !data.success) {
                         alert(data.error || 'Senkron hatası oluştu.');

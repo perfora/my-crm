@@ -25,7 +25,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/sistem/disa-aktar', [\App\Http\Controllers\SystemExportController::class, 'export'])->name('system-export.download');
 
     Route::get('/takvim', [\App\Http\Controllers\CalendarController::class, 'index'])->name('calendar.index');
-    Route::get('/takvim/sync', [\App\Http\Controllers\CalendarController::class, 'sync'])->name('calendar.sync');
+    Route::post('/takvim/sync', [\App\Http\Controllers\CalendarController::class, 'sync'])->name('calendar.sync');
     Route::post('/takvim/cleanup', [\App\Http\Controllers\CalendarController::class, 'cleanup'])->name('calendar.cleanup');
     Route::post('/takvim/push-crm', [\App\Http\Controllers\CalendarController::class, 'pushCrm'])->name('calendar.push-crm');
 
@@ -63,7 +63,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/musteriler', [\App\Http\Controllers\MusteriController::class, 'index'])->name('musteriler.index');
     Route::get('/raporlar', [\App\Http\Controllers\MusteriController::class, 'raporlar'])->name('raporlar.index');
-    Route::get('/musteriler/import', [\App\Http\Controllers\MusteriController::class, 'import'])->name('musteriler.import');
+    Route::post('/musteriler/import', [\App\Http\Controllers\MusteriController::class, 'import'])->name('musteriler.import');
     Route::post('/musteriler', [\App\Http\Controllers\MusteriController::class, 'store'])->name('musteriler.store');
     Route::post('/musteriler/{id}/quick-contact', [\App\Http\Controllers\MusteriController::class, 'quickContact'])->name('musteriler.quick-contact');
     Route::post('/ziyaretler/{id}/quick-note', [\App\Http\Controllers\MusteriController::class, 'quickNote'])->name('ziyaretler.quick-note');

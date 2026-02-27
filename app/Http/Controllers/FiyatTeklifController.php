@@ -3,12 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\FiyatTeklif;
-use App\Models\TeklifKalem;
 use App\Models\Musteri;
 use App\Models\Kisi;
 use App\Models\Urun;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
 class FiyatTeklifController extends Controller
