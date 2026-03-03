@@ -12,24 +12,25 @@ class RaporController extends Controller
     public function marka(Request $request): JsonResponse
     {
         $yil = $request->input('yil', date('Y'));
+        $defaultRate = config('crm.default_usd_rate', 35.0);
 
         $rapor = DB::select("
             SELECT
                 m.name as marka,
                 COUNT(t.id) as adet,
                 SUM(CASE
-                    WHEN t.teklif_doviz = 'TL' THEN t.teklif_tutari / 35
+                    WHEN t.teklif_doviz = 'TL' THEN t.teklif_tutari / ?
                     ELSE t.teklif_tutari
                 END) as toplam_teklif,
                 SUM(CASE
-                    WHEN t.alis_doviz = 'TL' THEN t.alis_tutari / 35
+                    WHEN t.alis_doviz = 'TL' THEN t.alis_tutari / ?
                     ELSE t.alis_tutari
                 END) as toplam_alis,
                 SUM(CASE
-                    WHEN t.teklif_doviz = 'TL' THEN t.teklif_tutari / 35
+                    WHEN t.teklif_doviz = 'TL' THEN t.teklif_tutari / ?
                     ELSE t.teklif_tutari
                 END) - SUM(CASE
-                    WHEN t.alis_doviz = 'TL' THEN t.alis_tutari / 35
+                    WHEN t.alis_doviz = 'TL' THEN t.alis_tutari / ?
                     ELSE t.alis_tutari
                 END) as toplam_kar
             FROM tum_isler t
@@ -38,7 +39,7 @@ class RaporController extends Controller
             AND strftime('%Y', t.kapanis_tarihi) = ?
             GROUP BY t.marka_id, m.name
             ORDER BY toplam_kar DESC
-        ", [$yil]);
+        ", [$defaultRate, $defaultRate, $defaultRate, $defaultRate, $yil]);
 
         return response()->json($rapor);
     }
@@ -46,6 +47,7 @@ class RaporController extends Controller
     public function musteri(Request $request): JsonResponse
     {
         $yil = $request->input('yil', date('Y'));
+        $defaultRate = config('crm.default_usd_rate', 35.0);
 
         $rapor = DB::select("
             SELECT
@@ -53,14 +55,18 @@ class RaporController extends Controller
                 m.sirket as musteri,
                 COUNT(t.id) as adet,
                 SUM(CASE
-                    WHEN t.teklif_doviz = 'TL' THEN t.teklif_tutari / 35
+                    WHEN t.teklif_doviz = 'TL' THEN t.teklif_tutari / ?
                     ELSE t.teklif_tutari
                 END) as toplam_teklif,
                 SUM(CASE
-                    WHEN t.teklif_doviz = 'TL' THEN t.teklif_tutari / 35
+                    WHEN t.alis_doviz = 'TL' THEN t.alis_tutari / ?
+                    ELSE t.alis_tutari
+                END) as toplam_alis,
+                SUM(CASE
+                    WHEN t.teklif_doviz = 'TL' THEN t.teklif_tutari / ?
                     ELSE t.teklif_tutari
                 END) - SUM(CASE
-                    WHEN t.alis_doviz = 'TL' THEN t.alis_tutari / 35
+                    WHEN t.alis_doviz = 'TL' THEN t.alis_tutari / ?
                     ELSE t.alis_tutari
                 END) as toplam_kar,
                 (SELECT COUNT(*) FROM ziyaretler z
@@ -79,7 +85,7 @@ class RaporController extends Controller
             AND strftime('%Y', t.kapanis_tarihi) = ?
             GROUP BY t.musteri_id, m.sirket, m.id
             ORDER BY toplam_kar DESC
-        ", [$yil, $yil, $yil]);
+        ", [$defaultRate, $defaultRate, $defaultRate, $defaultRate, $yil, $yil, $yil]);
 
         return response()->json($rapor);
     }
