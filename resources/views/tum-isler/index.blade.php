@@ -30,6 +30,7 @@
         #scroll-bottom {
             overflow-x: auto;
             overflow-y: visible !important;
+            position: relative;
         }
         .floating-x-scroll {
             position: fixed;
@@ -43,7 +44,7 @@
         }
         #isler-table thead th {
             position: sticky;
-            top: 64px;
+            top: 0;
             z-index: 30;
             background-color: #f9fafb;
             box-shadow: inset 0 -1px 0 #e5e7eb;
@@ -932,6 +933,17 @@
             }
         }
 
+        function setTumIslerTableViewportHeight() {
+            const scrollBottom = document.getElementById('scroll-bottom');
+            if (!scrollBottom) return;
+            const rect = scrollBottom.getBoundingClientRect();
+            const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+            const bottomSpacing = 16;
+            const desiredHeight = Math.max(320, Math.floor(viewportHeight - rect.top - bottomSpacing));
+            scrollBottom.style.maxHeight = desiredHeight + 'px';
+            scrollBottom.style.overflowY = 'auto';
+        }
+
         function getTumIslerHeaderOrder() {
             const headerRow = document.querySelector('#isler-table thead tr');
             if (!headerRow) return [];
@@ -1063,6 +1075,12 @@
             
             // Üst scroll bar genişliğini ayarla
             syncTumIslerTopScrollWidth();
+            setTumIslerTableViewportHeight();
+
+            window.addEventListener('resize', function() {
+                setTumIslerTableViewportHeight();
+                syncTumIslerTopScrollWidth();
+            });
             
             // Scroll senkronize et
             scrollTop.addEventListener('scroll', function() {
@@ -1135,6 +1153,7 @@
             // Sayfa yüklendiğinde scroll genişliğini tekrar ayarla
             window.addEventListener('load', function() {
                 syncTumIslerTopScrollWidth();
+                setTumIslerTableViewportHeight();
             });
         });
 
@@ -1151,6 +1170,10 @@
                     filters.style.display = 'none';
                     icon.style.transform = 'rotate(0deg)';
                 }
+                setTimeout(function() {
+                    setTumIslerTableViewportHeight();
+                    syncTumIslerTopScrollWidth();
+                }, 50);
             }
         }
         
