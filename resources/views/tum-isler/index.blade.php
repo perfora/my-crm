@@ -27,6 +27,10 @@
         .scroll-sync {
             overflow-x: auto;
         }
+        #scroll-bottom {
+            overflow-x: auto;
+            overflow-y: visible !important;
+        }
         .floating-x-scroll {
             position: fixed;
             left: 0;
@@ -40,8 +44,9 @@
         #isler-table thead th {
             position: sticky;
             top: 64px;
-            z-index: 20;
+            z-index: 30;
             background-color: #f9fafb;
+            box-shadow: inset 0 -1px 0 #e5e7eb;
         }
         .sortable {
             cursor: pointer;
