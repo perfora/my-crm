@@ -37,6 +37,12 @@
             border-top: 1px solid #e5e7eb;
             box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.08);
         }
+        #isler-table thead th {
+            position: sticky;
+            top: 64px;
+            z-index: 20;
+            background-color: #f9fafb;
+        }
         .sortable {
             cursor: pointer;
             user-select: none;
