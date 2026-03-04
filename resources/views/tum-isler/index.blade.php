@@ -57,7 +57,7 @@
 </head>
 <body class="bg-gray-100">
     @include('layouts.nav')
-    <div class="container mx-auto px-4 py-8">
+    <div class="w-full px-4 py-8">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold">Tüm İşler</h1>
             @php
@@ -606,7 +606,7 @@
             </div>
             
             <div id="scroll-bottom" class="scroll-sync" style="overflow-x: auto;">
-                <table id="isler-table" class="min-w-full divide-y divide-gray-200">
+                <table id="isler-table" class="min-w-full divide-y divide-gray-200" style="min-width: 2200px;">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-3 py-3 text-center" data-fixed="select">
