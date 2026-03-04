@@ -521,7 +521,7 @@
         
 
         <!-- Liste -->
-        <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="bg-white rounded-lg shadow overflow-visible">
             <!-- Toolbar -->
             <div class="px-6 py-4 border-b">
                 <div class="flex items-center justify-between">
