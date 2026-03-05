@@ -66,8 +66,8 @@
 
             <!-- Müşteri -->
             <div>
-                <label class="block text-gray-700 font-semibold mb-2">Müşteri/Firma *</label>
-                <select name="musteri_id" id="musteri-select" required 
+                <label class="block text-gray-700 font-semibold mb-2">Müşteri/Firma</label>
+                <select name="musteri_id" id="musteri-select"
                     class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg">
                     <option value="">Seçiniz</option>
                     @foreach(\App\Models\Musteri::orderBy('sirket')->get() as $musteri)
