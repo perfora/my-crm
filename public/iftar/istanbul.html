@@ -269,13 +269,13 @@
           </div>
           <div>
             <label for="telefon">Telefon *</label>
-            <input id="telefon" name="telefon" type="tel" required maxlength="30">
+            <input id="telefon" name="telefon" type="tel" required maxlength="11" inputmode="numeric" autocomplete="tel" pattern="[0-9]{10,11}" placeholder="5XXXXXXXXX" title="Telefon numarasını sadece rakamla 10 veya 11 hane giriniz.">
           </div>
         </div>
 
         <div>
           <label for="email">E-posta *</label>
-          <input id="email" name="email" type="email" required maxlength="150" placeholder="ornek@firma.com">
+          <input id="email" name="email" type="email" required maxlength="150" pattern="[^\s@]+@[^\s@]+\.[^\s@]+" placeholder="ornek@firma.com" title="Geçerli bir e-posta adresi giriniz (ornek@firma.com).">
         </div>
 
         <div class="grid-2">
@@ -334,6 +334,7 @@
 
       const form = document.getElementById('iftarForm');
       const submitBtn = document.getElementById('submitBtn');
+      const telefonInput = document.getElementById('telefon');
       const okMsg = document.getElementById('okMsg');
       const errMsg = document.getElementById('errMsg');
       const kvkkOnay = document.getElementById('kvkk_onay');
@@ -353,6 +354,10 @@
       customPopupBtn.addEventListener('click', closeCustomPopup);
       customPopup.addEventListener('click', function(e) {
         if (e.target === customPopup) closeCustomPopup();
+      });
+
+      telefonInput.addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '').slice(0, 11);
       });
 
       function updateSubmitState() {
