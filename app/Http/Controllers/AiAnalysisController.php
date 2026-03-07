@@ -17,6 +17,17 @@ class AiAnalysisController extends Controller
 
     public function index(Request $request): View
     {
+        AiAnalysis::query()
+            ->where('status', 'pending')
+            ->whereNull('response_text')
+            ->whereNull('error_message')
+            ->where('created_at', '<', now()->subMinutes(2))
+            ->update([
+                'status' => 'failed',
+                'error_message' => 'Analiz islemi tamamlanmadi. Islem yarida kalmis olabilir.',
+                'updated_at' => now(),
+            ]);
+
         $query = AiAnalysis::with('user')->latest('id');
 
         if ($request->filled('type')) {
