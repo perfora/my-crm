@@ -150,25 +150,31 @@
                         </div>
 
                         <aside class="p-5 bg-gray-50">
-                            <h4 class="text-sm font-semibold text-gray-900 mb-3">Analiz Detayi</h4>
-                            <dl class="grid grid-cols-1 gap-3 text-sm">
-                                <div class="rounded-lg border border-gray-200 bg-white px-3 py-2">
-                                    <dt class="text-xs uppercase tracking-wide text-gray-500">Kaynak Sayfa</dt>
-                                    <dd class="mt-1 text-gray-900">{{ $analysis->source_page ?? '-' }}</dd>
+                            <details class="rounded-lg border border-gray-200 bg-white">
+                                <summary class="cursor-pointer list-none px-3 py-3 text-sm font-semibold text-gray-900">
+                                    Analiz Detayi
+                                </summary>
+                                <div class="border-t border-gray-200 p-3">
+                                    <dl class="grid grid-cols-1 gap-3 text-sm">
+                                        <div class="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                                            <dt class="text-xs uppercase tracking-wide text-gray-500">Kaynak Sayfa</dt>
+                                            <dd class="mt-1 text-gray-900">{{ $analysis->source_page ?? '-' }}</dd>
+                                        </div>
+                                        <div class="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                                            <dt class="text-xs uppercase tracking-wide text-gray-500">Prompt Anahtari</dt>
+                                            <dd class="mt-1 text-gray-900">{{ $analysis->prompt_key }}</dd>
+                                        </div>
+                                        <div class="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                                            <dt class="text-xs uppercase tracking-wide text-gray-500">Model</dt>
+                                            <dd class="mt-1 text-gray-900">{{ data_get($analysis->response_meta, 'model', '-') }}</dd>
+                                        </div>
+                                        <div class="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                                            <dt class="text-xs uppercase tracking-wide text-gray-500">Response ID</dt>
+                                            <dd class="mt-1 break-all text-gray-900">{{ data_get($analysis->response_meta, 'response_id', '-') }}</dd>
+                                        </div>
+                                    </dl>
                                 </div>
-                                <div class="rounded-lg border border-gray-200 bg-white px-3 py-2">
-                                    <dt class="text-xs uppercase tracking-wide text-gray-500">Prompt Anahtari</dt>
-                                    <dd class="mt-1 text-gray-900">{{ $analysis->prompt_key }}</dd>
-                                </div>
-                                <div class="rounded-lg border border-gray-200 bg-white px-3 py-2">
-                                    <dt class="text-xs uppercase tracking-wide text-gray-500">Model</dt>
-                                    <dd class="mt-1 text-gray-900">{{ data_get($analysis->response_meta, 'model', '-') }}</dd>
-                                </div>
-                                <div class="rounded-lg border border-gray-200 bg-white px-3 py-2">
-                                    <dt class="text-xs uppercase tracking-wide text-gray-500">Response ID</dt>
-                                    <dd class="mt-1 break-all text-gray-900">{{ data_get($analysis->response_meta, 'response_id', '-') }}</dd>
-                                </div>
-                            </dl>
+                            </details>
 
                             <details class="mt-4 rounded-lg border border-gray-200 bg-white">
                                 <summary class="cursor-pointer list-none px-3 py-3 text-sm font-semibold text-gray-900">
