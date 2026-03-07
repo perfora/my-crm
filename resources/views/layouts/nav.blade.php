@@ -50,13 +50,16 @@
                         📊 Raporlar
                     </a>
                     <div class="relative group">
-                        <button class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('sistem-loglari*') || request()->is('notion-settings*') || request()->is('sistem/disa-aktar*') || request()->is('sistem/ai-api*') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100' }} inline-flex items-center gap-1">
+                        <button class="px-3 py-2 rounded-md text-sm font-medium {{ request()->is('sistem-loglari*') || request()->is('notion-settings*') || request()->is('sistem/disa-aktar*') || request()->is('sistem/ai-api*') || request()->is('sistem/ai-analizler*') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100' }} inline-flex items-center gap-1">
                             ⚙️ Sistem
                             <span class="text-xs">▼</span>
                         </button>
                         <div class="absolute left-0 mt-2 w-56 bg-white border rounded-lg shadow-lg py-2 hidden group-hover:block z-50">
                             <a href="/sistem-loglari" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                 🛠️ Loglar
+                            </a>
+                            <a href="/sistem/ai-analizler" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                🧠 AI Analizler
                             </a>
                             <a href="/sistem/ai-api" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                 🤖 AI API

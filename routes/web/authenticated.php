@@ -16,6 +16,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard', [\App\Http\Controllers\PageController::class, 'dashboard'])->name('dashboard.index');
     Route::get('/sistem-loglari', [\App\Http\Controllers\SystemLogController::class, 'index'])->name('system-logs.index');
+    Route::get('/sistem/ai-analizler', [\App\Http\Controllers\AiAnalysisController::class, 'index'])->name('system.ai-analyses.index');
+    Route::post('/sistem/ai-analizler', [\App\Http\Controllers\AiAnalysisController::class, 'store'])->name('system.ai-analyses.store');
 
     Route::get('/sistem/ai-api', [\App\Http\Controllers\AiTokenController::class, 'index'])->name('system.ai-api.index');
     Route::post('/sistem/ai-api/tokens', [\App\Http\Controllers\AiTokenController::class, 'store'])->name('system.ai-api.store');
