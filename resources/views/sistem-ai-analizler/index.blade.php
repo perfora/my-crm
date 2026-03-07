@@ -134,7 +134,16 @@
                             @if ($analysis->response_text)
                                 <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 whitespace-pre-wrap text-sm leading-7 text-gray-800">{{ $analysis->response_text }}</div>
                             @elseif ($analysis->error_message)
-                                <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 whitespace-pre-wrap">{{ $analysis->error_message }}</div>
+                                <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                                    <div class="font-medium mb-2">Analiz hatayla sonlandi.</div>
+                                    <div>{{ \Illuminate\Support\Str::limit($analysis->error_message, 180) }}</div>
+                                    @if (\Illuminate\Support\Str::length($analysis->error_message) > 180)
+                                        <details class="mt-3">
+                                            <summary class="cursor-pointer text-xs font-medium text-red-800">Hata detayini goster</summary>
+                                            <div class="mt-2 whitespace-pre-wrap rounded border border-red-200 bg-white p-3 text-xs leading-5 text-red-700">{{ $analysis->error_message }}</div>
+                                        </details>
+                                    @endif
+                                </div>
                             @else
                                 <div class="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-700">Sonuc bekleniyor.</div>
                             @endif
@@ -161,10 +170,14 @@
                                 </div>
                             </dl>
 
-                            <div class="mt-4">
-                                <h4 class="text-sm font-semibold text-gray-900 mb-2">Giren Veri</h4>
-                                <pre class="max-h-80 overflow-auto rounded-lg border border-gray-200 bg-white p-3 text-xs leading-5 text-gray-700">{{ json_encode($analysis->request_payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}</pre>
-                            </div>
+                            <details class="mt-4 rounded-lg border border-gray-200 bg-white">
+                                <summary class="cursor-pointer list-none px-3 py-3 text-sm font-semibold text-gray-900">
+                                    Giren Veri
+                                </summary>
+                                <div class="border-t border-gray-200 p-3">
+                                    <pre class="max-h-80 overflow-auto text-xs leading-5 text-gray-700">{{ json_encode($analysis->request_payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}</pre>
+                                </div>
+                            </details>
                         </aside>
                     </div>
                 </section>
