@@ -1,0 +1,13 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Direct Vite asset requests to the physical public/build directory.
+    RewriteRule ^build/(.*)$ /public/build/$1 [L]
+
+    # Requests already under /public should pass through as-is.
+    RewriteCond %{REQUEST_URI} ^/public/
+    RewriteRule ^ - [L]
+
+    # Everything else is served from the Laravel public directory.
+    RewriteRule ^(.*)$ /public/$1 [L]
+</IfModule>
